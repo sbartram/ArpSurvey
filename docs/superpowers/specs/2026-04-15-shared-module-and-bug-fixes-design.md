@@ -29,6 +29,7 @@ All of these are currently defined independently in 2-4 scripts. After extractio
 | `GOOD_MARGIN` | session_planner, moon_calendar | Identical (20) |
 | `SEASON_SHEETS` | acp_generator | Moves to common for consistency |
 | `SITE_TELESCOPES` | acp_generator | Moves to common — logically part of site config |
+| `LRGB_FILTERS`, `LUM_FILTERS` | acp_generator (in DEFAULTS dict) | `["Luminance", "Red", "Green", "Blue"]` and `["Luminance"]` |
 | `LRGB_COUNTS`, `LUM_COUNTS`, `INTERVAL` | session_planner (also as DEFAULTS dict in acp_generator) | Canonical defaults |
 | `OVERHEAD_PER_TARGET_SECS`, `OVERHEAD_SESSION_SECS` | acp_generator (session_planner uses inline `180`, `300`) | Named constants replace magic numbers |
 | `RISK_LABELS` | new | `{"G": "Good", "M": "Marginal", "A": "Avoid"}` for display |
@@ -84,11 +85,11 @@ if args.min_el is not None:
 ```
 Then pass `cfg` instead of looking up `OBSERVATORIES[obs_key]` throughout `run()`.
 
-### Bug 3: Fragile Dec column name with leading space
+### Bug 3: Dead code from stale column name
 
 **File:** `arp_acp_generator.py:403`
-**Current:** `row[" Dec"]` with a leading space, falling back to `row["Dec (J2000)"]`
-**Fix:** `load_targets()` in arp_common strips all column names (`str(c).strip()`). All scripts use `"Dec (J2000)"` consistently. The ` Dec` variant is eliminated.
+**Current:** `row[" Dec"]` with a leading space, falling back to `row["Dec (J2000)"]`. The existing `load_targets()` already strips column names (line 170), so the `" Dec"` branch is dead code that never executes — the fallback `"Dec (J2000)"` is always used. Not an active bug, but confusing dead code.
+**Fix:** Remove the dead `" Dec"` branch. Standardize on `"Dec (J2000)"` consistently.
 
 ### Bug 4: Inconsistent moon risk return values
 
@@ -99,11 +100,12 @@ Then pass `cfg` instead of looking up `OBSERVATORIES[obs_key]` throughout `run()
 
 ### `arp_acp_generator.py`
 
-- **Remove:** ~60 lines — all constants listed above, `load_telescopes()`, `load_rates()`, `load_targets()`, `load_ned_coords()`, `sanitize_name()`, `parse_fov()`
-- **Add:** `from arp_common import ...`
+- **Remove:** ~60 lines — all constants listed above, `load_telescopes()`, `load_rates()`, `load_targets()`, `load_ned_coords()`, `sanitize_name()`, the `DEFAULTS` dict
+- **Add:** `from arp_common import ...` (including `SITE_TELESCOPES`, `LRGB_FILTERS`, `LUM_FILTERS`, `SEASON_SHEETS`)
 - **Keep as-is:** `assign_telescope()`, `target_fits_telescope()`, `parse_fov()`, `build_acp_header()`, `build_target_block()`, `generate_plan_text()`, `calc_plan_duration()`, `calc_plan_cost()`, `format_duration()`, `run()`, CLI
-- **Note:** `parse_fov()` and `target_fits_telescope()` stay local — they're only used by this script's `assign_telescope()`
-- **Note:** The `DEFAULTS` dict is replaced by importing the canonical constants directly
+- **Note:** `parse_fov()` and `target_fits_telescope()` stay local — only used by this script's `assign_telescope()`
+- **Note:** The `DEFAULTS` dict is replaced by importing the canonical constants directly (`LRGB_FILTERS`, `LUM_FILTERS`, `LRGB_COUNTS`, `LUM_COUNTS`, `INTERVAL`)
+- **Adjust:** `run()` must map `args.season` through `SEASON_SHEETS` before calling `load_targets(sheet_name=...)`, since `load_targets()` no longer accepts a season key
 
 ### `arp_session_planner.py`
 
@@ -111,7 +113,7 @@ Then pass `cfg` instead of looking up `OBSERVATORIES[obs_key]` throughout `run()
 - **Add:** `from arp_common import ...`
 - **Keep as-is:** `get_dark_window()`, `get_target_visibility()`, `get_moon_info()`, `estimate_cost()`, `assign_telescope()`, `build_session_plan()`, `run()`, CLI
 - **Fix:** `--min-el` override applied, bare `except` corrected, `moon_risk()` uses common version + `RISK_LABELS`
-- **Note:** `load_rates()` now returns the full structure; session planner accesses `rates[tel]["session"][plan_tier]` instead of `rates[tel][plan_tier]`
+- **Note:** `load_rates()` now returns the full structure; all rate consumers must change access pattern from `rates[tel][plan_tier]` to `rates[tel]["session"][plan_tier]`. This affects both the `rates.get(tel, {}).get(plan_tier)` call in `run()` (line 487) and the `estimate_cost()` function that receives the rate value.
 
 ### `arp_moon_calendar.py`
 
@@ -140,3 +142,13 @@ Then pass `cfg` instead of looking up `OBSERVATORIES[obs_key]` throughout `run()
 - Each script retains its own `run()` and CLI — no change to how they are invoked
 - The shared module contains only pure functions and constants — no global state, no side effects on import
 - `DATA_DIR` in arp_common uses `Path(__file__).parent`, which resolves correctly as long as `arp_common.py` lives alongside the other scripts (same directory as today)
+
+## Validation
+
+After implementation, verify by running each script and confirming output matches pre-refactoring behavior:
+
+1. `python arp_acp_generator.py --season Spring` — diff generated plan files and summary CSV against pre-refactoring output
+2. `python arp_session_planner.py --site "New Mexico"` — diff ACP plan and JSON summary against pre-refactoring output
+3. `python arp_moon_calendar.py --days 7` — diff JSON output against pre-refactoring output (use short window for speed)
+4. `python arp_ned_coords.py --help` — verify CLI still parses (full run requires network, so just check import + help)
+5. Verify `--min-el` fix: `python arp_session_planner.py --min-el 45` should produce fewer targets than default `--min-el 30`
