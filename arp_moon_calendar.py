@@ -17,89 +17,13 @@ import argparse
 import datetime
 import json
 import math
-import sys
 from pathlib import Path
 
 import ephem
-import pandas as pd
 
-DATA_DIR           = Path(__file__).parent
-SEASONAL_PLAN_FILE = DATA_DIR / "Arp_Seasonal_Plan.xlsx"
-
-# Observatory coordinates (lat, lon, elevation_m, utc_offset)
-OBSERVATORIES = {
-    "New Mexico": {"lat": "33.0",  "lon": "-107.0", "elev": 1400, "utc_offset": -7},
-    "Spain":      {"lat": "38.0",  "lon": "-3.5",   "elev": 1200, "utc_offset":  2},
-    "Australia":  {"lat": "-31.3", "lon": "149.1",  "elev": 1100, "utc_offset": 10},
-    "Chile":      {"lat": "-30.0", "lon": "-70.7",  "elev": 1500, "utc_offset": -4},
-}
-
-# Map Best Site strings to primary observatory key
-SITE_MAP = {
-    "New Mexico / Spain":     "New Mexico",
-    "New Mexico / Australia": "New Mexico",
-    "Any site":               "New Mexico",
-    "Australia":              "Australia",
-    "New Mexico":             "New Mexico",
-    "Spain":                  "Spain",
-    "Chile":                  "Chile",
-}
-
-# Moon phase → minimum separation (degrees) for galaxy imaging
-PHASE_THRESHOLDS = [
-    (25,  20),   # phase < 25%  → 20 deg min
-    (50,  40),   # phase < 50%  → 40 deg min
-    (75,  60),   # phase < 75%  → 60 deg min
-    (101, 90),   # phase < 101% → 90 deg min
-]
-
-# Margin above minimum separation to qualify as "Good" vs "Marginal"
-GOOD_MARGIN = 20  # degrees
-
-
-def moon_risk(phase, separation):
-    """Return 'G' (good), 'M' (marginal), or 'A' (avoid)."""
-    min_sep = next(m for p, m in PHASE_THRESHOLDS if phase < p)
-    margin = separation - min_sep
-    if margin >= GOOD_MARGIN:
-        return "G"
-    elif margin >= 0:
-        return "M"
-    return "A"
-
-
-def parse_ra(s):
-    """Convert 'HH MM SS' to 'HH:MM:SS' for ephem."""
-    s = str(s).strip()
-    return s.replace(" ", ":") if " " in s else s
-
-
-def parse_dec(s):
-    """Convert '+DD MM.m' to '+DD:MM:SS' for ephem."""
-    s = str(s).strip()
-    sign = "-" if s.startswith("-") else "+"
-    body = s.lstrip("+-")
-    parts = body.split()
-    if len(parts) == 2:
-        deg = parts[0]
-        min_decimal = float(parts[1])
-        mins = int(min_decimal)
-        secs = int((min_decimal - mins) * 60)
-        return f"{sign}{deg}:{mins:02d}:{secs:02d}"
-    return s
-
-
-def load_targets():
-    """Load all 338 Arp targets from the seasonal plan."""
-    df = pd.read_excel(SEASONAL_PLAN_FILE, sheet_name="All Objects", header=None)
-    for i, row in df.iterrows():
-        if any(str(v) == "Arp #" for v in row.values):
-            df.columns = df.iloc[i]
-            df = df.iloc[i + 1:].reset_index(drop=True)
-            break
-    df = df.dropna(subset=["Arp #"])
-    df.columns = [str(c).strip() for c in df.columns]
-    return df
+from arp_common import (
+    OBSERVATORIES, SITE_MAP, load_targets, moon_risk, parse_ra, parse_dec,
+)
 
 
 def build_observer(obs_key):
@@ -180,7 +104,7 @@ def run(args):
         ra_str   = parse_ra(row["RA (J2000)"])
         dec_str  = parse_dec(row["Dec (J2000)"])
         site_str = str(row.get("Best Site", "Any site")).strip()
-        obs_key  = SITE_MAP.get(site_str, "New Mexico")
+        obs_key  = SITE_MAP.get(site_str, ["New Mexico"])[0]
         season   = str(row.get("season", "")).strip() if "season" in row else ""
 
         windows   = calc_windows(ra_str, dec_str, obs_key, today, days)
