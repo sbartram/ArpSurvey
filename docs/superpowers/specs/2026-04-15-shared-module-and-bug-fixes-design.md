@@ -109,9 +109,10 @@ Use `RISK_LABELS[code]` only for display output (table printing and ACP plan com
 
 - **Remove:** ~60 lines — all constants listed above, `load_telescopes()`, `load_rates()`, `load_targets()`, `load_ned_coords()`, `sanitize_name()`, the `DEFAULTS` dict
 - **Add:** `from arp_common import ...` (including `SITE_TELESCOPES`, `LRGB_FILTERS`, `LUM_FILTERS`, `SEASON_SHEETS`)
-- **Keep as-is:** `assign_telescope()`, `target_fits_telescope()`, `parse_fov()`, `build_acp_header()`, `build_target_block()`, `generate_plan_text()`, `calc_plan_duration()`, `calc_plan_cost()`, `format_duration()`, `run()`, CLI
+- **Keep as-is:** `assign_telescope()`, `target_fits_telescope()`, `parse_fov()`, `build_acp_header()`, `generate_plan_text()`, `calc_plan_duration()`, `calc_plan_cost()`, `format_duration()`, `run()`, CLI
+- **Adjust:** `build_target_block()` must replace `DEFAULTS["lrgb_filters"]` with `LRGB_FILTERS` and `DEFAULTS["lum_filters"][0]` with `LUM_FILTERS[0]` (lines 409, 414)
 - **Note:** `parse_fov()` and `target_fits_telescope()` stay local — only used by this script's `assign_telescope()`
-- **Note:** The `DEFAULTS` dict is replaced by importing the canonical constants directly (`LRGB_FILTERS`, `LUM_FILTERS`, `LRGB_COUNTS`, `LUM_COUNTS`, `INTERVAL`)
+- **Note:** The `DEFAULTS` dict is fully replaced by importing the canonical constants directly (`LRGB_FILTERS`, `LUM_FILTERS`, `LRGB_COUNTS`, `LUM_COUNTS`, `INTERVAL`)
 - **Adjust:** `run()` must map `args.season` through `SEASON_SHEETS` before calling `load_targets(sheet_name=...)`, since `load_targets()` no longer accepts a season key
 
 ### `arp_session_planner.py`
