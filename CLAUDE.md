@@ -15,6 +15,9 @@ pip install pandas openpyxl xlrd ephem
 # For NED coordinate fetching (one-time setup)
 pip install astroquery
 
+# For running the test suite
+pip install pytest
+
 # Generate ACP plans for a season
 python arp_acp_generator.py --season Spring
 python arp_acp_generator.py --season All
@@ -29,7 +32,22 @@ python arp_session_planner.py --site "New Mexico" --moon-ok-only
 python arp_ned_coords.py
 ```
 
-There is no test suite, linter, or build system. The scripts are standalone CLI tools run individually.
+The scripts are standalone CLI tools run individually. A pytest suite lives in `tests/`.
+
+### Testing
+
+```bash
+# Run the full suite
+pytest tests/
+
+# Run a single file
+pytest tests/test_arp_common.py -v
+
+# Run a single test by name pattern
+pytest tests/ -k "moon_risk" -v
+```
+
+Tests cover pure functions in all 5 modules plus data loaders. Astronomy-heavy code (dark window, target visibility, moon info at transit) is not tested — those wrap `ephem` directly. Tests run against the real data files in the repo.
 
 ## Architecture
 
