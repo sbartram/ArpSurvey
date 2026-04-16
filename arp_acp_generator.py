@@ -30,16 +30,15 @@ Examples:
 """
 
 import argparse
-import re
 import sys
 from pathlib import Path
 
 import pandas as pd
 
 from arp_common import (
-    DATA_DIR, SEASONAL_PLAN_FILE, TELESCOPE_FILE,
+    TELESCOPE_FILE,
     TELESCOPE_TIERS, SITE_TELESCOPES, PLAN_TIERS, SEASON_SHEETS,
-    LRGB_FILTERS, LUM_FILTERS, LRGB_COUNTS, LUM_COUNTS, INTERVAL,
+    LRGB_FILTERS, LUM_FILTERS,
     OVERHEAD_PER_TARGET_SECS, OVERHEAD_SESSION_SECS,
     load_telescopes, load_rates, load_targets, load_ned_coords, sanitize_name,
 )
