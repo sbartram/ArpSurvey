@@ -271,3 +271,128 @@ def test_calc_plan_cost_missing_telescope():
     )
     assert points is None
     assert rate is None
+
+
+# ---------------------------------------------------------------------------
+# build_acp_header
+# ---------------------------------------------------------------------------
+
+from arp_acp_generator import build_acp_header, build_target_block
+
+
+def test_build_acp_header_contains_basics():
+    header = build_acp_header(
+        plan_name="Arp_Spring_T11_batch01",
+        telescope_id="T11",
+        season="Spring",
+        target_count=5,
+    )
+    assert "Arp_Spring_T11_batch01" in header
+    assert "T11" in header
+    assert "Spring" in header
+    assert "Targets      : 5" in header
+
+
+def test_build_acp_header_free_cost():
+    header = build_acp_header(
+        plan_name="test",
+        telescope_id="T68",
+        season="Spring",
+        target_count=1,
+        duration_str="1h 00m",
+        imaging_time_str="0h 30m",
+        session_cost=0.0,
+        exposure_cost=0.0,
+        plan_tier="Plan-40",
+    )
+    assert "FREE" in header
+
+
+def test_build_acp_header_no_plan_tier_omits_cost_block():
+    """Without plan_tier, no 'Est. Cost' block appears."""
+    header = build_acp_header(
+        plan_name="test",
+        telescope_id="T11",
+        season="Spring",
+        target_count=1,
+        duration_str="1h 00m",
+    )
+    assert "Est. Cost" not in header
+
+
+def test_build_acp_header_cost_formatted():
+    header = build_acp_header(
+        plan_name="test",
+        telescope_id="T11",
+        season="Spring",
+        target_count=1,
+        duration_str="1h 00m",
+        imaging_time_str="0h 30m",
+        session_cost=1234.0,
+        exposure_cost=567.0,
+        plan_tier="Plan-40",
+    )
+    assert "Session billing : ~1234 pts" in header
+    assert "Exposure billing: ~567 pts" in header
+
+
+# ---------------------------------------------------------------------------
+# build_target_block
+# ---------------------------------------------------------------------------
+
+def test_build_target_block_lrgb():
+    row = pd.Series({
+        "Arp #": 82,
+        "Common Name": "NGC 2535",
+        "Size (arcmin)": 3.5,
+        "RA (J2000)": "08 11 13",
+        "Dec (J2000)": "+25 12",
+    })
+    block = build_target_block(
+        row, filter_strategy="LRGB",
+        interval=300, lrgb_counts=[2, 1, 1, 1], lum_counts=[2],
+    )
+    assert "#filter Luminance,Red,Green,Blue" in block
+    assert "#binning 1,2,2,2" in block
+    assert "#count 2,1,1,1" in block
+    assert "#interval 300,300,300,300" in block
+    assert "Arp 82: NGC 2535" in block
+
+
+def test_build_target_block_luminance():
+    row = pd.Series({
+        "Arp #": 82,
+        "Common Name": "NGC 2535",
+        "Size (arcmin)": 3.5,
+        "RA (J2000)": "08 11 13",
+        "Dec (J2000)": "+25 12",
+    })
+    block = build_target_block(
+        row, filter_strategy="Luminance",
+        interval=300, lrgb_counts=[2, 1, 1, 1], lum_counts=[2],
+    )
+    # Verify Luminance-only directives
+    assert "#filter Luminance" in block
+    # Should NOT contain LRGB filter list
+    assert "Luminance,Red" not in block
+    assert "#binning 1\n" in block
+
+
+def test_build_target_block_uses_ned_coords_when_available():
+    """NED coords override parsed catalog coords when provided."""
+    row = pd.Series({
+        "Arp #": 82,
+        "Common Name": "NGC 2535",
+        "Size (arcmin)": 3.5,
+        "RA (J2000)": "08 11 13",
+        "Dec (J2000)": "+25 12",
+    })
+    ned_coords = {82: (9.999999, 30.0)}  # obviously wrong values vs. catalog
+    block = build_target_block(
+        row, filter_strategy="Luminance",
+        interval=300, lrgb_counts=[2, 1, 1, 1], lum_counts=[2],
+        ned_coords=ned_coords,
+    )
+    # The NED coords should appear in the coordinate line
+    assert "9.999999" in block
+    assert "30.000000" in block
