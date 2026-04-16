@@ -56,6 +56,7 @@ SITE_TELESCOPES = {
 
 # Telescope preference order for auto-assignment based on target angular size.
 # Format: (min_arcmin, max_arcmin, preferred_telescope_ids_in_order)
+# The first telescope in the list that has the target in its FOV will be used.
 TELESCOPE_TIERS = [
     (0,    3.0,  ["T17", "T32", "T21", "T11", "T25"]),   # compact targets
     (3.0,  7.0,  ["T11", "T21", "T26", "T30", "T17"]),   # medium targets
