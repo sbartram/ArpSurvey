@@ -30,169 +30,19 @@ Examples:
 """
 
 import argparse
-import os
 import re
 import sys
-import pandas as pd
 from pathlib import Path
 
+import pandas as pd
 
-# ---------------------------------------------------------------------------
-# Configuration — adjust defaults here or via command-line arguments
-# ---------------------------------------------------------------------------
-
-DATA_DIR = Path(__file__).parent          # expects data files alongside script
-SEASONAL_PLAN_FILE = DATA_DIR / "Arp_Seasonal_Plan.xlsx"
-TELESCOPE_FILE     = DATA_DIR / "itelescopesystems.xlsx"
-
-# Telescope preference order for auto-assignment based on target size
-# Format: (min_arcmin, max_arcmin, preferred_telescope_ids_in_order)
-# The first telescope in the list that has the target in its FOV will be used.
-TELESCOPE_TIERS = [
-    (0,    3.0,  ["T17", "T32", "T21", "T11", "T25"]),   # compact targets
-    (3.0,  7.0,  ["T11", "T21", "T26", "T30", "T17"]),   # medium targets
-    (7.0,  20.0, ["T5",  "T20", "T26", "T71", "T75"]),   # large targets
-    (20.0, 999,  ["T14", "T8",  "T70", "T80"]),           # very wide targets
-]
-
-# Site-to-telescope mapping for auto-assignment
-SITE_TELESCOPES = {
-    "New Mexico": ["T5", "T8", "T14", "T11", "T21", "T25", "T68"],
-    "Spain":      ["T17", "T20", "T30", "T32", "T33", "T59"],
-    "Australia":  ["T24", "T18"],
-    "Chile":      ["T71", "T72", "T73", "T74", "T75"],
-}
-
-# Default ACP imaging parameters
-DEFAULTS = {
-    "lrgb_filters":  ["Luminance", "Red", "Green", "Blue"],
-    "lum_filters":   ["Luminance"],
-    "lrgb_counts":   [2, 1, 1, 1],  # per-repeat counts (use --repeat 3)
-    "lum_counts":    [2],
-    "interval":      300,      # seconds per sub-exposure
-    "repeat":        3,
-    "binning":       1,
-}
-
-SEASON_SHEETS = {
-    "Spring":  "Spring (Now)",
-    "Summer":  "Summer",
-    "Autumn":  "Autumn",
-    "Winter":  "Winter",
-    "All":     "All Objects",
-}
-
-# iTelescope membership plan tiers (column names in Imaging Rates sheet)
-PLAN_TIERS = ["Plan-40", "Plan-90", "Plan-160", "Plan-290", "Plan-490"]
-
-# Per-target overhead estimate in seconds (slew + plate-solve + focus + guider settle)
-OVERHEAD_PER_TARGET_SECS = 180
-
-# ACP startup overhead per plan session in seconds (roof open, startup, first slew)
-OVERHEAD_SESSION_SECS = 300
-
-
-# ---------------------------------------------------------------------------
-# Data loading
-# ---------------------------------------------------------------------------
-
-def load_telescopes(filepath):
-    """Load telescope specs, return dict keyed by telescope ID."""
-    df = pd.read_excel(filepath, sheet_name="Telescopes")
-    tels = df[df["Telescope"].notna() & df["Telescope"].astype(str).str.match(r"T\d+")].copy()
-    tels = tels.set_index("Telescope")
-    return tels
-
-
-def load_rates(filepath):
-    """
-    Load iTelescope imaging rates from the Imaging Rates sheet.
-    Returns a dict: {telescope_id: {"session": {plan: pts}, "exposure": {plan: pts}}}
-    Rates are in iTelescope points per minute.
-    """
-    df = pd.read_excel(filepath, sheet_name="Imaging Rates", header=None)
-
-    # Find the header row (contains 'Telescope')
-    header_row = None
-    for i, row in df.iterrows():
-        if any(str(v).strip() == "Telescope" for v in row.values):
-            header_row = i
-            break
-    if header_row is None:
-        return {}
-
-    # The header row has: Telescope, Plan-40..Plan-490 (session), Plan-40..Plan-490 (exposure)
-    headers = [str(v).strip() for v in df.iloc[header_row].values]
-
-    rates = {}
-    for i in range(header_row + 1, len(df)):
-        row = df.iloc[i]
-        tel_id = str(row.iloc[0]).strip()
-        if not tel_id or tel_id == "nan" or not tel_id.startswith("T"):
-            continue
-        values = [v for v in row.values]
-        # Columns 1-5: session rates, column 6: blank separator, columns 7-11: exposure rates
-        session_rates = {}
-        exposure_rates = {}
-        for j, plan in enumerate(PLAN_TIERS):
-            try:
-                session_rates[plan]  = float(values[j + 1])
-            except (ValueError, TypeError, IndexError):
-                session_rates[plan]  = None
-            try:
-                exposure_rates[plan] = float(values[j + 7])  # skip blank col at index 6
-            except (ValueError, TypeError, IndexError):
-                exposure_rates[plan] = None
-        rates[tel_id] = {"session": session_rates, "exposure": exposure_rates}
-    return rates
-
-
-def load_targets(filepath, season):
-    """Load targets for the given season from the seasonal plan workbook."""
-    sheet_name = SEASON_SHEETS.get(season)
-    if not sheet_name:
-        raise ValueError(f"Unknown season '{season}'. Choose from: {list(SEASON_SHEETS)}")
-
-    df = pd.read_excel(filepath, sheet_name=sheet_name, header=None)
-
-    # Find the header row (contains 'Arp #')
-    header_row = None
-    for i, row in df.iterrows():
-        if "Arp #" in row.values or any(str(v) == "Arp #" for v in row.values):
-            header_row = i
-            break
-    if header_row is None:
-        raise ValueError(f"Could not find header row in sheet '{sheet_name}'")
-
-    df.columns = df.iloc[header_row]
-    df = df.iloc[header_row + 1:].reset_index(drop=True)
-    df = df.dropna(subset=["Arp #"])
-    df.columns = [str(c).strip() for c in df.columns]
-    return df
-
-
-# ---------------------------------------------------------------------------
-# NED coordinates (loaded if arp_ned_coords.csv is present)
-# ---------------------------------------------------------------------------
-
-def load_ned_coords():
-    """
-    Load NED-fetched coordinates from arp_ned_coords.csv if it exists.
-    Returns dict keyed by Arp number: {arp: (ra_hours, dec_deg)}.
-    Falls back to empty dict if file not found.
-    """
-    ned_path = DATA_DIR / "arp_ned_coords.csv"
-    if not ned_path.exists():
-        return {}
-    try:
-        df = pd.read_csv(ned_path)
-        coords = {}
-        for _, row in df.iterrows():
-            if row.get('source') == 'NED':
-                coords[int(row['arp'])] = (float(row['ra_hours']), float(row['dec_deg']))
-        return coords
-    except Exception:
-        return {}
+from arp_common import (
+    DATA_DIR, SEASONAL_PLAN_FILE, TELESCOPE_FILE,
+    TELESCOPE_TIERS, SITE_TELESCOPES, PLAN_TIERS, SEASON_SHEETS,
+    LRGB_FILTERS, LUM_FILTERS, LRGB_COUNTS, LUM_COUNTS, INTERVAL,
+    OVERHEAD_PER_TARGET_SECS, OVERHEAD_SESSION_SECS,
+    load_telescopes, load_rates, load_targets, load_ned_coords, sanitize_name,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -263,15 +113,6 @@ def assign_telescope(row, telescopes, preferred_telescope=None):
             return tel_id
 
     return "T11"  # final fallback
-
-
-# ---------------------------------------------------------------------------
-def sanitize_name(name):
-    """Make a target name safe for ACP (no spaces, special chars)."""
-    name = str(name).strip()
-    name = re.sub(r"[^\w\-+]", "_", name)
-    name = re.sub(r"_+", "_", name)
-    return name.strip("_")
 
 
 # ---------------------------------------------------------------------------
@@ -400,18 +241,18 @@ def build_target_block(row, filter_strategy, interval, lrgb_counts, lum_counts,
     else:
         ra_str = str(row["RA (J2000)"]).strip().split()
         ra_dec = float(ra_str[0]) + float(ra_str[1])/60 + (float(ra_str[2]) if len(ra_str)>2 else 0)/3600
-        dec_str = str(row[" Dec"]).strip() if " Dec" in row.index else str(row["Dec (J2000)"]).strip()
+        dec_str = str(row["Dec (J2000)"]).strip()
         sign = -1 if dec_str.startswith("-") else 1
         dec_parts = dec_str.lstrip("+-").split()
         dec_dec = sign * (float(dec_parts[0]) + float(dec_parts[1])/60)
 
     if filter_strategy == "LRGB":
-        filters   = ",".join(DEFAULTS["lrgb_filters"])
+        filters   = ",".join(LRGB_FILTERS)
         counts    = ",".join(str(c) for c in lrgb_counts)
         intervals = ",".join(str(interval) for _ in lrgb_counts)
         binnings  = "1,2,2,2"  # Luminance bin 1, RGB bin 2
     else:
-        filters   = DEFAULTS["lum_filters"][0]
+        filters   = LUM_FILTERS[0]
         counts    = str(lum_counts[0])
         intervals = str(interval)
         binnings  = "1"
@@ -493,7 +334,11 @@ def run(args):
     print(f"  {len(rates)} telescopes with rate data.")
 
     print(f"Loading targets for season: {args.season}...")
-    targets = load_targets(SEASONAL_PLAN_FILE, args.season)
+    sheet_name = SEASON_SHEETS.get(args.season)
+    if not sheet_name:
+        print(f"Unknown season '{args.season}'. Choose from: {list(SEASON_SHEETS)}")
+        sys.exit(1)
+    targets = load_targets(sheet_name=sheet_name)
     print(f"  {len(targets)} targets loaded.\n")
 
     # Assign telescopes
