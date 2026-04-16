@@ -40,7 +40,7 @@ except ImportError:
     print("ERROR: astroquery not installed. Run: pip install astroquery")
     raise SystemExit(1)
 
-from arp_common import SEASONAL_PLAN_FILE, load_targets, parse_catalog_coords
+from arp_common import load_targets, parse_catalog_coords
 
 
 # ---------------------------------------------------------------------------
