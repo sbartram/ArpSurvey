@@ -94,7 +94,14 @@ Then pass `cfg` instead of looking up `OBSERVATORIES[obs_key]` throughout `run()
 ### Bug 4: Inconsistent moon risk return values
 
 **Current:** Moon calendar returns `"G"/"M"/"A"`. Session planner returns `"Good"/"Marginal"/"Avoid"`.
-**Fix:** Single `moon_risk()` in arp_common returns `"G"/"M"/"A"`. New `RISK_LABELS` dict provides display names. Session planner uses `RISK_LABELS[risk_code]` for its table output and ACP plan comments.
+**Fix:** Single `moon_risk()` in arp_common returns `"G"/"M"/"A"`. New `RISK_LABELS` dict provides display names. Session planner must update all comparison/filter logic to use short codes:
+- `moon_info["risk"] == "Avoid"` becomes `== "A"` (line 483, moon-ok-only filter)
+- `t["moon"]["risk"] != "Avoid"` becomes `!= "A"` (line 521)
+- `t["moon"]["risk"] == "Marginal"` becomes `== "M"` (line 522)
+- `t["moon"]["risk"] == "Avoid"` becomes `== "A"` (line 523)
+- `t["moon"]["risk"] == "Good"` / `"Marginal"` becomes `== "G"` / `"M"` (line 526)
+
+Use `RISK_LABELS[code]` only for display output (table printing and ACP plan comments).
 
 ## Changes per script
 
@@ -111,9 +118,11 @@ Then pass `cfg` instead of looking up `OBSERVATORIES[obs_key]` throughout `run()
 
 - **Remove:** ~70 lines — constants, `load_targets()`, `load_rates()`, `load_ned_coords()`, `parse_ra()`, `parse_dec()`, `sanitize_name()`, `moon_risk()`
 - **Add:** `from arp_common import ...`
-- **Keep as-is:** `get_dark_window()`, `get_target_visibility()`, `get_moon_info()`, `estimate_cost()`, `assign_telescope()`, `build_session_plan()`, `run()`, CLI
+- **Keep as-is:** `get_dark_window()`, `get_target_visibility()`, `get_moon_info()`, `assign_telescope()`, `run()`, CLI
 - **Fix:** `--min-el` override applied, bare `except` corrected, `moon_risk()` uses common version + `RISK_LABELS`
-- **Note:** `load_rates()` now returns the full structure; all rate consumers must change access pattern from `rates[tel][plan_tier]` to `rates[tel]["session"][plan_tier]`. This affects both the `rates.get(tel, {}).get(plan_tier)` call in `run()` (line 487) and the `estimate_cost()` function that receives the rate value.
+- **Adjust:** `estimate_cost()` (line 300) and `build_session_plan()` (line 329) must replace hardcoded `180` and `300` with `OVERHEAD_PER_TARGET_SECS` and `OVERHEAD_SESSION_SECS`
+- **Adjust:** All moon risk comparison logic must switch from `"Good"/"Marginal"/"Avoid"` to `"G"/"M"/"A"` short codes (see Bug 4 for full list of affected lines)
+- **Note:** `load_rates()` now returns the full structure; all rate consumers must change access pattern from `rates[tel][plan_tier]` to `rates[tel]["session"][plan_tier]`. This affects the `rates.get(tel, {}).get(plan_tier)` call in `run()` (line 487); `estimate_cost()` receives the already-extracted rate scalar and does not need dict access changes.
 
 ### `arp_moon_calendar.py`
 
