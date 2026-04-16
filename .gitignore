@@ -1,0 +1,22 @@
+# Generated coordinate data — run arp_ned_coords.py to regenerate
+#arp_ned_coords.csv
+
+# Generated ACP plan files
+acp_plans/
+session_plans/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+*.swp
