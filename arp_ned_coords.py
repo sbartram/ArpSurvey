@@ -40,8 +40,7 @@ except ImportError:
     print("ERROR: astroquery not installed. Run: pip install astroquery")
     raise SystemExit(1)
 
-DATA_DIR           = Path(__file__).parent
-SEASONAL_PLAN_FILE = DATA_DIR / "Arp_Seasonal_Plan.xlsx"
+from arp_common import load_targets, parse_catalog_coords
 
 
 # ---------------------------------------------------------------------------
@@ -138,36 +137,6 @@ def query_ned(name_candidates, fallback_ra, fallback_dec):
 
     # All candidates failed — use catalog coords
     return fallback_ra, fallback_dec, '', 'catalog'
-
-
-# ---------------------------------------------------------------------------
-# Data loading
-# ---------------------------------------------------------------------------
-
-def load_targets():
-    df = pd.read_excel(SEASONAL_PLAN_FILE, sheet_name='All Objects', header=None)
-    for i, row in df.iterrows():
-        if any(str(v) == 'Arp #' for v in row.values):
-            df.columns = df.iloc[i]
-            df = df.iloc[i + 1:].reset_index(drop=True)
-            break
-    df = df.dropna(subset=['Arp #'])
-    df.columns = [str(c).strip() for c in df.columns]
-    return df
-
-
-def parse_catalog_coords(ra_str, dec_str):
-    """Parse catalog RA/Dec strings to decimal degrees."""
-    ra_parts = str(ra_str).strip().split()
-    ra_h = float(ra_parts[0]) + float(ra_parts[1])/60 + (float(ra_parts[2]) if len(ra_parts)>2 else 0)/3600
-
-    dec_str  = str(dec_str).strip()
-    sign     = -1 if dec_str.startswith('-') else 1
-    dec_parts = dec_str.lstrip('+-').split()
-    dec_d    = sign * (float(dec_parts[0]) + float(dec_parts[1])/60)
-
-    # Convert RA from hours to degrees
-    return ra_h * 15, dec_d
 
 
 # ---------------------------------------------------------------------------
