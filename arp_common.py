@@ -119,3 +119,143 @@ def moon_risk(phase, separation):
     elif margin >= 0:
         return "M"
     return "A"
+
+
+# ---------------------------------------------------------------------------
+# Coordinate utilities
+# ---------------------------------------------------------------------------
+
+def parse_ra(s):
+    """Convert 'HH MM SS' to 'HH:MM:SS' for ephem."""
+    s = str(s).strip()
+    return s.replace(" ", ":") if " " in s else s
+
+
+def parse_dec(s):
+    """Convert '+DD MM.m' to '+DD:MM:SS' for ephem."""
+    s = str(s).strip()
+    sign = "-" if s.startswith("-") else "+"
+    body = s.lstrip("+-")
+    parts = body.split()
+    if len(parts) == 2:
+        deg = parts[0]
+        min_decimal = float(parts[1])
+        mins = int(min_decimal)
+        secs = int((min_decimal - mins) * 60)
+        return f"{sign}{deg}:{mins:02d}:{secs:02d}"
+    return s
+
+
+def sanitize_name(name):
+    """Make a target name safe for ACP (no spaces, special chars)."""
+    name = str(name).strip()
+    name = re.sub(r"[^\w\-+]", "_", name)
+    name = re.sub(r"_+", "_", name)
+    return name.strip("_")
+
+
+def parse_catalog_coords(ra_str, dec_str):
+    """Parse catalog RA/Dec strings to (ra_degrees, dec_degrees)."""
+    ra_parts = str(ra_str).strip().split()
+    ra_h = float(ra_parts[0]) + float(ra_parts[1]) / 60 + (float(ra_parts[2]) if len(ra_parts) > 2 else 0) / 3600
+
+    dec_str = str(dec_str).strip()
+    sign = -1 if dec_str.startswith('-') else 1
+    dec_parts = dec_str.lstrip('+-').split()
+    dec_d = sign * (float(dec_parts[0]) + float(dec_parts[1]) / 60)
+
+    return ra_h * 15, dec_d
+
+
+# ---------------------------------------------------------------------------
+# Data loading
+# ---------------------------------------------------------------------------
+
+def load_targets(sheet_name="All Objects"):
+    """
+    Load Arp targets from the seasonal plan workbook.
+    Returns a DataFrame with stripped column names.
+    """
+    df = pd.read_excel(SEASONAL_PLAN_FILE, sheet_name=sheet_name, header=None)
+
+    header_row = None
+    for i, row in df.iterrows():
+        if "Arp #" in row.values or any(str(v) == "Arp #" for v in row.values):
+            header_row = i
+            break
+    if header_row is None:
+        raise ValueError(f"Could not find header row in sheet '{sheet_name}'")
+
+    df.columns = df.iloc[header_row]
+    df = df.iloc[header_row + 1:].reset_index(drop=True)
+    df = df.dropna(subset=["Arp #"])
+    df.columns = [str(c).strip() for c in df.columns]
+    return df
+
+
+def load_telescopes(filepath=None):
+    """Load telescope specs, return DataFrame keyed by telescope ID."""
+    filepath = filepath or TELESCOPE_FILE
+    df = pd.read_excel(filepath, sheet_name="Telescopes")
+    tels = df[df["Telescope"].notna() & df["Telescope"].astype(str).str.match(r"T\d+")].copy()
+    tels = tels.set_index("Telescope")
+    return tels
+
+
+def load_rates(filepath=None):
+    """
+    Load iTelescope imaging rates from the Imaging Rates sheet.
+    Returns a dict: {telescope_id: {"session": {plan: pts}, "exposure": {plan: pts}}}
+    Rates are in iTelescope points per minute.
+    """
+    filepath = filepath or TELESCOPE_FILE
+    df = pd.read_excel(filepath, sheet_name="Imaging Rates", header=None)
+
+    header_row = None
+    for i, row in df.iterrows():
+        if any(str(v).strip() == "Telescope" for v in row.values):
+            header_row = i
+            break
+    if header_row is None:
+        return {}
+
+    rates = {}
+    for i in range(header_row + 1, len(df)):
+        row = df.iloc[i]
+        tel_id = str(row.iloc[0]).strip()
+        if not tel_id or tel_id == "nan" or not tel_id.startswith("T"):
+            continue
+        values = list(row.values)
+        session_rates = {}
+        exposure_rates = {}
+        for j, plan in enumerate(PLAN_TIERS):
+            try:
+                session_rates[plan] = float(values[j + 1])
+            except (ValueError, TypeError, IndexError):
+                session_rates[plan] = None
+            try:
+                exposure_rates[plan] = float(values[j + 7])
+            except (ValueError, TypeError, IndexError):
+                exposure_rates[plan] = None
+        rates[tel_id] = {"session": session_rates, "exposure": exposure_rates}
+    return rates
+
+
+def load_ned_coords():
+    """
+    Load NED-fetched coordinates from arp_ned_coords.csv if it exists.
+    Returns dict keyed by Arp number: {arp: (ra_hours, dec_deg)}.
+    Falls back to empty dict if file not found.
+    """
+    ned_path = DATA_DIR / "arp_ned_coords.csv"
+    if not ned_path.exists():
+        return {}
+    try:
+        df = pd.read_csv(ned_path)
+        coords = {}
+        for _, row in df.iterrows():
+            if row.get('source') == 'NED':
+                coords[int(row['arp'])] = (float(row['ra_hours']), float(row['dec_deg']))
+        return coords
+    except Exception:
+        return {}
