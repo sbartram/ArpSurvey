@@ -35,13 +35,22 @@ def test_parse_fov_valid_numeric():
     assert parse_fov(row) == (30.0, 20.0)
 
 
-def test_parse_fov_nan():
-    """NaN behavior: float(NaN) doesn't raise, so parse_fov returns (NaN, 20.0)
-    rather than (None, None). NaN comparison via != self, or None check."""
+def test_parse_fov_nan_passes_through():
+    """NaN passes through as NaN (float(nan) doesn't raise). This is harmless
+    because target_fits_telescope treats NaN comparisons as False."""
+    import math
     row = pd.Series({"FOV X (arcmins)": float("nan"), "FOV Y (arcmins)": 20.0})
     x, y = parse_fov(row)
-    # Accept either (NaN, 20.0) or (None, None)
-    assert (x != x) or x is None
+    assert math.isnan(x)
+    assert y == 20.0
+
+
+def test_parse_fov_nan_end_to_end_returns_false():
+    """End-to-end contract: regardless of NaN vs None in parse_fov output,
+    target_fits_telescope must return False for unknown FOV."""
+    row = pd.Series({"FOV X (arcmins)": float("nan"), "FOV Y (arcmins)": 20.0})
+    fov_x, fov_y = parse_fov(row)
+    assert target_fits_telescope(5, fov_x, fov_y) is False
 
 
 def test_parse_fov_string_placeholder():
