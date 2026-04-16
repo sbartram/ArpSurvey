@@ -141,3 +141,133 @@ def test_assign_telescope_missing_size_defaults_to_3():
     # T11 FOV min=20; 3 × 1.5 = 4.5 ≤ 20 → T11 selected
     result = assign_telescope(row, telescopes)
     assert result in ("T11", "T21", "T17")  # any of the medium-tier fits
+
+
+# ---------------------------------------------------------------------------
+# calc_plan_duration
+# ---------------------------------------------------------------------------
+
+from arp_acp_generator import calc_plan_duration, calc_plan_cost
+
+
+def _make_batch(strategies):
+    """Build a DataFrame with one row per strategy string."""
+    return pd.DataFrame({
+        "Arp #": list(range(1, len(strategies) + 1)),
+        "Common Name": [f"Target{i}" for i in range(1, len(strategies) + 1)],
+        "Filter Strategy": strategies,
+    })
+
+
+def test_calc_plan_duration_single_luminance():
+    """
+    1 Lum target, interval=300, repeat=3, lum_counts=[2]:
+      exposure_secs = 1 × 2 × 300 = 600
+      imaging_total (returned) = 600 × 3 = 1800
+      target_overhead = 1 × 180 = 180
+      total_secs = (600 + 180) × 3 + 300 = 2640
+    """
+    batch = _make_batch(["Luminance"])
+    total, imaging = calc_plan_duration(
+        batch, interval=300, repeat=3,
+        lrgb_counts=[2, 1, 1, 1], lum_counts=[2],
+    )
+    assert total == 2640
+    assert imaging == 1800
+
+
+def test_calc_plan_duration_single_lrgb():
+    """
+    1 LRGB target, interval=300, repeat=3, lrgb_counts=[2,1,1,1]:
+      exposures per target = 2+1+1+1 = 5
+      exposure_secs = 1 × 5 × 300 = 1500
+      imaging_total = 1500 × 3 = 4500
+      target_overhead = 1 × 180 = 180
+      total = (1500 + 180) × 3 + 300 = 5340
+    """
+    batch = _make_batch(["LRGB"])
+    total, imaging = calc_plan_duration(
+        batch, interval=300, repeat=3,
+        lrgb_counts=[2, 1, 1, 1], lum_counts=[2],
+    )
+    assert total == 5340
+    assert imaging == 4500
+
+
+def test_calc_plan_duration_mixed_batch():
+    """
+    2 LRGB + 1 Lum, interval=300, repeat=3:
+      exposure_secs = (2 × 5 × 300) + (1 × 2 × 300) = 3000 + 600 = 3600
+      imaging_total = 3600 × 3 = 10800
+      target_overhead = 3 × 180 = 540
+      total = (3600 + 540) × 3 + 300 = 12720
+    """
+    batch = _make_batch(["LRGB", "LRGB", "Luminance"])
+    total, imaging = calc_plan_duration(
+        batch, interval=300, repeat=3,
+        lrgb_counts=[2, 1, 1, 1], lum_counts=[2],
+    )
+    assert total == 12720
+    assert imaging == 10800
+
+
+# ---------------------------------------------------------------------------
+# calc_plan_cost
+# ---------------------------------------------------------------------------
+
+def test_calc_plan_cost_session_mode():
+    """
+    Session billing = total_secs / 60 × rate.
+    1 Lum target: total = 2640 sec = 44 min. At 10 pts/min → 440 pts.
+    """
+    batch = _make_batch(["Luminance"])
+    rates = {"T11": {"session": {"Plan-40": 10.0}, "exposure": {"Plan-40": 5.0}}}
+    points, rate = calc_plan_cost(
+        batch, "T11", interval=300, repeat=3,
+        lrgb_counts=[2, 1, 1, 1], lum_counts=[2],
+        rates=rates, plan_tier="Plan-40", billing_mode="session",
+    )
+    assert points == pytest.approx(440.0)
+    assert rate == 10.0
+
+
+def test_calc_plan_cost_exposure_mode():
+    """
+    Exposure billing = imaging_secs / 60 × rate.
+    1 Lum target: imaging = 1800 sec = 30 min. At 5 pts/min → 150 pts.
+    """
+    batch = _make_batch(["Luminance"])
+    rates = {"T11": {"session": {"Plan-40": 10.0}, "exposure": {"Plan-40": 5.0}}}
+    points, rate = calc_plan_cost(
+        batch, "T11", interval=300, repeat=3,
+        lrgb_counts=[2, 1, 1, 1], lum_counts=[2],
+        rates=rates, plan_tier="Plan-40", billing_mode="exposure",
+    )
+    assert points == pytest.approx(150.0)
+    assert rate == 5.0
+
+
+def test_calc_plan_cost_free_telescope():
+    """Rate of 0 means free telescope (e.g. T33, T68)."""
+    batch = _make_batch(["Luminance"])
+    rates = {"T68": {"session": {"Plan-40": 0.0}, "exposure": {"Plan-40": 0.0}}}
+    points, rate = calc_plan_cost(
+        batch, "T68", interval=300, repeat=3,
+        lrgb_counts=[2, 1, 1, 1], lum_counts=[2],
+        rates=rates, plan_tier="Plan-40", billing_mode="session",
+    )
+    assert points == 0.0
+    assert rate == 0.0
+
+
+def test_calc_plan_cost_missing_telescope():
+    """Telescope not in rates → (None, None)."""
+    batch = _make_batch(["Luminance"])
+    rates = {}
+    points, rate = calc_plan_cost(
+        batch, "T11", interval=300, repeat=3,
+        lrgb_counts=[2, 1, 1, 1], lum_counts=[2],
+        rates=rates, plan_tier="Plan-40", billing_mode="session",
+    )
+    assert points is None
+    assert rate is None
