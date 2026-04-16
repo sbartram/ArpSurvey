@@ -30,141 +30,20 @@ import sys
 from pathlib import Path
 
 import ephem
-import pandas as pd
 
-DATA_DIR           = Path(__file__).parent
-SEASONAL_PLAN_FILE = DATA_DIR / "Arp_Seasonal_Plan.xlsx"
-TELESCOPE_FILE     = DATA_DIR / "itelescopesystems.xlsx"
-
-OBSERVATORIES = {
-    "New Mexico": {"lat": "33.0",  "lon": "-107.0", "elev": 1400, "utc_offset": -7,  "min_el": 30},
-    "Spain":      {"lat": "38.0",  "lon": "-3.5",   "elev": 1200, "utc_offset":  2,  "min_el": 30},
-    "Australia":  {"lat": "-31.3", "lon": "149.1",  "elev": 1100, "utc_offset": 10,  "min_el": 30},
-    "Chile":      {"lat": "-30.0", "lon": "-70.7",  "elev": 1500, "utc_offset": -4,  "min_el": 30},
-}
-
-SITE_MAP = {
-    "New Mexico / Spain":     ["New Mexico", "Spain"],
-    "New Mexico / Australia": ["New Mexico", "Australia"],
-    "Any site":               ["New Mexico", "Spain", "Chile", "Australia"],
-    "Australia":              ["Australia"],
-    "New Mexico":             ["New Mexico"],
-    "Spain":                  ["Spain"],
-    "Chile":                  ["Chile"],
-}
-
-TELESCOPE_TIERS = [
-    (0,    3.0,  ["T17", "T32", "T21", "T11", "T25"]),
-    (3.0,  7.0,  ["T11", "T21", "T26", "T30", "T17"]),
-    (7.0,  20.0, ["T5",  "T20", "T26", "T71", "T75"]),
-    (20.0, 999,  ["T14", "T8",  "T70", "T80"]),
-]
-
-PHASE_THRESHOLDS = [(25, 20), (50, 40), (75, 60), (101, 90)]
-GOOD_MARGIN = 20
-
-PLAN_TIERS = ["Plan-40", "Plan-90", "Plan-160", "Plan-290", "Plan-490"]
-
-LRGB_COUNTS = [2, 1, 1, 1]  # per-repeat counts; plan uses #repeat 3
-LUM_COUNTS  = [2]
-INTERVAL    = 300
-
-
-# ---------------------------------------------------------------------------
-# Data loading
-# ---------------------------------------------------------------------------
-
-def load_targets():
-    df = pd.read_excel(SEASONAL_PLAN_FILE, sheet_name="All Objects", header=None)
-    for i, row in df.iterrows():
-        if any(str(v) == "Arp #" for v in row.values):
-            df.columns = df.iloc[i]
-            df = df.iloc[i + 1:].reset_index(drop=True)
-            break
-    df = df.dropna(subset=["Arp #"])
-    df.columns = [str(c).strip() for c in df.columns]
-    return df
-
-
-def load_rates():
-    df = pd.read_excel(TELESCOPE_FILE, sheet_name="Imaging Rates", header=None)
-    for i, row in df.iterrows():
-        if any(str(v).strip() == "Telescope" for v in row.values):
-            header_row = i
-            break
-    else:
-        return {}
-    rates = {}
-    for i in range(header_row + 1, len(df)):
-        row = df.iloc[i]
-        tel_id = str(row.iloc[0]).strip()
-        if not tel_id or tel_id == "nan" or not tel_id.startswith("T"):
-            continue
-        vals = list(row.values)
-        sess_rates = {}
-        for j, plan in enumerate(PLAN_TIERS):
-            try:    sess_rates[plan] = float(vals[j + 1])
-            except: sess_rates[plan] = None
-        rates[tel_id] = sess_rates
-    return rates
-
-
-# ---------------------------------------------------------------------------
-# NED coordinates
-# ---------------------------------------------------------------------------
-
-def load_ned_coords():
-    """Load NED coordinates from arp_ned_coords.csv if present."""
-    ned_path = DATA_DIR / "arp_ned_coords.csv"
-    if not ned_path.exists():
-        return {}
-    try:
-        df = pd.read_csv(ned_path)
-        return {int(r["arp"]): (float(r["ra_hours"]), float(r["dec_deg"]))
-                for _, r in df.iterrows() if r.get("source") == "NED"}
-    except Exception:
-        return {}
-
-
-# ---------------------------------------------------------------------------
-# Coordinate helpers
-# ---------------------------------------------------------------------------
-
-def parse_ra(s):
-    s = str(s).strip()
-    return s.replace(" ", ":") if " " in s else s
-
-
-def parse_dec(s):
-    s = str(s).strip()
-    sign = "-" if s.startswith("-") else "+"
-    body = s.lstrip("+-")
-    parts = body.split()
-    if len(parts) == 2:
-        deg = parts[0]
-        md  = float(parts[1])
-        m, sc = int(md), int((md - int(md)) * 60)
-        return f"{sign}{deg}:{m:02d}:{sc:02d}"
-    return s
-
-
-def sanitize_name(name):
-    import re
-    name = re.sub(r"[^\w\-+]", "_", str(name).strip())
-    return re.sub(r"_+", "_", name).strip("_")
+from arp_common import (
+    OBSERVATORIES, SITE_MAP, TELESCOPE_TIERS, PLAN_TIERS,
+    LRGB_COUNTS, LUM_COUNTS, INTERVAL,
+    OVERHEAD_PER_TARGET_SECS, OVERHEAD_SESSION_SECS,
+    RISK_LABELS,
+    load_targets, load_rates, load_ned_coords,
+    parse_ra, parse_dec, sanitize_name, moon_risk,
+)
 
 
 # ---------------------------------------------------------------------------
 # Moon avoidance
 # ---------------------------------------------------------------------------
-
-def moon_risk(phase, sep):
-    min_sep = next(m for p, m in PHASE_THRESHOLDS if phase < p)
-    margin  = sep - min_sep
-    if margin >= GOOD_MARGIN: return "Good"
-    if margin >= 0:           return "Marginal"
-    return "Avoid"
-
 
 def get_moon_info(ra_str, dec_str, observer):
     moon   = ephem.Moon()
@@ -183,9 +62,10 @@ def get_moon_info(ra_str, dec_str, observer):
 # Visibility calculation
 # ---------------------------------------------------------------------------
 
-def get_dark_window(obs_key, date):
+def get_dark_window(obs_key, date, cfg=None):
     """Return (eve_twi, morn_twi) as ephem.Date floats, or (None, None)."""
-    cfg = OBSERVATORIES[obs_key]
+    if cfg is None:
+        cfg = OBSERVATORIES[obs_key]
     observer = ephem.Observer()
     observer.lat       = cfg["lat"]
     observer.lon       = cfg["lon"]
@@ -205,12 +85,13 @@ def get_dark_window(obs_key, date):
         return None, None
 
 
-def get_target_visibility(ra_str, dec_str, obs_key, eve_twi, morn_twi):
+def get_target_visibility(ra_str, dec_str, obs_key, eve_twi, morn_twi, cfg=None):
     """
     Return dict with observable hours, start/end/transit times (UTC ephem floats),
     or None if not observable.
     """
-    cfg      = OBSERVATORIES[obs_key]
+    if cfg is None:
+        cfg = OBSERVATORIES[obs_key]
     observer = ephem.Observer()
     observer.lat       = cfg["lat"]
     observer.lon       = cfg["lon"]
@@ -297,7 +178,7 @@ def estimate_cost(strategy, rate_per_min):
         total_exp = sum(LRGB_COUNTS) * INTERVAL
     else:
         total_exp = sum(LUM_COUNTS) * INTERVAL
-    overhead = 180  # slew + platesolve
+    overhead = OVERHEAD_PER_TARGET_SECS
     session_min = (total_exp + overhead) / 60
     return round(session_min * rate_per_min)
 
@@ -326,8 +207,7 @@ def build_session_plan(targets_tonight, obs_key, date, plan_tier, no_adaptive=Fa
             imaging_secs += sum(LRGB_COUNTS) * INTERVAL
         else:
             imaging_secs += sum(LUM_COUNTS) * INTERVAL
-    overhead_secs = len(targets_tonight) * 180 + 300  # slew + startup
-    total_secs = imaging_secs + overhead_secs
+    overhead_secs = len(targets_tonight) * OVERHEAD_PER_TARGET_SECS + OVERHEAD_SESSION_SECS
 
     def fmt(secs):
         h, m = int(secs // 3600), int((secs % 3600) // 60)
@@ -342,7 +222,7 @@ def build_session_plan(targets_tonight, obs_key, date, plan_tier, no_adaptive=Fa
     lines.append(f"; Observatory : {obs_key}")
     lines.append(f"; Targets     : {len(targets_tonight)}")
     lines.append(f"; Imaging time : {fmt(imaging_secs)}  (shutter-open only)")
-    lines.append(f"; Total duration: {fmt(total_secs)}  (imaging + slew/overhead)")
+    lines.append(f"; Total duration: {fmt(imaging_secs + overhead_secs)}  (imaging + slew/overhead)")
     lines.append(f"; Est. cost    : ~{total_cost:,} pts (session billing, {plan_tier})")
     lines.append(f"; Plan tier    : {plan_tier}")
     lines.append(f"; Generated    : Arp Session Planner")
@@ -401,9 +281,16 @@ def run(args):
     obs_key = args.site
     plan_tier = args.plan_tier
 
+    # Local copy of observatory config so --min-el override doesn't mutate shared dict
+    cfg = dict(OBSERVATORIES[obs_key])
+    if args.min_el is not None:
+        cfg["min_el"] = args.min_el
+
     print(f"\n{'='*60}")
     print(f"  Arp Nightly Session Planner")
     print(f"  Date: {date}  |  Site: {obs_key}  |  Tier: {plan_tier}")
+    if args.min_el is not None:
+        print(f"  Min elevation: {args.min_el}° (override)")
     print(f"{'='*60}\n")
 
     ned_coords = load_ned_coords()
@@ -416,12 +303,11 @@ def run(args):
     rates      = load_rates()
 
     # Dark window
-    eve_twi, morn_twi = get_dark_window(obs_key, date)
+    eve_twi, morn_twi = get_dark_window(obs_key, date, cfg)
     if eve_twi is None:
         print("  Could not compute dark window for this date/site.")
         sys.exit(1)
 
-    cfg = OBSERVATORIES[obs_key]
     dark_hrs = (morn_twi - eve_twi) * 24
     print(f"  Dark window: {ephem_to_local(eve_twi, cfg['utc_offset'])} – "
           f"{ephem_to_local(morn_twi, cfg['utc_offset'])} local  ({dark_hrs:.1f}h)\n")
@@ -472,19 +358,19 @@ def run(args):
             continue
 
         # Visibility
-        vis = get_target_visibility(ra_str, dec_str, obs_key, eve_twi, morn_twi)
+        vis = get_target_visibility(ra_str, dec_str, obs_key, eve_twi, morn_twi, cfg)
         if not vis or vis["hours"] < args.min_hours:
             continue
 
         # Moon
         observer.date = vis["transit"]
         moon_info = get_moon_info(ra_str, dec_str, observer)
-        if args.moon_ok_only and moon_info["risk"] == "Avoid":
+        if args.moon_ok_only and moon_info["risk"] == "A":
             continue
 
         # Telescope & cost
         tel  = assign_telescope(size, obs_key)
-        rate = rates.get(tel, {}).get(plan_tier)
+        rate = rates.get(tel, {}).get("session", {}).get(plan_tier)
         cost = estimate_cost(strategy, rate)
 
         # RA/Dec formatted for ACP
@@ -518,18 +404,18 @@ def run(args):
           f"{'Moon%':>5}  {'Sep':>6}  {'Risk':<8}  {'Tel':>4}  {'Pts':>6}  {'Filters'}")
     print(f"  {'-'*4}  {'-'*22} {'-'*13}  {'-'*7}  {'-'*5}  {'-'*6}  {'-'*8}  {'-'*4}  {'-'*6}  {'-'*8}")
 
-    good = [t for t in results if t["moon"]["risk"] != "Avoid"]
-    marg = [t for t in results if t["moon"]["risk"] == "Marginal"]
-    avoid = [t for t in results if t["moon"]["risk"] == "Avoid"]
+    good  = [t for t in results if t["moon"]["risk"] != "A"]
+    marg  = [t for t in results if t["moon"]["risk"] == "M"]
+    avoid = [t for t in results if t["moon"]["risk"] == "A"]
 
     for t in results:
-        risk_flag = "  " if t["moon"]["risk"] == "Good" else ("~ " if t["moon"]["risk"] == "Marginal" else "! ")
+        risk_flag = "  " if t["moon"]["risk"] == "G" else ("~ " if t["moon"]["risk"] == "M" else "! ")
         cost_str  = str(t["cost_pts"]) if t["cost_pts"] else "n/a"
         print(f"  {risk_flag}{t['arp']:>4}  {t['name']:<22} "
               f"{t['start_local']}-{t['end_local']}  "
               f"{t['transit_local']:>7}  "
               f"{t['moon']['phase']:>5.1f}  {t['moon']['sep']:>5.1f}°  "
-              f"{t['moon']['risk']:<8}  {t['telescope']:>4}  {cost_str:>6}  {t['strategy']}")
+              f"{RISK_LABELS[t['moon']['risk']]:<8}  {t['telescope']:>4}  {cost_str:>6}  {t['strategy']}")
 
     print(f"\n  {len(results)} observable targets  "
           f"({len(good)} good, {len(marg)} marginal, {len(avoid)} avoid moon)")
