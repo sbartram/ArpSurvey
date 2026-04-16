@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arp Catalog — iTelescope Project</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#ffffff;--bg2:#f5f5f3;--bg3:#ededea;
+  --text:#1a1a18;--text2:#6b6b67;--text3:#9b9b96;
+  --border:rgba(0,0,0,0.12);--border2:rgba(0,0,0,0.2);
+  --green:#27500A;--green-bg:#EAF3DE;
+  --amber:#633806;--amber-bg:#FAEEDA;
+  --red:#791F1F;--red-bg:#FCEBEB;
+  --blue:#0C447C;--blue-bg:#E6F1FB;
+  --accent:#1D9E75;--accent-dark:#0F6E56;
+  --purple:#7F77DD;
+  --radius:8px;--radius-lg:12px;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#1a1a18;--bg2:#242422;--bg3:#2e2e2b;
+  --text:#e8e8e4;--text2:#9b9b96;--text3:#6b6b67;
+  --border:rgba(255,255,255,0.1);--border2:rgba(255,255,255,0.18);
+  --green:#97C459;--green-bg:#1a2e08;
+  --amber:#EF9F27;--amber-bg:#2a1e06;
+  --red:#F09595;--red-bg:#2a0808;
+  --blue:#85B7EB;--blue-bg:#061a2a;
+}}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg3);color:var(--text);font-size:14px;line-height:1.5}
+.app{max-width:1400px;margin:0 auto;padding:0}
+header{background:var(--bg);border-bottom:0.5px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.header-title{font-size:16px;font-weight:500}
+.header-sub{font-size:12px;color:var(--text2);margin-top:1px}
+.header-meta{display:flex;gap:16px;align-items:center;font-size:12px;color:var(--text2)}
+.nav{background:var(--bg);border-bottom:0.5px solid var(--border);display:flex;padding:0 24px;overflow-x:auto}
+.nav-btn{padding:10px 18px;font-size:13px;cursor:pointer;border:none;background:none;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-0.5px;white-space:nowrap}
+.nav-btn.active{color:var(--text);font-weight:500;border-bottom-color:var(--accent)}
+.main{padding:20px 24px}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:16px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.metric{background:var(--bg2);border-radius:var(--radius);padding:12px 16px}
+.metric .lbl{font-size:11px;color:var(--text2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em}
+.metric .val{font-size:24px;font-weight:500}
+.metric .sub{font-size:11px;color:var(--text3);margin-top:2px}
+.card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:16px 20px;margin-bottom:16px}
+.card-title{font-size:11px;font-weight:500;color:var(--text2);margin-bottom:12px;text-transform:uppercase;letter-spacing:.05em}
+.badge{display:inline-block;font-size:11px;font-weight:500;padding:2px 8px;border-radius:4px}
+.G{color:var(--green);background:var(--green-bg)}
+.M{color:var(--amber);background:var(--amber-bg)}
+.A{color:var(--red);background:var(--red-bg)}
+.done{color:var(--green);background:var(--green-bg)}
+.pending{color:var(--blue);background:var(--blue-bg)}
+.sched{color:var(--amber);background:var(--amber-bg)}
+.skip{color:var(--text2);background:var(--bg2)}
+.sea-Spring{color:#27500A;background:#EAF3DE}
+.sea-Summer{color:#633806;background:#FAEEDA}
+.sea-Autumn{color:#712B13;background:#FAECE7}
+.sea-Winter{color:#0C447C;background:#E6F1FB}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:7px 10px;font-size:10px;font-weight:500;color:var(--text2);border-bottom:0.5px solid var(--border);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;background:var(--bg2)}
+td{padding:7px 10px;border-bottom:0.5px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr.data-row:hover td{background:var(--bg2);cursor:pointer}
+.filter-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+input[type=text],input[type=date],input[type=number],select,textarea{
+  font-size:13px;padding:6px 10px;border-radius:var(--radius);
+  border:0.5px solid var(--border2);background:var(--bg);color:var(--text);font-family:inherit}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:1px}
+textarea{resize:vertical;min-height:60px}
+.btn{padding:6px 14px;font-size:13px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg2);color:var(--text);cursor:pointer;font-family:inherit}
+.btn:hover{background:var(--bg3)}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-primary:hover{background:var(--accent-dark)}
+.progress-bg{background:var(--border);border-radius:3px;height:5px}
+.progress-fill{background:var(--accent);border-radius:3px;height:5px;transition:width .3s}
+.vis-bar{height:14px;background:var(--bg2);border-radius:2px;position:relative;overflow:visible;width:100%;min-width:100px}
+.vis-fill{position:absolute;height:100%;background:var(--accent);border-radius:2px;opacity:.7}
+.vis-transit{position:absolute;width:2px;height:100%;background:var(--purple)}
+.strip-day{display:inline-block;width:8px;height:14px;border-radius:1px;margin:0 0.5px;vertical-align:middle}
+.star-interactive{cursor:pointer;font-size:18px;line-height:1}
+.toast{position:fixed;bottom:20px;right:20px;background:#27500A;color:#EAF3DE;padding:9px 18px;border-radius:var(--radius);font-size:13px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:999;box-shadow:0 4px 12px rgba(0,0,0,.2)}
+.toast.show{opacity:1}
+pre{font-family:'SF Mono','Fira Code',monospace;font-size:12px;white-space:pre-wrap;max-height:320px;overflow-y:auto;padding:12px;background:var(--bg2);border-radius:var(--radius);color:var(--text)}
+.pane{display:none}
+.pane.active{display:block}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.form-group label{display:block;font-size:11px;color:var(--text2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
+.form-group input,.form-group select,.form-group textarea{width:100%}
+.tbl-wrap{overflow-x:auto;border-radius:var(--radius-lg);border:0.5px solid var(--border)}
+.empty-state{padding:40px;text-align:center;color:var(--text3);font-size:13px}
+.section-head{font-size:15px;font-weight:500;margin-bottom:12px;margin-top:4px}
+</style>
+</head>
+<body>
+<div class="app">
+
+<header>
+  <div>
+    <div class="header-title">Arp Catalog · iTelescope Project</div>
+    <div class="header-sub">338 peculiar galaxies · Plan-40 membership</div>
+  </div>
+  <div class="header-meta">
+    <span id="hdr-done">0 imaged</span>
+    <span id="hdr-pct">0%</span>
+    <span id="hdr-log">0 log entries</span>
+    <span id="hdr-moon">Moon: —</span>
+    <span id="hdr-ned" style="color:var(--text3)">Coords: catalog</span>
+    <label style="cursor:pointer;padding:4px 10px;border-radius:var(--radius);border:0.5px solid var(--border2);font-size:12px;color:var(--text2);background:var(--bg2)" title="Load arp_ned_coords.csv to use precise NED coordinates">Load NED coords<input type="file" id="ned-file-input" accept=".csv" style="display:none" onchange="loadNedCoords(this)"></label>
+  </div>
+</header>
+
+<nav class="nav">
+  <button class="nav-btn active" onclick="showPane('overview',this)">Overview</button>
+  <button class="nav-btn" onclick="showPane('planner',this)">Tonight's plan</button>
+  <button class="nav-btn" onclick="showPane('visibility',this)">Visibility</button>
+  <button class="nav-btn" onclick="showPane('moon',this)">Moon calendar</button>
+  <button class="nav-btn" onclick="showPane('log',this)">Imaging log</button>
+  <button class="nav-btn" onclick="showPane('export',this)">Progress export</button>
+</nav>
+
+<div class="main">
+
+<!-- OVERVIEW -->
+<div class="pane active" id="pane-overview">
+  <div class="grid4">
+    <div class="metric"><div class="lbl">Total targets</div><div class="val">338</div><div class="sub">Full Arp catalog</div></div>
+    <div class="metric"><div class="lbl">Imaged</div><div class="val" id="ov-done" style="color:var(--accent)">0</div><div class="sub" id="ov-pct">0% complete</div></div>
+    <div class="metric"><div class="lbl">Remaining</div><div class="val" id="ov-remain">338</div><div class="sub">targets to image</div></div>
+    <div class="metric"><div class="lbl">Log entries</div><div class="val" id="ov-log">0</div><div class="sub" id="ov-exp">0h total exposure</div></div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">Season progress</div>
+      <div id="ov-seasons"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Moon calendar — next 60 days</div>
+      <div id="ov-moon-strip" style="margin-bottom:8px;line-height:1.4"></div>
+      <div style="font-size:11px;color:var(--text3)">
+        <span style="display:inline-block;width:10px;height:10px;background:#97C459;border-radius:2px;vertical-align:middle"></span> Good
+        <span style="margin-left:8px;display:inline-block;width:10px;height:10px;background:#EF9F27;border-radius:2px;vertical-align:middle"></span> Marginal
+        <span style="margin-left:8px;display:inline-block;width:10px;height:10px;background:#E24B4A;border-radius:2px;vertical-align:middle"></span> Avoid
+        <span id="ov-moon-dates" style="margin-left:16px"></span>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Re-image queue (quality ≤ 2★)</div>
+    <div id="ov-reimage" class="empty-state">No re-image candidates yet</div>
+  </div>
+</div>
+
+<!-- TONIGHT'S PLAN -->
+<div class="pane" id="pane-planner">
+  <div class="card" style="margin-bottom:12px;padding:12px 20px">
+    <div style="display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap">
+      <div class="form-group" style="margin:0">
+        <label>Date</label>
+        <input type="date" id="pl-date" style="width:140px">
+      </div>
+      <div class="form-group" style="margin:0">
+        <label>Observatory</label>
+        <select id="pl-site" style="width:160px">
+          <option value="NM">New Mexico (UTC-7)</option>
+          <option value="SP">Spain (UTC+2)</option>
+          <option value="AU">Australia (UTC+10)</option>
+          <option value="CL">Chile (UTC-4)</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin:0">
+        <label>Min obs hours</label>
+        <select id="pl-minhrs" style="width:110px">
+          <option value="1">1+ hour</option>
+          <option value="2" selected>2+ hours</option>
+          <option value="3">3+ hours</option>
+          <option value="4">4+ hours</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin:0">
+        <label>Moon filter</label>
+        <select id="pl-moon" style="width:140px">
+          <option value="">All (incl. avoid)</option>
+          <option value="GM" selected>Good + marginal</option>
+          <option value="G">Good only</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="computePlanner()">Compute session</button>
+      <button class="btn" onclick="generateACP()">Generate ACP plan (Scheduled only)</button>
+    </div>
+    <div id="pl-summary" style="margin-top:10px;font-size:13px;color:var(--text2)"></div>
+  </div>
+  <div class="filter-row">
+    <input type="text" id="pl-search" placeholder="Search Arp # or name" style="width:180px" oninput="filterPlanner()">
+    <select id="pl-tel-f" onchange="filterPlanner()" title="Filter by telescope">
+      <option value="">All telescopes</option>
+    </select>
+    <select id="pl-flt-f" onchange="filterPlanner()">
+      <option value="">All filter strategies</option>
+      <option value="LRGB">LRGB</option>
+      <option value="Luminance">Luminance</option>
+    </select>
+    <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+      <input type="checkbox" id="pl-hide-done" onchange="filterPlanner()"> Hide already done
+    </label>
+    <span id="pl-count" style="font-size:12px;color:var(--text3)"></span>
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr>
+        <th>Arp</th><th>Name</th><th>Season</th><th>Window (local)</th>
+        <th>Transit</th><th>Obs hrs</th><th>Moon%</th><th>Sep</th>
+        <th>Risk</th><th>Telescope</th><th>Filters</th><th>Pts est</th><th>Status</th>
+      </tr></thead>
+      <tbody id="pl-table"></tbody>
+    </table>
+  </div>
+  <div id="acp-out" style="display:none;margin-top:16px">
+    <div class="card">
+      <div class="card-title">Generated ACP plan — <span id="acp-filename"></span></div>
+      <pre id="acp-pre"></pre>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn btn-primary" onclick="copyACP()">Copy to clipboard</button>
+        <button class="btn" id="acp-dl-btn" onclick="downloadACP()">Download .txt</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- VISIBILITY WINDOWS -->
+<div class="pane" id="pane-visibility">
+  <div class="filter-row">
+    <input type="text" id="vis-search" placeholder="Search Arp # or name" style="width:180px" oninput="filterVisibility()">
+    <select id="vis-minhrs" onchange="filterVisibility()">
+      <option value="0">Any duration</option>
+      <option value="2">2+ hours</option>
+      <option value="4" selected>4+ hours</option>
+      <option value="6">6+ hours</option>
+    </select>
+    <select id="vis-moon-f" onchange="filterVisibility()">
+      <option value="">Any moon rating</option>
+      <option value="G">Good only</option>
+      <option value="GM">Good + marginal</option>
+    </select>
+    <select id="vis-sort" onchange="filterVisibility()">
+      <option value="transit">Sort by transit</option>
+      <option value="hours">Sort by obs hours</option>
+      <option value="arp">Sort by Arp #</option>
+    </select>
+    <span id="vis-count" style="font-size:12px;color:var(--text3)"></span>
+  </div>
+  <div style="font-size:12px;color:var(--text3);margin-bottom:8px">
+    Showing results from last computed session. Run "Tonight's plan" first to populate.
+    <span id="vis-night-info"></span>
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr>
+        <th>Arp</th><th>Name</th><th>Start</th><th>Transit</th><th>End</th>
+        <th style="min-width:140px">Night window</th>
+        <th>Hours</th><th>Moon%</th><th>Sep°</th><th>Risk</th><th>Telescope</th><th>Status</th>
+      </tr></thead>
+      <tbody id="vis-table"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MOON CALENDAR -->
+<div class="pane" id="pane-moon">
+  <div class="grid4" id="moon-metrics"></div>
+  <div class="card">
+    <div class="card-title">Good-target count by night (next 30 days from data generation)</div>
+    <div id="moon-bar-chart" style="display:flex;align-items:flex-end;gap:2px;height:100px;padding:4px 0"></div>
+    <div id="moon-bar-labels" style="display:flex;gap:2px;margin-top:4px;font-size:10px;color:var(--text3)"></div>
+  </div>
+  <div class="filter-row">
+    <input type="text" id="moon-search" placeholder="Search Arp # or name" style="width:180px" oninput="filterMoon()">
+    <select id="moon-risk-f" onchange="filterMoon()">
+      <option value="">All — tonight</option>
+      <option value="G">Good tonight</option>
+      <option value="M">Marginal tonight</option>
+      <option value="A">Avoid tonight</option>
+    </select>
+    <span id="moon-count" style="font-size:12px;color:var(--text3)"></span>
+  </div>
+  <div id="moon-ruler" style="display:flex;gap:1px;padding-left:210px;margin-bottom:2px;overflow:hidden"></div>
+  <div id="moon-strips"></div>
+  <div style="font-size:11px;color:var(--text3);margin-top:6px">
+    Each cell = 1 night &nbsp;·&nbsp;
+    <span style="display:inline-block;width:10px;height:10px;background:#97C459;border-radius:1px;vertical-align:middle"></span> Good
+    <span style="margin-left:8px;display:inline-block;width:10px;height:10px;background:#EF9F27;border-radius:1px;vertical-align:middle"></span> Marginal
+    <span style="margin-left:8px;display:inline-block;width:10px;height:10px;background:#E24B4A;border-radius:1px;vertical-align:middle"></span> Avoid
+    &nbsp;·&nbsp; Data generated: <span id="moon-gen-date"></span>
+  </div>
+</div>
+
+<!-- IMAGING LOG -->
+<div class="pane" id="pane-log">
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">Log new observation</div>
+      <div class="form-row">
+        <div class="form-group"><label>Arp #</label><input type="number" id="log-arp" min="1" max="338" placeholder="e.g. 85"></div>
+        <div class="form-group"><label>Date imaged</label><input type="date" id="log-date"></div>
+        <div class="form-group"><label>Telescope</label>
+          <select id="log-tel"><option>T5</option><option>T11</option><option>T14</option><option>T17</option><option>T20</option><option>T21</option><option>T24</option><option>T25</option><option>T26</option><option>T30</option><option>T32</option><option>T33</option><option>T59</option><option>T71</option><option>T72</option><option>T73</option><option>T75</option></select>
+        </div>
+        <div class="form-group"><label>Total exposure (min)</label><input type="number" id="log-exp" min="1" placeholder="e.g. 90"></div>
+        <div class="form-group"><label>Filter strategy</label>
+          <select id="log-flt"><option>Luminance</option><option>LRGB</option><option>Ha+RGB</option><option>Narrowband</option></select>
+        </div>
+        <div class="form-group"><label>Quality</label>
+          <div id="log-stars" style="padding:4px 0;display:flex;gap:6px">
+            <span class="star-interactive" data-v="1" onclick="setStars(1)">★</span>
+            <span class="star-interactive" data-v="2" onclick="setStars(2)" style="color:var(--border2)">★</span>
+            <span class="star-interactive" data-v="3" onclick="setStars(3)" style="color:var(--border2)">★</span>
+            <span class="star-interactive" data-v="4" onclick="setStars(4)" style="color:var(--border2)">★</span>
+            <span class="star-interactive" data-v="5" onclick="setStars(5)" style="color:var(--border2)">★</span>
+          </div>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:12px"><label>Notes</label><textarea id="log-notes" placeholder="Seeing, tracking, clouds, re-image needed..."></textarea></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" onclick="addLog()">Save observation</button>
+        <button class="btn" onclick="clearLogForm()">Clear</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Log statistics</div>
+      <div class="grid2" id="log-stats-grid" style="margin-bottom:16px"></div>
+      <div id="log-reimage-panel"></div>
+    </div>
+  </div>
+  <div class="filter-row">
+    <input type="text" id="log-search" placeholder="Search Arp # or name" style="width:180px" oninput="renderLog()">
+    <select id="log-qual-f" onchange="renderLog()">
+      <option value="">All quality</option>
+      <option value="5">5★ only</option>
+      <option value="3">3★+</option>
+      <option value="2">≤2★ (re-image)</option>
+    </select>
+    <button class="btn" onclick="exportLog()">Export log CSV</button>
+    <span id="log-count" style="font-size:12px;color:var(--text3)"></span>
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Date</th><th>Arp #</th><th>Name</th><th>Telescope</th><th>Filters</th><th>Exposure</th><th>Quality</th><th>Notes</th><th></th></tr></thead>
+      <tbody id="log-table"></tbody>
+    </table>
+    <div id="log-empty" class="empty-state">No observations logged yet.</div>
+  </div>
+</div>
+
+<!-- PROGRESS EXPORT -->
+<div class="pane" id="pane-export">
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">Project summary</div>
+      <div id="exp-summary" style="font-size:13px;line-height:2"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Season breakdown</div>
+      <div id="exp-seasons"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Export</div>
+    <div class="filter-row" style="margin-bottom:0">
+      <select id="exp-season"><option value="">All seasons</option><option>Spring</option><option>Summer</option><option>Autumn</option><option>Winter</option></select>
+      <select id="exp-status">
+        <option value="remaining">Remaining only</option>
+        <option value="done">Done only</option>
+        <option value="all">All targets</option>
+        <option value="reimage">Re-image queue</option>
+      </select>
+      <button class="btn btn-primary" onclick="exportCSV()">Export CSV</button>
+      <button class="btn" onclick="exportTargetList()">Export ACP target list</button>
+      <button class="btn" onclick="exportStatus()">Export status CSV</button>
+      <span id="exp-count" style="font-size:12px;color:var(--text3)"></span>
+    </div>
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Arp #</th><th>Name</th><th>Season</th><th>RA</th><th>Dec</th><th>Size</th><th>Telescope</th><th>Filters</th><th>Status</th><th>Log entries</th><th>Last imaged</th><th>Best quality</th></tr></thead>
+      <tbody id="exp-table"></tbody>
+    </table>
+  </div>
+</div>
+
+</div><!-- main -->
+</div><!-- app -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== EMBEDDED DATA =====
+const TARGETS = [{"a":82,"n":"NGC 2535 + 36","ra":8.1872,"dec":25.2067,"sz":5.2,"site":"New Mexico / Spain","flt":"LRGB","sea":"Spring"},{"a":6,"n":"NGC 2537","ra":8.2206,"dec":45.9917,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":9,"n":"NGC 2523","ra":8.2497,"dec":73.58,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":268,"n":"Holmberg II","ra":8.3183,"dec":70.7133,"sz":10.4,"site":"New Mexico / Spain","flt":"LRGB","sea":"Spring"},{"a":247,"n":"IC 2338 + 39","ra":8.3922,"dec":21.3383,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":58,"n":"UGC 04457","ra":8.5328,"dec":19.2133,"sz":2.6,"site":"Any site","flt":"Luminance","sea":"Spring"},{"a":12,"n":"NGC 2608","ra":8.5881,"dec":28.4733,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":243,"n":"NGC 2623","ra":8.64,"dec":25.755,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":89,"n":"NGC 2648 + comp","ra":8.7111,"dec":14.285,"sz":5.2,"site":"Any site","flt":"LRGB","sea":"Spring"},{"a":80,"n":"NGC 2633","ra":8.8019,"dec":74.1,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":167,"n":"NGC 2672","ra":8.8228,"dec":19.075,"sz":2.6,"site":"Any site","flt":"Luminance","sea":"Spring"},{"a":7,"n":"MCG-03-23-009","ra":8.8381,"dec":-16.5767,"sz":2.6,"site":"New Mexico / Australia","flt":"Luminance","sea":"Spring"},{"a":257,"n":"UGC 04638","ra":8.8606,"dec":-2.3667,"sz":2.6,"site":"New Mexico / Australia","flt":"Luminance","sea":"Spring"},{"a":195,"n":"UGC 04653","ra":8.8972,"dec":35.1433,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":336,"n":"NGC 2685","ra":8.9264,"dec":58.7333,"sz":6.9,"site":"New Mexico / Spain","flt":"LRGB","sea":"Spring"},{"a":225,"n":"NGC 2655","ra":8.9275,"dec":78.225,"sz":10.4,"site":"New Mexico / Spain","flt":"LRGB","sea":"Spring"},{"a":202,"n":"NGC 2719 + A","ra":9.0044,"dec":35.7267,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":287,"n":"NGC 2735 + A","ra":9.0439,"dec":25.935,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":215,"n":"NGC 2782","ra":9.2347,"dec":40.1133,"sz":5.2,"site":"New Mexico / Spain","flt":"LRGB","sea":"Spring"},{"a":55,"n":"UGC 04881","ra":9.2656,"dec":44.3317,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":283,"n":"NGC 2798 + 99","ra":9.2897,"dec":42.0,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":315,"n":"NGC 2832","ra":9.3297,"dec":33.75,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":285,"n":"NGC 2854 + 56","ra":9.4008,"dec":49.2033,"sz":5.2,"site":"New Mexico / Spain","flt":"LRGB","sea":"Spring"},{"a":1,"n":"NGC 2857","ra":9.4106,"dec":49.3567,"sz":5.2,"site":"New Mexico / Spain","flt":"LRGB","sea":"Spring"},{"a":307,"n":"NGC 2872 + 74","ra":9.4286,"dec":11.4317,"sz":3.5,"site":"Any site","flt":"Luminance","sea":"Spring"},{"a":275,"n":"NGC 2881","ra":9.4319,"dec":-11.9833,"sz":2.1,"site":"New Mexico / Australia","flt":"Luminance","sea":"Spring"},{"a":237,"n":"UGC 05044","ra":9.4622,"dec":12.2867,"sz":2.6,"site":"Any site","flt":"Luminance","sea":"Spring"},{"a":300,"n":"UGC 05029","ra":9.4672,"dec":68.4217,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":207,"n":"UGC 05050","ra":9.5186,"dec":76.465,"sz":2.1,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":232,"n":"NGC 2911","ra":9.5631,"dec":10.1517,"sz":2.1,"site":"Any site","flt":"Luminance","sea":"Spring"},{"a":137,"n":"NGC 2914","ra":9.5675,"dec":10.1083,"sz":2.1,"site":"Any site","flt":"Luminance","sea":"Spring"},{"a":221,"n":"MCG-02-25-006","ra":9.6067,"dec":-11.3283,"sz":2.6,"site":"New Mexico / Australia","flt":"Luminance","sea":"Spring"},{"a":142,"n":"NGC 2936 + 37","ra":9.6289,"dec":2.76,"sz":3.5,"site":"Any site","flt":"Luminance","sea":"Spring"},{"a":321,"n":"MCG-01-25-009","ra":9.6481,"dec":-4.86,"sz":2.6,"site":"New Mexico / Australia","flt":"Luminance","sea":"Spring"},{"a":63,"n":"NGC 2944","ra":9.6547,"dec":32.31,"sz":2.1,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":129,"n":"UGC 05146","ra":9.6569,"dec":32.3617,"sz":2.1,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":253,"n":"UGCA 173 + 174","ra":9.7236,"dec":-5.28,"sz":3.5,"site":"New Mexico / Australia","flt":"Luminance","sea":"Spring"},{"a":252,"n":"ESO 566-IG007","ra":9.7494,"dec":-19.725,"sz":2.6,"site":"New Mexico / Australia","flt":"Luminance","sea":"Spring"},{"a":245,"n":"NGC 2992 + 93","ra":9.7617,"dec":-14.3267,"sz":10.4,"site":"New Mexico / Australia","flt":"LRGB","sea":"Spring"},{"a":303,"n":"IC 0563 + 64","ra":9.7722,"dec":3.045,"sz":3.5,"site":"Any site","flt":"Luminance","sea":"Spring"},{"a":255,"n":"UGC 05304","ra":9.8858,"dec":7.88,"sz":2.6,"site":"Any site","flt":"Luminance","sea":"Spring"},{"a":292,"n":"IC 0575","ra":9.9092,"dec":-6.8567,"sz":2.6,"site":"New Mexico / Australia","flt":"Luminance","sea":"Spring"},{"a":337,"n":"MESSIER 82","ra":9.9311,"dec":69.68,"sz":10.4,"site":"New Mexico / Spain","flt":"LRGB","sea":"Spring"},{"a":174,"n":"NGC 3068A","ra":9.9778,"dec":28.8767,"sz":5.2,"site":"New Mexico / Spain","flt":"LRGB","sea":"Spring"},{"a":264,"n":"NGC 3104","ra":10.0661,"dec":40.7567,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":338,"n":"Arp 338","ra":10.1831,"dec":-7.915,"sz":2.1,"site":"New Mexico / Australia","flt":"Luminance","sea":"Spring"},{"a":316,"n":"NGC 3193","ra":10.3069,"dec":21.8933,"sz":16.2,"site":"New Mexico / Spain","flt":"LRGB","sea":"Spring"},{"a":94,"n":"NGC 3226 + 27","ra":10.3908,"dec":19.8983,"sz":10.4,"site":"Any site","flt":"LRGB","sea":"Spring"},{"a":43,"n":"IC 0607","ra":10.4044,"dec":16.7433,"sz":2.6,"site":"Any site","flt":"Luminance","sea":"Spring"},{"a":263,"n":"NGC 3239","ra":10.4181,"dec":17.16,"sz":5.2,"site":"Any site","flt":"LRGB","sea":"Spring"},{"a":44,"n":"IC 0609","ra":10.4258,"dec":-2.2217,"sz":3.5,"site":"New Mexico / Australia","flt":"Luminance","sea":"Spring"},{"a":181,"n":"NGC 3212","ra":10.4714,"dec":79.8233,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":233,"n":"UGC 05720","ra":10.5422,"dec":54.4,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":53,"n":"NGC 3290","ra":10.5881,"dec":-17.275,"sz":2.6,"site":"New Mexico / Australia","flt":"Luminance","sea":"Spring"},{"a":267,"n":"UGC 05764","ra":10.6119,"dec":31.5467,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":192,"n":"NGC 3303","ra":10.6164,"dec":18.1367,"sz":3.5,"site":"Any site","flt":"Luminance","sea":"Spring"},{"a":217,"n":"NGC 3310","ra":10.6461,"dec":53.5017,"sz":10.4,"site":"New Mexico / Spain","flt":"LRGB","sea":"Spring"},{"a":156,"n":"UGC 05814","ra":10.7106,"dec":77.495,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":291,"n":"UGC 05832","ra":10.7136,"dec":13.46,"sz":2.6,"site":"Any site","flt":"Luminance","sea":"Spring"},{"a":270,"n":"NGC 3395 + 96","ra":10.8306,"dec":32.98,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":162,"n":"NGC 3414","ra":10.8544,"dec":27.975,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":107,"n":"UGC 05984","ra":10.8719,"dec":30.0667,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":206,"n":"NGC 3432","ra":10.8753,"dec":36.62,"sz":10.4,"site":"New Mexico / Spain","flt":"LRGB","sea":"Spring"},{"a":24,"n":"NGC 3445","ra":10.9103,"dec":56.99,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":205,"n":"NGC 3448","ra":10.9108,"dec":54.3067,"sz":10.4,"site":"New Mexico / Spain","flt":"LRGB","sea":"Spring"},{"a":198,"n":"UGC 06073","ra":10.9961,"dec":17.6483,"sz":2.6,"site":"Any site","flt":"Luminance","sea":"Spring"},{"a":148,"n":"MCG+07-23-019","ra":11.0667,"dec":40.8467,"sz":2.1,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":335,"n":"NGC 3509","ra":11.0733,"dec":4.83,"sz":2.6,"site":"Any site","flt":"Luminance","sea":"Spring"},{"a":21,"n":"CGCG 155-056","ra":11.0831,"dec":30.0267,"sz":2.1,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":191,"n":"UGC 06175","ra":11.1222,"dec":18.4317,"sz":2.6,"site":"Any site","flt":"Luminance","sea":"Spring"},{"a":301,"n":"UGC 06204","ra":11.1644,"dec":24.2617,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":105,"n":"NGC 3561A&B","ra":11.1869,"dec":28.695,"sz":5.2,"site":"New Mexico / Spain","flt":"LRGB","sea":"Spring"},{"a":317,"n":"MESSIER 65 + 66","ra":11.3153,"dec":13.0933,"sz":62.4,"site":"Any site","flt":"LRGB","sea":"Spring"},{"a":132,"n":"CGCG 011-053","ra":11.3225,"dec":-3.09,"sz":2.1,"site":"New Mexico / Australia","flt":"Luminance","sea":"Spring"},{"a":16,"n":"MESSIER 66","ra":11.3375,"dec":12.9883,"sz":10.4,"site":"Any site","flt":"LRGB","sea":"Spring"},{"a":27,"n":"NGC 3631","ra":11.3506,"dec":53.1717,"sz":5.2,"site":"New Mexico / Spain","flt":"LRGB","sea":"Spring"},{"a":155,"n":"NGC 3656","ra":11.3939,"dec":53.8417,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":5,"n":"NGC 3664","ra":11.4069,"dec":3.3267,"sz":2.6,"site":"Any site","flt":"Luminance","sea":"Spring"},{"a":151,"n":"MRK 0040","ra":11.4267,"dec":54.3817,"sz":2.1,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":296,"n":"MCG+10-17-5","ra":11.4722,"dec":58.5417,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":299,"n":"NGC 3690","ra":11.4761,"dec":58.5633,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":197,"n":"IC 0701","ra":11.5169,"dec":20.47,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":203,"n":"NGC 3712","ra":11.5192,"dec":28.5667,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":329,"n":"UGC 06514","ra":11.5353,"dec":70.815,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":214,"n":"NGC 3718","ra":11.5431,"dec":53.0667,"sz":10.4,"site":"New Mexico / Spain","flt":"LRGB","sea":"Spring"},{"a":322,"n":"UGC 06527","ra":11.5444,"dec":52.95,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":234,"n":"NGC 3738","ra":11.5969,"dec":54.525,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":280,"n":"NGC 3769 + A","ra":11.6289,"dec":47.8917,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":320,"n":"NGC 3750","ra":11.6311,"dec":21.9733,"sz":5.2,"site":"New Mexico / Spain","flt":"LRGB","sea":"Spring"},{"a":294,"n":"NGC 3786 + 88","ra":11.6619,"dec":31.9083,"sz":10.4,"site":"New Mexico / Spain","flt":"LRGB","sea":"Spring"},{"a":83,"n":"NGC 3800 + 3799","ra":11.6703,"dec":15.3433,"sz":3.5,"site":"Any site","flt":"Luminance","sea":"Spring"},{"a":87,"n":"NGC 3808 + A","ra":11.6789,"dec":22.4283,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":161,"n":"UGC 06665","ra":11.7036,"dec":0.3333,"sz":2.6,"site":"Any site","flt":"Luminance","sea":"Spring"},{"a":115,"n":"UGC 06678","ra":11.7175,"dec":26.2767,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":248,"n":"Wild's Triplet","ra":11.7792,"dec":-3.8467,"sz":5.2,"site":"New Mexico / Australia","flt":"LRGB","sea":"Spring"},{"a":224,"n":"NGC 3921","ra":11.8519,"dec":55.0783,"sz":5.2,"site":"New Mexico / Spain","flt":"LRGB","sea":"Spring"},{"a":62,"n":"UGC 06865","ra":11.8933,"dec":43.455,"sz":2.1,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":289,"n":"NGC 3981","ra":11.9353,"dec":-19.895,"sz":10.4,"site":"New Mexico / Australia","flt":"LRGB","sea":"Spring"},{"a":313,"n":"NGC 3994 + 95","ra":11.9603,"dec":32.2767,"sz":10.4,"site":"New Mexico / Spain","flt":"LRGB","sea":"Spring"},{"a":194,"n":"UGC 06945","ra":11.9647,"dec":36.3883,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":305,"n":"NGC 4016 + 17","ra":11.9747,"dec":27.5283,"sz":10.4,"site":"New Mexico / Spain","flt":"LRGB","sea":"Spring"},{"a":138,"n":"NGC 4015","ra":11.9786,"dec":25.0367,"sz":2.1,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":22,"n":"NGC 4027","ra":11.9919,"dec":-19.2633,"sz":10.4,"site":"New Mexico / Australia","flt":"LRGB","sea":"Spring"},{"a":244,"n":"NGC 4038 + 39","ra":12.0314,"dec":-18.865,"sz":20.8,"site":"New Mexico / Australia","flt":"LRGB","sea":"Spring"},{"a":18,"n":"NGC 4088","ra":12.0931,"dec":50.5417,"sz":5.2,"site":"New Mexico / Spain","flt":"LRGB","sea":"Spring"},{"a":97,"n":"UGC 07085A","ra":12.0961,"dec":31.06,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":260,"n":"UGC 07230","ra":12.2275,"dec":16.1217,"sz":2.6,"site":"Any site","flt":"Luminance","sea":"Spring"},{"a":160,"n":"NGC 4194","ra":12.2361,"dec":54.5283,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":106,"n":"NGC 4211 + A","ra":12.26,"dec":28.1767,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":120,"n":"NGC 4438","ra":12.4628,"dec":13.0083,"sz":10.4,"site":"Any site","flt":"LRGB","sea":"Spring"},{"a":134,"n":"MESSIER 49","ra":12.4961,"dec":7.9967,"sz":10.4,"site":"Any site","flt":"LRGB","sea":"Spring"},{"a":269,"n":"NGC 4490 + 85","ra":12.5103,"dec":41.64,"sz":10.4,"site":"New Mexico / Spain","flt":"LRGB","sea":"Spring"},{"a":152,"n":"MESSIER 87","ra":12.5136,"dec":12.3917,"sz":2.6,"site":"Any site","flt":"Luminance","sea":"Spring"},{"a":175,"n":"IC 3481+A + 83","ra":12.5478,"dec":11.4033,"sz":10.4,"site":"Any site","flt":"LRGB","sea":"Spring"},{"a":76,"n":"MESSIER 90","ra":12.6139,"dec":13.1633,"sz":10.4,"site":"Any site","flt":"LRGB","sea":"Spring"},{"a":211,"n":"MCG+07-26-034","ra":12.6219,"dec":38.725,"sz":2.1,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":149,"n":"IC 0803","ra":12.6619,"dec":16.5917,"sz":2.1,"site":"Any site","flt":"Luminance","sea":"Spring"},{"a":23,"n":"NGC 4618","ra":12.6922,"dec":41.15,"sz":20.8,"site":"New Mexico / Spain","flt":"LRGB","sea":"Spring"},{"a":34,"n":"NGC 4615+13+14","ra":12.6936,"dec":26.0717,"sz":5.2,"site":"New Mexico / Spain","flt":"LRGB","sea":"Spring"},{"a":281,"n":"NGC 4631 + 27","ra":12.7017,"dec":32.54,"sz":21.8,"site":"New Mexico / Spain","flt":"LRGB","sea":"Spring"},{"a":116,"n":"MESSIER 60","ra":12.7278,"dec":11.5533,"sz":10.4,"site":"Any site","flt":"LRGB","sea":"Spring"},{"a":189,"n":"NGC 4651","ra":12.7286,"dec":16.395,"sz":10.4,"site":"Any site","flt":"LRGB","sea":"Spring"},{"a":163,"n":"NGC 4670","ra":12.7547,"dec":27.125,"sz":2.1,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":242,"n":"NGC 4676A + B","ra":12.7694,"dec":30.7333,"sz":5.2,"site":"New Mexico / Spain","flt":"LRGB","sea":"Spring"},{"a":159,"n":"NGC 4747","ra":12.8628,"dec":25.775,"sz":10.4,"site":"New Mexico / Spain","flt":"LRGB","sea":"Spring"},{"a":265,"n":"IC 3862","ra":12.8981,"dec":36.0867,"sz":2.1,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":277,"n":"NGC 4809 + 10","ra":12.9142,"dec":2.6533,"sz":2.1,"site":"Any site","flt":"Luminance","sea":"Spring"},{"a":266,"n":"NGC 4861","ra":12.9839,"dec":34.86,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":176,"n":"NGC 4933A + B","ra":13.0653,"dec":-11.5067,"sz":3.5,"site":"New Mexico / Australia","flt":"Luminance","sea":"Spring"},{"a":139,"n":"MCG+05-31-135","ra":13.1233,"dec":26.7183,"sz":2.1,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":196,"n":"Herzog 21","ra":13.2439,"dec":26.1233,"sz":2.1,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":60,"n":"ARP 060","ra":13.2464,"dec":26.085,"sz":2.1,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":238,"n":"UGC 08335","ra":13.2581,"dec":62.1283,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":57,"n":"MCG+03-34-012","ra":13.2778,"dec":14.4367,"sz":2.6,"site":"Any site","flt":"Luminance","sea":"Spring"},{"a":193,"n":"IC 0883","ra":13.3431,"dec":34.1383,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":204,"n":"UGC 08454","ra":13.3806,"dec":84.5067,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":153,"n":"NGC 5128","ra":13.4244,"dec":-43.0183,"sz":21.8,"site":"Australia","flt":"LRGB","sea":"Spring"},{"a":40,"n":"IC 4271","ra":13.4889,"dec":37.4083,"sz":2.1,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":85,"n":"MESSIER 51","ra":13.4978,"dec":47.1983,"sz":21.8,"site":"New Mexico / Spain","flt":"LRGB","sea":"Spring"},{"a":334,"n":"UGC 08498","ra":13.5072,"dec":31.62,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":104,"n":"NGC 5218 + 16","ra":13.5364,"dec":62.7667,"sz":10.4,"site":"New Mexico / Spain","flt":"LRGB","sea":"Spring"},{"a":36,"n":"UGC 08548","ra":13.5708,"dec":31.425,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":183,"n":"UGC 08560","ra":13.5819,"dec":31.3917,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":288,"n":"NGC 5221 + 22","ra":13.5822,"dec":13.8317,"sz":10.4,"site":"Any site","flt":"LRGB","sea":"Spring"},{"a":326,"n":"UGC 08610","ra":13.6219,"dec":6.4783,"sz":10.4,"site":"Any site","flt":"LRGB","sea":"Spring"},{"a":33,"n":"UGC 08613","ra":13.6233,"dec":6.4367,"sz":3.5,"site":"Any site","flt":"Luminance","sea":"Spring"},{"a":240,"n":"NGC 5257 + 58","ra":13.6647,"dec":0.84,"sz":4.2,"site":"Any site","flt":"Luminance","sea":"Spring"},{"a":239,"n":"NGC 5278 + 79","ra":13.6944,"dec":55.6683,"sz":4.2,"site":"New Mexico / Spain","flt":"Luminance","sea":"Spring"},{"a":84,"n":"NGC 5395 + 94","ra":13.9772,"dec":37.425,"sz":5.2,"site":"New Mexico / Spain","flt":"LRGB","sea":"Spring"},{"a":111,"n":"NGC 5421","ra":14.0281,"dec":33.8283,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Summer"},{"a":26,"n":"MESSIER 101","ra":14.0536,"dec":54.35,"sz":32.4,"site":"New Mexico / Spain","flt":"LRGB","sea":"Summer"},{"a":271,"n":"NGC 5426 + 27","ra":14.0569,"dec":-6.07,"sz":5.2,"site":"New Mexico / Australia","flt":"LRGB","sea":"Summer"},{"a":117,"n":"IC 0982 + 983","ra":14.1664,"dec":17.6967,"sz":5.2,"site":"Any site","flt":"LRGB","sea":"Summer"},{"a":79,"n":"NGC 5490C","ra":14.1686,"dec":17.615,"sz":2.1,"site":"Any site","flt":"Luminance","sea":"Summer"},{"a":199,"n":"NGC 5544 + 45","ra":14.2839,"dec":36.5717,"sz":2.1,"site":"New Mexico / Spain","flt":"Luminance","sea":"Summer"},{"a":45,"n":"UGC 09178","ra":14.3308,"dec":51.905,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Summer"},{"a":286,"n":"NGC 5566 +60+69","ra":14.3389,"dec":3.9333,"sz":10.4,"site":"Any site","flt":"LRGB","sea":"Summer"},{"a":69,"n":"NGC 5579 + 80","ra":14.3406,"dec":35.1883,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Summer"},{"a":178,"n":"NGC 5613","ra":14.4017,"dec":34.8917,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Summer"},{"a":49,"n":"NGC 5665","ra":14.5406,"dec":8.08,"sz":2.6,"site":"Any site","flt":"Luminance","sea":"Summer"},{"a":95,"n":"IC 4461 + 62","ra":14.5839,"dec":26.5433,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Summer"},{"a":274,"n":"NGC 5679A +B+C","ra":14.585,"dec":5.3483,"sz":2.6,"site":"Any site","flt":"Luminance","sea":"Summer"},{"a":241,"n":"UGC 09425","ra":14.6308,"dec":30.4817,"sz":2.1,"site":"New Mexico / Spain","flt":"Luminance","sea":"Summer"},{"a":171,"n":"NGC 5718","ra":14.6786,"dec":3.4533,"sz":2.6,"site":"Any site","flt":"Luminance","sea":"Summer"},{"a":297,"n":"NGC 5754 + 55","ra":14.7556,"dec":38.7317,"sz":10.4,"site":"New Mexico / Spain","flt":"LRGB","sea":"Summer"},{"a":64,"n":"UGC 09503","ra":14.7572,"dec":19.465,"sz":2.6,"site":"Any site","flt":"Luminance","sea":"Summer"},{"a":47,"n":"CGCG 105-026","ra":14.7869,"dec":18.8583,"sz":2.6,"site":"Any site","flt":"Luminance","sea":"Summer"},{"a":328,"n":"UGC 09532","ra":14.7989,"dec":19.0567,"sz":5.2,"site":"Any site","flt":"LRGB","sea":"Summer"},{"a":261,"n":"MCG-02-38-016","ra":14.8253,"dec":-10.1733,"sz":10.4,"site":"New Mexico / Australia","flt":"LRGB","sea":"Summer"},{"a":173,"n":"UGC 09561","ra":14.8572,"dec":9.3283,"sz":3.5,"site":"Any site","flt":"Luminance","sea":"Summer"},{"a":177,"n":"MCG+04-35-017","ra":14.9303,"dec":24.5983,"sz":2.1,"site":"New Mexico / Spain","flt":"Luminance","sea":"Summer"},{"a":302,"n":"UGC 09618","ra":14.9503,"dec":24.6167,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Summer"},{"a":136,"n":"NGC 5820","ra":14.9778,"dec":53.8867,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Summer"},{"a":42,"n":"NGC 5829+IC4526","ra":15.045,"dec":23.3317,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Summer"},{"a":254,"n":"NGC 5917","ra":15.3589,"dec":-7.3767,"sz":10.4,"site":"New Mexico / Australia","flt":"LRGB","sea":"Summer"},{"a":90,"n":"NGC 5930 + 29","ra":15.4356,"dec":41.675,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Summer"},{"a":91,"n":"NGC 5953 + 54","ra":15.5756,"dec":15.195,"sz":2.6,"site":"Any site","flt":"Luminance","sea":"Summer"},{"a":220,"n":"IC 4553","ra":15.5825,"dec":23.505,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Summer"},{"a":72,"n":"NGC 5994 + 96","ra":15.7814,"dec":17.8717,"sz":3.5,"site":"Any site","flt":"Luminance","sea":"Summer"},{"a":109,"n":"UGC 10053","ra":15.8022,"dec":69.4583,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Summer"},{"a":218,"n":"CGCG 107-052","ra":15.8922,"dec":18.6033,"sz":2.1,"site":"Any site","flt":"Luminance","sea":"Summer"},{"a":324,"n":"UGC 10143","ra":16.0369,"dec":15.9067,"sz":12.8,"site":"Any site","flt":"LRGB","sea":"Summer"},{"a":122,"n":"NGC 6040A + B","ra":16.0742,"dec":17.75,"sz":2.6,"site":"Any site","flt":"Luminance","sea":"Summer"},{"a":101,"n":"UGC 10169 + 164","ra":16.0756,"dec":14.8183,"sz":5.2,"site":"Any site","flt":"LRGB","sea":"Summer"},{"a":71,"n":"NGC 6045","ra":16.0856,"dec":17.7567,"sz":2.1,"site":"Any site","flt":"Luminance","sea":"Summer"},{"a":209,"n":"NGC 6052","ra":16.0869,"dec":20.5417,"sz":2.1,"site":"New Mexico / Spain","flt":"Luminance","sea":"Summer"},{"a":272,"n":"NGC 6054","ra":16.0919,"dec":17.7683,"sz":2.1,"site":"Any site","flt":"Luminance","sea":"Summer"},{"a":172,"n":"IC 1178","ra":16.0925,"dec":17.6017,"sz":3.5,"site":"Any site","flt":"Luminance","sea":"Summer"},{"a":188,"n":"UGC 10214","ra":16.1011,"dec":55.4217,"sz":5.2,"site":"New Mexico / Spain","flt":"LRGB","sea":"Summer"},{"a":2,"n":"UGC 10310","ra":16.2717,"dec":47.0467,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Summer"},{"a":66,"n":"UGC 10396","ra":16.4481,"dec":51.555,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Summer"},{"a":185,"n":"NGC 6217","ra":16.5444,"dec":78.1983,"sz":5.2,"site":"New Mexico / Spain","flt":"LRGB","sea":"Summer"},{"a":73,"n":"IC 1222","ra":16.5858,"dec":46.2133,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Summer"},{"a":125,"n":"UGC 10491","ra":16.6372,"dec":41.93,"sz":2.1,"site":"New Mexico / Spain","flt":"Luminance","sea":"Summer"},{"a":330,"n":"I Zw 167","ra":16.8189,"dec":53.4317,"sz":10.4,"site":"New Mexico / Spain","flt":"LRGB","sea":"Summer"},{"a":103,"n":"UGC 10586","ra":16.8239,"dec":45.4583,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Summer"},{"a":312,"n":"MCG+08-31-004","ra":16.8303,"dec":46.7183,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Summer"},{"a":208,"n":"MCG+08-31-010","ra":16.8508,"dec":47.22,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Summer"},{"a":293,"n":"NGC 6286","ra":16.9753,"dec":58.9367,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Summer"},{"a":32,"n":"UGC 10770","ra":17.2189,"dec":59.3233,"sz":2.1,"site":"New Mexico / Spain","flt":"Luminance","sea":"Summer"},{"a":124,"n":"NGC 6361","ra":17.3114,"dec":60.6067,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Summer"},{"a":102,"n":"UGC 10814","ra":17.3206,"dec":48.98,"sz":10.4,"site":"New Mexico / Spain","flt":"LRGB","sea":"Summer"},{"a":30,"n":"NGC 6365A + B","ra":17.3786,"dec":62.1733,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Summer"},{"a":311,"n":"IC 1259 Field","ra":17.4547,"dec":58.485,"sz":5.2,"site":"New Mexico / Spain","flt":"LRGB","sea":"Summer"},{"a":310,"n":"IC 1259","ra":17.4569,"dec":58.5167,"sz":2.1,"site":"New Mexico / Spain","flt":"Luminance","sea":"Summer"},{"a":38,"n":"NGC 6412","ra":17.4933,"dec":75.705,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Summer"},{"a":81,"n":"NGC 6621 + 22","ra":18.2153,"dec":68.3633,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Summer"},{"a":249,"n":"UGC 12891","ra":0.0053,"dec":22.99,"sz":2.1,"site":"New Mexico / Spain","flt":"Luminance","sea":"Autumn"},{"a":112,"n":"NGC 7805 + 06","ra":0.0242,"dec":31.4333,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Autumn"},{"a":130,"n":"IC 5378","ra":0.0439,"dec":16.6433,"sz":2.6,"site":"Any site","flt":"Luminance","sea":"Autumn"},{"a":51,"n":"MCG-02-01-24","ra":0.1047,"dec":-13.4483,"sz":2.1,"site":"New Mexico / Australia","flt":"Luminance","sea":"Autumn"},{"a":144,"n":"NGC 7828","ra":0.1075,"dec":-13.4167,"sz":2.6,"site":"New Mexico / Australia","flt":"Luminance","sea":"Autumn"},{"a":146,"n":"VV 790","ra":0.1122,"dec":-6.6367,"sz":2.1,"site":"New Mexico / Australia","flt":"Luminance","sea":"Autumn"},{"a":246,"n":"NGC 7838","ra":0.115,"dec":8.35,"sz":2.1,"site":"Any site","flt":"Luminance","sea":"Autumn"},{"a":235,"n":"NGC 0014","ra":0.1461,"dec":15.815,"sz":3.5,"site":"Any site","flt":"Luminance","sea":"Autumn"},{"a":113,"n":"NGC 0070","ra":0.3061,"dec":30.08,"sz":5.2,"site":"New Mexico / Spain","flt":"LRGB","sea":"Autumn"},{"a":256,"n":"MCG-02-01-52","ra":0.3139,"dec":-10.3617,"sz":2.6,"site":"New Mexico / Australia","flt":"Luminance","sea":"Autumn"},{"a":65,"n":"NGC 0091","ra":0.3644,"dec":22.4,"sz":5.2,"site":"New Mexico / Spain","flt":"LRGB","sea":"Autumn"},{"a":35,"n":"UGC 00212 +comp","ra":0.3731,"dec":-1.3033,"sz":5.2,"site":"New Mexico / Australia","flt":"LRGB","sea":"Autumn"},{"a":201,"n":"UGC 00224","ra":0.3928,"dec":-0.49,"sz":2.1,"site":"New Mexico / Australia","flt":"Luminance","sea":"Autumn"},{"a":100,"n":"IC 0018 + 19","ra":0.4772,"dec":-11.5733,"sz":10.4,"site":"New Mexico / Australia","flt":"LRGB","sea":"Autumn"},{"a":19,"n":"NGC 0145","ra":0.5292,"dec":-5.1533,"sz":2.6,"site":"New Mexico / Australia","flt":"Luminance","sea":"Autumn"},{"a":282,"n":"NGC 0169","ra":0.6144,"dec":23.9917,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Autumn"},{"a":127,"n":"NGC 0191","ra":0.6497,"dec":-9.0017,"sz":2.6,"site":"New Mexico / Australia","flt":"Luminance","sea":"Autumn"},{"a":168,"n":"MESSIER 32","ra":0.7117,"dec":40.865,"sz":16.2,"site":"New Mexico / Spain","flt":"LRGB","sea":"Autumn"},{"a":231,"n":"IC 1575","ra":0.7261,"dec":-4.1183,"sz":5.2,"site":"New Mexico / Australia","flt":"LRGB","sea":"Autumn"},{"a":230,"n":"IC 0051","ra":0.7733,"dec":-13.4417,"sz":3.5,"site":"New Mexico / Australia","flt":"Luminance","sea":"Autumn"},{"a":140,"n":"NGC 0275 + 74","ra":0.8514,"dec":-7.0633,"sz":2.6,"site":"New Mexico / Australia","flt":"Luminance","sea":"Autumn"},{"a":251,"n":"VV 674","ra":0.8964,"dec":-13.8617,"sz":2.1,"site":"New Mexico / Australia","flt":"Luminance","sea":"Autumn"},{"a":121,"n":"MCG-01-03-051","ra":0.9897,"dec":-4.8033,"sz":2.6,"site":"New Mexico / Australia","flt":"Luminance","sea":"Autumn"},{"a":59,"n":"NGC 0341","ra":1.0128,"dec":-9.185,"sz":2.6,"site":"New Mexico / Australia","flt":"Luminance","sea":"Autumn"},{"a":331,"n":"Pisces Cloud","ra":1.1236,"dec":32.4117,"sz":20.8,"site":"New Mexico / Spain","flt":"LRGB","sea":"Autumn"},{"a":236,"n":"IC 1623","ra":1.1297,"dec":-17.5067,"sz":5.2,"site":"New Mexico / Australia","flt":"LRGB","sea":"Autumn"},{"a":11,"n":"UGC 00717","ra":1.1564,"dec":14.3367,"sz":5.2,"site":"Any site","flt":"LRGB","sea":"Autumn"},{"a":164,"n":"NGC 0455","ra":1.2658,"dec":5.1783,"sz":3.5,"site":"Any site","flt":"Luminance","sea":"Autumn"},{"a":128,"n":"UGC 00827","ra":1.2903,"dec":14.6967,"sz":2.1,"site":"Any site","flt":"Luminance","sea":"Autumn"},{"a":88,"n":"VV 445","ra":1.3181,"dec":12.4783,"sz":2.1,"site":"Any site","flt":"Luminance","sea":"Autumn"},{"a":119,"n":"UGC 00849","ra":1.3233,"dec":12.4467,"sz":2.6,"site":"Any site","flt":"Luminance","sea":"Autumn"},{"a":48,"n":"CGCG 436-026","ra":1.3322,"dec":12.345,"sz":2.1,"site":"Any site","flt":"Luminance","sea":"Autumn"},{"a":227,"n":"NGC 0474","ra":1.3353,"dec":3.4167,"sz":10.4,"site":"Any site","flt":"LRGB","sea":"Autumn"},{"a":67,"n":"UGC 00892","ra":1.3547,"dec":-0.545,"sz":2.6,"site":"New Mexico / Australia","flt":"Luminance","sea":"Autumn"},{"a":8,"n":"NGC 0497","ra":1.3731,"dec":-0.875,"sz":3.5,"site":"New Mexico / Australia","flt":"Luminance","sea":"Autumn"},{"a":70,"n":"UGC 00934","ra":1.3911,"dec":30.785,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Autumn"},{"a":229,"n":"NGC 0508 + 07","ra":1.3947,"dec":33.28,"sz":10.4,"site":"New Mexico / Spain","flt":"LRGB","sea":"Autumn"},{"a":157,"n":"NGC 0520","ra":1.4097,"dec":3.7933,"sz":10.4,"site":"Any site","flt":"LRGB","sea":"Autumn"},{"a":158,"n":"NGC 0523","ra":1.4222,"dec":34.025,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Autumn"},{"a":133,"n":"NGC 0541","ra":1.4289,"dec":-1.38,"sz":2.6,"site":"New Mexico / Australia","flt":"Luminance","sea":"Autumn"},{"a":308,"n":"NGC 0545 + 47","ra":1.4331,"dec":-1.34,"sz":2.6,"site":"New Mexico / Australia","flt":"Luminance","sea":"Autumn"},{"a":98,"n":"UGC 01095 +comp","ra":1.5381,"dec":32.09,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Autumn"},{"a":306,"n":"UGC 01102","ra":1.5414,"dec":4.595,"sz":5.2,"site":"Any site","flt":"LRGB","sea":"Autumn"},{"a":4,"n":"MCG-02-05-50+A","ra":1.8072,"dec":-12.3817,"sz":3.5,"site":"New Mexico / Australia","flt":"Luminance","sea":"Autumn"},{"a":228,"n":"IC 0162","ra":1.8147,"dec":10.5217,"sz":2.6,"site":"Any site","flt":"Luminance","sea":"Autumn"},{"a":31,"n":"IC 0167","ra":1.8522,"dec":21.9133,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Autumn"},{"a":75,"n":"NGC 0702","ra":1.8553,"dec":-4.055,"sz":3.5,"site":"New Mexico / Australia","flt":"Luminance","sea":"Autumn"},{"a":56,"n":"UGC 01432","ra":1.9572,"dec":17.2167,"sz":2.1,"site":"Any site","flt":"Luminance","sea":"Autumn"},{"a":166,"n":"NGC 0750 + 51","ra":1.9589,"dec":33.21,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Autumn"},{"a":126,"n":"UGC 01449","ra":1.9681,"dec":3.1,"sz":2.6,"site":"Any site","flt":"Luminance","sea":"Autumn"},{"a":78,"n":"NGC 0772 + 770","ra":1.9889,"dec":19.0067,"sz":10.4,"site":"Any site","flt":"LRGB","sea":"Autumn"},{"a":29,"n":"NGC 6946","ra":20.5811,"dec":60.1533,"sz":20.8,"site":"New Mexico / Spain","flt":"LRGB","sea":"Autumn"},{"a":325,"n":"ESO 601-G018","ra":22.1067,"dec":-21.0783,"sz":2.1,"site":"New Mexico / Australia","flt":"Luminance","sea":"Autumn"},{"a":169,"n":"NGC 7236 + 37","ra":22.2458,"dec":13.8467,"sz":3.5,"site":"Any site","flt":"Luminance","sea":"Autumn"},{"a":278,"n":"NGC 7253A + B","ra":22.3239,"dec":29.3983,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Autumn"},{"a":226,"n":"NGC 7252","ra":22.3458,"dec":-24.6783,"sz":10.4,"site":"New Mexico / Australia","flt":"LRGB","sea":"Autumn"},{"a":93,"n":"NGC 7284 + 85","ra":22.4767,"dec":-24.8433,"sz":5.2,"site":"New Mexico / Australia","flt":"LRGB","sea":"Autumn"},{"a":14,"n":"NGC 7314","ra":22.5961,"dec":-26.05,"sz":5.2,"site":"New Mexico / Australia","flt":"LRGB","sea":"Autumn"},{"a":319,"n":"Stephan's Quint","ra":22.5992,"dec":33.965,"sz":10.4,"site":"New Mexico / Spain","flt":"LRGB","sea":"Autumn"},{"a":3,"n":"MCG-01-57-016","ra":22.6094,"dec":-2.905,"sz":5.2,"site":"New Mexico / Australia","flt":"LRGB","sea":"Autumn"},{"a":15,"n":"NGC 7393","ra":22.8611,"dec":-5.5583,"sz":2.6,"site":"New Mexico / Australia","flt":"Luminance","sea":"Autumn"},{"a":110,"n":"MCG-03-58-011","ra":22.9025,"dec":-15.2367,"sz":2.1,"site":"New Mexico / Australia","flt":"Luminance","sea":"Autumn"},{"a":314,"n":"MCG-03-58-009","ra":22.9669,"dec":-3.7683,"sz":10.4,"site":"New Mexico / Australia","flt":"LRGB","sea":"Autumn"},{"a":13,"n":"NGC 7448","ra":23.0006,"dec":15.99,"sz":2.6,"site":"Any site","flt":"Luminance","sea":"Autumn"},{"a":298,"n":"NGC 7469","ra":23.0544,"dec":8.8733,"sz":3.5,"site":"Any site","flt":"Luminance","sea":"Autumn"},{"a":99,"n":"NGC 7550 + 49","ra":23.2544,"dec":18.9617,"sz":10.4,"site":"Any site","flt":"LRGB","sea":"Autumn"},{"a":170,"n":"NGC 7578A + B","ra":23.2867,"dec":18.7,"sz":3.5,"site":"Any site","flt":"Luminance","sea":"Autumn"},{"a":223,"n":"NGC 7585","ra":23.3006,"dec":-4.6483,"sz":3.5,"site":"New Mexico / Australia","flt":"Luminance","sea":"Autumn"},{"a":92,"n":"NGC 7603 + comp","ra":23.3156,"dec":0.2433,"sz":2.6,"site":"Any site","flt":"Luminance","sea":"Autumn"},{"a":150,"n":"NGC 7609","ra":23.325,"dec":9.5083,"sz":2.1,"site":"Any site","flt":"Luminance","sea":"Autumn"},{"a":212,"n":"NGC 7625","ra":23.3417,"dec":17.225,"sz":2.6,"site":"Any site","flt":"Luminance","sea":"Autumn"},{"a":182,"n":"NGC 7674","ra":23.4658,"dec":8.7783,"sz":3.5,"site":"Any site","flt":"Luminance","sea":"Autumn"},{"a":28,"n":"NGC 7678","ra":23.4744,"dec":22.4217,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Autumn"},{"a":216,"n":"NGC 7679 + 82","ra":23.4797,"dec":3.5117,"sz":10.4,"site":"Any site","flt":"LRGB","sea":"Autumn"},{"a":46,"n":"UGC 12665","ra":23.5614,"dec":30.0433,"sz":2.1,"site":"New Mexico / Spain","flt":"Luminance","sea":"Autumn"},{"a":284,"n":"NGC 7714 + 15","ra":23.6039,"dec":2.155,"sz":5.2,"site":"Any site","flt":"LRGB","sea":"Autumn"},{"a":222,"n":"NGC 7727","ra":23.665,"dec":-12.2917,"sz":10.4,"site":"New Mexico / Australia","flt":"LRGB","sea":"Autumn"},{"a":295,"n":"MCG-01-60-021","ra":23.6967,"dec":-3.6767,"sz":10.4,"site":"New Mexico / Australia","flt":"LRGB","sea":"Autumn"},{"a":86,"n":"NGC 7753 + 52","ra":23.7847,"dec":29.4833,"sz":5.2,"site":"New Mexico / Spain","flt":"LRGB","sea":"Autumn"},{"a":68,"n":"NGC 7757(56?)","ra":23.8125,"dec":4.1733,"sz":3.5,"site":"Any site","flt":"Luminance","sea":"Autumn"},{"a":323,"n":"NGC 7783","ra":23.9028,"dec":0.3833,"sz":3.5,"site":"Any site","flt":"Luminance","sea":"Autumn"},{"a":262,"n":"UGC 12856","ra":23.9458,"dec":16.8117,"sz":2.6,"site":"Any site","flt":"Luminance","sea":"Autumn"},{"a":50,"n":"IC 1520","ra":23.9661,"dec":-14.03,"sz":2.1,"site":"New Mexico / Australia","flt":"Luminance","sea":"Autumn"},{"a":290,"n":"IC 0195 + 196","ra":2.0622,"dec":14.7083,"sz":3.5,"site":"Any site","flt":"Luminance","sea":"Winter"},{"a":74,"n":"UGC 01626","ra":2.1394,"dec":41.48,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Winter"},{"a":318,"n":"NGC 0833 Group","ra":2.1556,"dec":-10.1333,"sz":10.4,"site":"New Mexico / Australia","flt":"LRGB","sea":"Winter"},{"a":10,"n":"UGC 01775","ra":2.3072,"dec":5.6533,"sz":2.6,"site":"Any site","flt":"Luminance","sea":"Winter"},{"a":273,"n":"UGC 01810 + 13","ra":2.3581,"dec":39.375,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Winter"},{"a":145,"n":"ARP 145","ra":2.3856,"dec":41.37,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Winter"},{"a":54,"n":"MCG-01-07-007","ra":2.4006,"dec":-4.6933,"sz":2.6,"site":"New Mexico / Australia","flt":"Luminance","sea":"Winter"},{"a":276,"n":"NGC 0935+IC1801","ra":2.4697,"dec":19.6,"sz":2.6,"site":"Any site","flt":"Luminance","sea":"Winter"},{"a":309,"n":"NGC 0942 + 43","ra":2.4861,"dec":-10.8367,"sz":3.5,"site":"New Mexico / Australia","flt":"Luminance","sea":"Winter"},{"a":258,"n":"UGC 02140","ra":2.6514,"dec":18.3933,"sz":3.5,"site":"Any site","flt":"Luminance","sea":"Winter"},{"a":333,"n":"NGC 1024","ra":2.6533,"dec":10.8467,"sz":5.2,"site":"Any site","flt":"LRGB","sea":"Winter"},{"a":135,"n":"NGC 1023","ra":2.6733,"dec":39.0633,"sz":10.4,"site":"New Mexico / Spain","flt":"LRGB","sea":"Winter"},{"a":37,"n":"MESSIER 77","ra":2.7114,"dec":0.0133,"sz":3.5,"site":"Any site","flt":"Luminance","sea":"Winter"},{"a":77,"n":"NGC 1097","ra":2.7719,"dec":-30.275,"sz":10.4,"site":"Australia","flt":"LRGB","sea":"Winter"},{"a":131,"n":"MCG-03-08-25","ra":2.7883,"dec":-14.8017,"sz":2.6,"site":"New Mexico / Australia","flt":"Luminance","sea":"Winter"},{"a":190,"n":"UGC 02320","ra":2.8389,"dec":12.8883,"sz":5.2,"site":"Any site","flt":"LRGB","sea":"Winter"},{"a":200,"n":"NGC 1134","ra":2.8947,"dec":13.015,"sz":3.5,"site":"Any site","flt":"Luminance","sea":"Winter"},{"a":118,"n":"NGC 1144 + 43","ra":2.9197,"dec":0.1767,"sz":2.1,"site":"Any site","flt":"Luminance","sea":"Winter"},{"a":179,"n":"NPM1G -04.0134","ra":3.0281,"dec":-4.6717,"sz":2.1,"site":"New Mexico / Australia","flt":"Luminance","sea":"Winter"},{"a":108,"n":"ESO 547-G002&3","ra":3.0514,"dec":-22.2167,"sz":2.6,"site":"New Mexico / Australia","flt":"Luminance","sea":"Winter"},{"a":332,"n":"IC 1892","ra":3.1411,"dec":-23.0517,"sz":20.8,"site":"New Mexico / Australia","flt":"LRGB","sea":"Winter"},{"a":41,"n":"NGC 1232 + A","ra":3.1628,"dec":-20.5783,"sz":10.4,"site":"New Mexico / Australia","flt":"LRGB","sea":"Winter"},{"a":304,"n":"NGC 1241 + 42","ra":3.1875,"dec":-8.9217,"sz":3.5,"site":"New Mexico / Australia","flt":"Luminance","sea":"Winter"},{"a":147,"n":"IC 029  8","ra":3.1886,"dec":1.3133,"sz":2.1,"site":"Any site","flt":"Luminance","sea":"Winter"},{"a":279,"n":"NGC 1253 + A","ra":3.2358,"dec":-2.8233,"sz":10.4,"site":"New Mexico / Australia","flt":"LRGB","sea":"Winter"},{"a":154,"n":"NGC 1316","ra":3.3781,"dec":-37.21,"sz":5.2,"site":"Australia","flt":"LRGB","sea":"Winter"},{"a":39,"n":"NGC 1347","ra":3.495,"dec":-22.2783,"sz":3.5,"site":"New Mexico / Australia","flt":"Luminance","sea":"Winter"},{"a":219,"n":"UGC 02812","ra":3.6617,"dec":-2.1133,"sz":2.1,"site":"New Mexico / Australia","flt":"Luminance","sea":"Winter"},{"a":213,"n":"IC 0356","ra":4.1297,"dec":69.8133,"sz":5.2,"site":"New Mexico / Spain","flt":"LRGB","sea":"Winter"},{"a":20,"n":"UGC 03014","ra":4.3317,"dec":2.095,"sz":2.1,"site":"Any site","flt":"Luminance","sea":"Winter"},{"a":210,"n":"NGC 1569","ra":4.5136,"dec":64.8483,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Winter"},{"a":186,"n":"NGC 1614","ra":4.5667,"dec":-8.5783,"sz":2.6,"site":"New Mexico / Australia","flt":"Luminance","sea":"Winter"},{"a":61,"n":"UGC 03104","ra":4.6117,"dec":-2.2867,"sz":2.1,"site":"New Mexico / Australia","flt":"Luminance","sea":"Winter"},{"a":180,"n":"MCG-01-13-034","ra":4.8894,"dec":-4.8017,"sz":2.6,"site":"New Mexico / Australia","flt":"Luminance","sea":"Winter"},{"a":259,"n":"NGC 1741","ra":5.0272,"dec":-4.2583,"sz":3.5,"site":"New Mexico / Australia","flt":"Luminance","sea":"Winter"},{"a":187,"n":"MCG-02-13-040A","ra":5.0814,"dec":-10.2483,"sz":2.1,"site":"New Mexico / Australia","flt":"Luminance","sea":"Winter"},{"a":52,"n":"CGCG 421-027","ra":5.3289,"dec":3.7167,"sz":2.1,"site":"Any site","flt":"Luminance","sea":"Winter"},{"a":327,"n":"NGC 1875","ra":5.3628,"dec":6.6883,"sz":2.6,"site":"Any site","flt":"Luminance","sea":"Winter"},{"a":123,"n":"NGC 1888 + 89","ra":5.3756,"dec":-11.495,"sz":3.5,"site":"New Mexico / Australia","flt":"Luminance","sea":"Winter"},{"a":184,"n":"NGC 1961","ra":5.7011,"dec":69.38,"sz":10.4,"site":"New Mexico / Spain","flt":"LRGB","sea":"Winter"},{"a":96,"n":"UGC 03528A","ra":7.0503,"dec":86.6033,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Winter"},{"a":141,"n":"UGC 03730","ra":7.2392,"dec":73.48,"sz":2.6,"site":"New Mexico / Spain","flt":"Luminance","sea":"Winter"},{"a":25,"n":"NGC 2276","ra":7.4536,"dec":85.755,"sz":5.2,"site":"New Mexico / Spain","flt":"LRGB","sea":"Winter"},{"a":114,"n":"NGC 2300+2276","ra":7.5389,"dec":85.7083,"sz":10.4,"site":"New Mexico / Spain","flt":"LRGB","sea":"Winter"},{"a":250,"n":"IRAS F07327+3529","ra":7.6,"dec":35.375,"sz":2.1,"site":"New Mexico / Spain","flt":"Luminance","sea":"Winter"},{"a":165,"n":"NGC 2418","ra":7.6106,"dec":17.885,"sz":3.5,"site":"Any site","flt":"Luminance","sea":"Winter"},{"a":17,"n":"UGC 03972","ra":7.7425,"dec":73.83,"sz":2.1,"site":"New Mexico / Spain","flt":"Luminance","sea":"Winter"},{"a":143,"n":"NGC 2444","ra":7.7814,"dec":39.0317,"sz":3.5,"site":"New Mexico / Spain","flt":"Luminance","sea":"Winter"}];
+
+// NED coordinate overrides — populated by loadNedCoords()
+let NED_COORDS = {};  // {arp_num: {ra: decimal_hours, dec: decimal_deg}}
+
+function loadNedCoords(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const lines = e.target.result.split('\n').filter(l => l.trim());
+    if (lines.length < 2) { toast('CSV appears empty'); return; }
+    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g,''));
+    const arpIdx  = headers.indexOf('arp');
+    const raIdx   = headers.indexOf('ra_hours');
+    const decIdx  = headers.indexOf('dec_deg');
+    const srcIdx  = headers.indexOf('source');
+    if (arpIdx<0||raIdx<0||decIdx<0) { toast('CSV missing required columns (arp, ra_hours, dec_deg)'); return; }
+    let count = 0;
+    NED_COORDS = {};
+    for (let i=1;i<lines.length;i++) {
+      const cols = lines[i].split(',').map(c=>c.trim().replace(/"/g,''));
+      if (!cols[arpIdx]) continue;
+      if (srcIdx>=0 && cols[srcIdx]!=='NED') continue;  // only NED-sourced rows
+      const arp = parseInt(cols[arpIdx]);
+      const ra  = parseFloat(cols[raIdx]);
+      const dec = parseFloat(cols[decIdx]);
+      if (!isNaN(arp)&&!isNaN(ra)&&!isNaN(dec)) {
+        NED_COORDS[arp] = {ra, dec};
+        count++;
+      }
+    }
+    document.getElementById('hdr-ned').textContent = `Coords: NED (${count})`;
+    document.getElementById('hdr-ned').style.color = 'var(--accent)';
+    toast(`NED coordinates loaded for ${count} targets`);
+    // If planner results exist, recompute to use new coords
+    if (plannerResults.length > 0) {
+      document.getElementById('pl-summary').textContent += ' — NED coords loaded, recompute to apply.';
+    }
+  };
+  reader.readAsText(file);
+}
+
+// Return ra/dec for a target, preferring NED coords if available
+function getCoords(target) {
+  if (NED_COORDS[target.a]) return NED_COORDS[target.a];
+  return {ra: target.ra, dec: target.dec};
+}
+
+const MOON = {"gen":"2026-04-15","days":60,"new":"2026-04-17","full":"2026-05-01","phases":[6.5,2.1,0.2,1.1,4.9,11.3,19.9,30.0,41.0,52.2,63.0,72.9,81.6,88.8,94.3,97.9,99.7,99.5,97.6,93.9,88.7,82.1,74.3,65.5,56.0,46.0,35.9,26.1,17.0,9.3,3.7,0.6,0.5,3.4,9.2,17.2,26.8,37.4,48.2,58.8,68.8,77.6,85.3,91.4,96.0,98.8,99.8,99.1,96.6,92.4,86.6,79.5,71.0,61.6,51.5,40.9,30.4,20.5,11.9,5.3],"dates":["2026-04-15","2026-04-16","2026-04-17","2026-04-18","2026-04-19","2026-04-20","2026-04-21","2026-04-22","2026-04-23","2026-04-24","2026-04-25","2026-04-26","2026-04-27","2026-04-28","2026-04-29","2026-04-30","2026-05-01","2026-05-02","2026-05-03","2026-05-04","2026-05-05","2026-05-06","2026-05-07","2026-05-08","2026-05-09","2026-05-10","2026-05-11","2026-05-12","2026-05-13","2026-05-14","2026-05-15","2026-05-16","2026-05-17","2026-05-18","2026-05-19","2026-05-20","2026-05-21","2026-05-22","2026-05-23","2026-05-24","2026-05-25","2026-05-26","2026-05-27","2026-05-28","2026-05-29","2026-05-30","2026-05-31","2026-06-01","2026-06-02","2026-06-03","2026-06-04","2026-06-05","2026-06-06","2026-06-07","2026-06-08","2026-06-09","2026-06-10","2026-06-11","2026-06-12","2026-06-13"],"targets":[{"a":82,"n":"NGC 2535 + 36","o":"New Mexico","g":37,"ng":"2026-04-15","s":"GGGGGGMAAAAAAAAAMMGGGGGGGGGGGGGGGGMAAAAAAAAMMGGGGGGGGGGGGGGG"},{"a":6,"n":"NGC 2537","o":"New Mexico","g":39,"ng":"2026-04-15","s":"GGGGGGMAAAAAAAAMMGGGGGGGGGGGGGGGGGMMAAMAMAAMGGGGGGGGGGGGGGGG"},{"a":9,"n":"NGC 2523","o":"New Mexico","g":44,"ng":"2026-04-15","s":"GGGGGGGMMAAMAAMMMGGGGGGGGGGGGGGGGGGGMMGMGAMMGGGGGGGGGGGGGGGG"},{"a":268,"n":"Holmberg II","o":"New Mexico","g":43,"ng":"2026-04-15","s":"GGGGGGGMMAAMAAAMMGGGGGGGGGGGGGGGGGGGMMGMMAMMGGGGGGGGGGGGGGGG"},{"a":247,"n":"IC 2338 + 39","o":"New Mexico","g":38,"ng":"2026-04-15","s":"GGGGGGGAAAAAAAAAMMGGGGGGGGGGGGGGGGMAAAAAAAAAMGGGGGGGGGGGGGGG"},{"a":58,"n":"UGC 04457","o":"New Mexico","g":38,"ng":"2026-04-15","s":"GGGGGGGAAAAAAAAAMMGGGGGGGGGGGGGGGGMAAAAAAAAAMGGGGGGGGGGGGGGG"},{"a":12,"n":"NGC 2608","o":"New Mexico","g":38,"ng":"2026-04-15","s":"GGGGGGGAAAAAAAAAMMGGGGGGGGGGGGGGGGMAAAAAAAAAMGGGGGGGGGGGGGGG"},{"a":243,"n":"NGC 2623","o":"New Mexico","g":38,"ng":"2026-04-15","s":"GGGGGGGAAAAAAAAAMMGGGGGGGGGGGGGGGGMAAAAAAAAAMGGGGGGGGGGGGGGG"},{"a":89,"n":"NGC 2648 + comp","o":"New Mexico","g":37,"ng":"2026-04-15","s":"GGGGGGGAAAAAAAAAAMGGGGGGGGGGGGGGGGMMAAAAAAAAMMGGGGGGGGGGGGGG"},{"a":80,"n":"NGC 2633","o":"New Mexico","g":43,"ng":"2026-04-15","s":"GGGGGGGMMAAMAAAMMGGGGGGGGGGGGGGGGGGGMMGMMAMMGGGGGGGGGGGGGGGG"},{"a":167,"n":"NGC 2672","o":"New Mexico","g":37,"ng":"2026-04-15","s":"GGGGGGGAAAAAAAAAAMGGGGGGGGGGGGGGGGMMAAAAAAAAMMGGGGGGGGGGGGGG"},{"a":7,"n":"MCG-03-23-009","o":"New Mexico","g":36,"ng":"2026-04-15","s":"GGGGGGGMMAAAAAAAAAMMGGGGGGGGGGGGGGGGAAAAAAAAAMMGGGGGGGGGGGGG"},{"a":257,"n":"UGC 04638","o":"New Mexico","g":36,"ng":"2026-04-15","s":"GGGGGGGMAAAAAAAAAMMGGGGGGGGGGGGGGGGMAAAAAAAAAMMGGGGGGGGGGGGG"},{"a":195,"n":"UGC 04653","o":"New Mexico","g":38,"ng":"2026-04-15","s":"GGGGGGGAAAAAAAAAMMGGGGGGGGGGGGGGGGMMAAAAAAAAMGGGGGGGGGGGGGGG"},{"a":336,"n":"NGC 2685","o":"New Mexico","g":39,"ng":"2026-04-15","s":"GGGGGGGMAAAAAAAAMMGGGGGGGGGGGGGGGGGMAMMAMAAMMGGGGGGGGGGGGGGG"},{"a":225,"n":"NGC 2655","o":"New Mexico","g":45,"ng":"2026-04-15","s":"GGGGGGGMMAMMAAMMMGGGGGGGGGGGGGGGGGGGMGGMGAMMGGGGGGGGGGGGGGGG"},{"a":202,"n":"NGC 2719 + A","o":"New Mexico","g":38,"ng":"2026-04-15","s":"GGGGGGGAAAAAAAAAMMGGGGGGGGGGGGGGGGMMAAAAAAAAMGGGGGGGGGGGGGGG"},{"a":287,"n":"NGC 2735 + A","o":"New Mexico","g":37,"ng":"2026-04-15","s":"GGGGGGGAAAAAAAAAAMGGGGGGGGGGGGGGGGMMAAAAAAAAMMGGGGGGGGGGGGGG"},{"a":215,"n":"NGC 2782","o":"New Mexico","g":37,"ng":"2026-04-15","s":"GGGGGGGAAAAAAAAAAMGGGGGGGGGGGGGGGGMMAAAAAAAAMMGGGGGGGGGGGGGG"},{"a":55,"n":"UGC 04881","o":"New Mexico","g":38,"ng":"2026-04-15","s":"GGGGGGGAAAAAAAAAMMGGGGGGGGGGGGGGGGGMAAAAAAAAMMGGGGGGGGGGGGGG"},{"a":283,"n":"NGC 2798 + 99","o":"New Mexico","g":38,"ng":"2026-04-15","s":"GGGGGGGAAAAAAAAAAMGGGGGGGGGGGGGGGGGMAAAAAAAAMMGGGGGGGGGGGGGG"},{"a":315,"n":"NGC 2832","o":"New Mexico","g":37,"ng":"2026-04-15","s":"GGGGGGGAAAAAAAAAAMMGGGGGGGGGGGGGGGGMAAAAAAAAMMGGGGGGGGGGGGGG"},{"a":285,"n":"NGC 2854 + 56","o":"New Mexico","g":38,"ng":"2026-04-15","s":"GGGGGGGAAAAAAAAAMMGGGGGGGGGGGGGGGGGMAAAAAAAAMMGGGGGGGGGGGGGG"},{"a":1,"n":"NGC 2857","o":"New Mexico","g":38,"ng":"2026-04-15","s":"GGGGGGGAAAAAAAAAMMGGGGGGGGGGGGGGGGGMAAAAAAAAMMGGGGGGGGGGGGGG"},{"a":307,"n":"NGC 2872 + 74","o":"New Mexico","g":36,"ng":"2026-04-15","s":"GGGGGGGMAAAAAAAAAAMGGGGGGGGGGGGGGGGMAAAAAAAAAMMGGGGGGGGGGGGG"},{"a":275,"n":"NGC 2881","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGMMAAAAAAAAAAMGGGGGGGGGGGGGGGGAAAAAAAAAAMMGGGGGGGGGGGG"},{"a":237,"n":"UGC 05044","o":"New Mexico","g":36,"ng":"2026-04-15","s":"GGGGGGGMAAAAAAAAAAMGGGGGGGGGGGGGGGGMAAAAAAAAAMMGGGGGGGGGGGGG"},{"a":300,"n":"UGC 05029","o":"New Mexico","g":40,"ng":"2026-04-15","s":"GGGGGGGMMAAAAAAMMMGGGGGGGGGGGGGGGGGGMMMMMAAMMGGGGGGGGGGGGGGG"},{"a":207,"n":"UGC 05050","o":"New Mexico","g":41,"ng":"2026-04-15","s":"GGGGGGGMMAMMAAAMMMGGGGGGGGGGGGGGGGGGMMGMMAMMMGGGGGGGGGGGGGGG"},{"a":232,"n":"NGC 2911","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGMAAAAAAAAAAMMGGGGGGGGGGGGGGGMAAAAAAAAAMMGGGGGGGGGGGGG"},{"a":137,"n":"NGC 2914","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGMAAAAAAAAAAMMGGGGGGGGGGGGGGGMAAAAAAAAAMMGGGGGGGGGGGGG"},{"a":221,"n":"MCG-02-25-006","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGMMAAAAAAAAAAMMGGGGGGGGGGGGGGGAAAAAAAAAAMMGGGGGGGGGGGG"},{"a":142,"n":"NGC 2936 + 37","o":"New Mexico","g":36,"ng":"2026-04-15","s":"GGGGGGGMAAAAAAAAAAMMGGGGGGGGGGGGGGGGAAAAAAAAAAMGGGGGGGGGGGGG"},{"a":321,"n":"MCG-01-25-009","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGMMAAAAAAAAAAMGGGGGGGGGGGGGGGGAAAAAAAAAAMMGGGGGGGGGGGG"},{"a":63,"n":"NGC 2944","o":"New Mexico","g":37,"ng":"2026-04-15","s":"GGGGGGGMAAAAAAAAAMMGGGGGGGGGGGGGGGGMAAAAAAAAMMGGGGGGGGGGGGGG"},{"a":129,"n":"UGC 05146","o":"New Mexico","g":37,"ng":"2026-04-15","s":"GGGGGGGMAAAAAAAAAMMGGGGGGGGGGGGGGGGMAAAAAAAAMMGGGGGGGGGGGGGG"},{"a":253,"n":"UGCA 173 + 174","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGMMAAAAAAAAAAMGGGGGGGGGGGGGGGGAAAAAAAAAAMMGGGGGGGGGGGG"},{"a":252,"n":"ESO 566-IG007","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGMAAAAAAAAAAMMGGGGGGGGGGGGGGGMAAAAAAAAAAMMGGGGGGGGGGG"},{"a":245,"n":"NGC 2992 + 93","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGGMAAAAAAAAAAMMGGGGGGGGGGGGGGGMAAAAAAAAAMMGGGGGGGGGGGG"},{"a":303,"n":"IC 0563 + 64","o":"New Mexico","g":36,"ng":"2026-04-15","s":"GGGGGGGMAAAAAAAAAAMMGGGGGGGGGGGGGGGGAAAAAAAAAAMGGGGGGGGGGGGG"},{"a":255,"n":"UGC 05304","o":"New Mexico","g":36,"ng":"2026-04-15","s":"GGGGGGGMAAAAAAAAAAMMGGGGGGGGGGGGGGGGAAAAAAAAAAMGGGGGGGGGGGGG"},{"a":292,"n":"IC 0575","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGMMAAAAAAAAAAMMGGGGGGGGGGGGGGGAAAAAAAAAAMMGGGGGGGGGGGG"},{"a":337,"n":"MESSIER 82","o":"New Mexico","g":40,"ng":"2026-04-15","s":"GGGGGGGMMAAAAAAMMMGGGGGGGGGGGGGGGGGGMMMMMAAMMGGGGGGGGGGGGGGG"},{"a":174,"n":"NGC 3068A","o":"New Mexico","g":36,"ng":"2026-04-15","s":"GGGGGGGMAAAAAAAAAAMGGGGGGGGGGGGGGGGMAAAAAAAAAMMGGGGGGGGGGGGG"},{"a":264,"n":"NGC 3104","o":"New Mexico","g":37,"ng":"2026-04-15","s":"GGGGGGGMAAAAAAAAAMMGGGGGGGGGGGGGGGGMAAAAAAAAAMGGGGGGGGGGGGGG"},{"a":338,"n":"Arp 338","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGGMAAAAAAAAAAMMGGGGGGGGGGGGGGGMAAAAAAAAAAMGGGGGGGGGGGG"},{"a":316,"n":"NGC 3193","o":"New Mexico","g":36,"ng":"2026-04-15","s":"GGGGGGGMAAAAAAAAAAMMGGGGGGGGGGGGGGGGAAAAAAAAAAMGGGGGGGGGGGGG"},{"a":94,"n":"NGC 3226 + 27","o":"New Mexico","g":36,"ng":"2026-04-15","s":"GGGGGGGMAAAAAAAAAAMMGGGGGGGGGGGGGGGGAAAAAAAAAAMGGGGGGGGGGGGG"},{"a":43,"n":"IC 0607","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGMMAAAAAAAAAAMGGGGGGGGGGGGGGGGAAAAAAAAAAMMGGGGGGGGGGGG"},{"a":263,"n":"NGC 3239","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGMMAAAAAAAAAAMGGGGGGGGGGGGGGGGAAAAAAAAAAMMGGGGGGGGGGGG"},{"a":44,"n":"IC 0609","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGGMAAAAAAAAAAMMGGGGGGGGGGGGGGGAAAAAAAAAAAMGGGGGGGGGGGG"},{"a":181,"n":"NGC 3212","o":"New Mexico","g":43,"ng":"2026-04-15","s":"GGGGGGGMMMMMAAAMMMGGGGGGGGGGGGGGGGGGMGGMGAMMMGGGGGGGGGGGGGGG"},{"a":233,"n":"UGC 05720","o":"New Mexico","g":38,"ng":"2026-04-15","s":"GGGGGGGMMAAAAAAAAMMGGGGGGGGGGGGGGGGGMMMAAAAAMMGGGGGGGGGGGGGG"},{"a":53,"n":"NGC 3290","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGAAAAAAAAAAAMMGGGGGGGGGGGGGGMAAAAAAAAAAMMGGGGGGGGGGG"},{"a":267,"n":"UGC 05764","o":"New Mexico","g":36,"ng":"2026-04-15","s":"GGGGGGGMMAAAAAAAAAMMGGGGGGGGGGGGGGGGAAAAAAAAAMMGGGGGGGGGGGGG"},{"a":192,"n":"NGC 3303","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGMMAAAAAAAAAAMGGGGGGGGGGGGGGGGAAAAAAAAAAMMGGGGGGGGGGGG"},{"a":217,"n":"NGC 3310","o":"New Mexico","g":37,"ng":"2026-04-15","s":"GGGGGGGMMAAAAAAAAMMGGGGGGGGGGGGGGGGGMMMAAAAAMMMGGGGGGGGGGGGG"},{"a":156,"n":"UGC 05814","o":"New Mexico","g":42,"ng":"2026-04-15","s":"GGGGGGGMMAMMAAAMMMGGGGGGGGGGGGGGGGGGMGGMMAMMMGGGGGGGGGGGGGGG"},{"a":291,"n":"UGC 05832","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGMMAAAAAAAAAAMMGGGGGGGGGGGGGGGAAAAAAAAAAMMGGGGGGGGGGGG"},{"a":270,"n":"NGC 3395 + 96","o":"New Mexico","g":36,"ng":"2026-04-15","s":"GGGGGGGMMAAAAAAAAAMMGGGGGGGGGGGGGGGGAAAAAAAAAAMGGGGGGGGGGGGG"},{"a":162,"n":"NGC 3414","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGMMAAAAAAAAAAMGGGGGGGGGGGGGGGGAAAAAAAAAAMMGGGGGGGGGGGG"},{"a":107,"n":"UGC 05984","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGMMAAAAAAAAAAMGGGGGGGGGGGGGGGGAAAAAAAAAAMMGGGGGGGGGGGG"},{"a":206,"n":"NGC 3432","o":"New Mexico","g":36,"ng":"2026-04-15","s":"GGGGGGGMMAAAAAAAAAMMGGGGGGGGGGGGGGGGAAAAAAAAAMMGGGGGGGGGGGGG"},{"a":24,"n":"NGC 3445","o":"New Mexico","g":37,"ng":"2026-04-15","s":"GGGGGGGMMAAAAAAAAMMGGGGGGGGGGGGGGGGGMMMAAAAAMMMGGGGGGGGGGGGG"},{"a":205,"n":"NGC 3448","o":"New Mexico","g":37,"ng":"2026-04-15","s":"GGGGGGGMMAAAAAAAAMMGGGGGGGGGGGGGGGGGMMMAAAAAMMMGGGGGGGGGGGGG"},{"a":198,"n":"UGC 06073","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGGMAAAAAAAAAAMMGGGGGGGGGGGGGGGAAAAAAAAAAMMGGGGGGGGGGGG"},{"a":148,"n":"MCG+07-23-019","o":"New Mexico","g":36,"ng":"2026-04-15","s":"GGGGGGGMMAAAAAAAAAMMGGGGGGGGGGGGGGGGMAAAAAAAAMMGGGGGGGGGGGGG"},{"a":335,"n":"NGC 3509","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGMAAAAAAAAAAAMGGGGGGGGGGGGGGGMAAAAAAAAAAMMGGGGGGGGGGG"},{"a":21,"n":"CGCG 155-056","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGMMAAAAAAAAAAMMGGGGGGGGGGGGGGGAAAAAAAAAAMMGGGGGGGGGGGG"},{"a":191,"n":"UGC 06175","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGGMAAAAAAAAAAMMGGGGGGGGGGGGGGGMAAAAAAAAAAMGGGGGGGGGGGG"},{"a":301,"n":"UGC 06204","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGGMAAAAAAAAAAMMGGGGGGGGGGGGGGGAAAAAAAAAAMMGGGGGGGGGGGG"},{"a":105,"n":"NGC 3561A&B","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGGMAAAAAAAAAAMMGGGGGGGGGGGGGGGAAAAAAAAAAMMGGGGGGGGGGGG"},{"a":317,"n":"MESSIER 65 + 66","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGMAAAAAAAAAAAMGGGGGGGGGGGGGGGMAAAAAAAAAAMMGGGGGGGGGGG"},{"a":132,"n":"CGCG 011-053","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGAAAAAAAAAAAMMGGGGGGGGGGGGGGMAAAAAAAAAAAMGGGGGGGGGGG"},{"a":16,"n":"MESSIER 66","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGMAAAAAAAAAAAMGGGGGGGGGGGGGGGMAAAAAAAAAAMMGGGGGGGGGGG"},{"a":27,"n":"NGC 3631","o":"New Mexico","g":36,"ng":"2026-04-15","s":"GGGGGGGMMAAAAAAAAAMMGGGGGGGGGGGGGGGGMMMAAAAAAMMGGGGGGGGGGGGG"},{"a":155,"n":"NGC 3656","o":"New Mexico","g":36,"ng":"2026-04-15","s":"GGGGGGGMMAAAAAAAAAMMGGGGGGGGGGGGGGGGMMMAAAAAAMMGGGGGGGGGGGGG"},{"a":5,"n":"NGC 3664","o":"New Mexico","g":33,"ng":"2026-04-15","s":"GGGGGGGGMAAAAAAAAAAAMMGGGGGGGGGGGGGGMAAAAAAAAAAMMGGGGGGGGGGG"},{"a":151,"n":"MRK 0040","o":"New Mexico","g":36,"ng":"2026-04-15","s":"GGGGGGGMMAAAAAAAAAMMGGGGGGGGGGGGGGGGMMMAAAAAAMMGGGGGGGGGGGGG"},{"a":296,"n":"MCG+10-17-5","o":"New Mexico","g":36,"ng":"2026-04-15","s":"GGGGGGGMMAAAAAAAAMMMGGGGGGGGGGGGGGGGMMMAAAAAAMMGGGGGGGGGGGGG"},{"a":299,"n":"NGC 3690","o":"New Mexico","g":36,"ng":"2026-04-15","s":"GGGGGGGMMAAAAAAAAMMMGGGGGGGGGGGGGGGGMMMAAAAAAMMGGGGGGGGGGGGG"},{"a":197,"n":"IC 0701","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGMAAAAAAAAAAAMGGGGGGGGGGGGGGGMAAAAAAAAAAMMGGGGGGGGGGG"},{"a":203,"n":"NGC 3712","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGGMAAAAAAAAAAMMGGGGGGGGGGGGGGGMAAAAAAAAAAMGGGGGGGGGGGG"},{"a":329,"n":"UGC 06514","o":"New Mexico","g":39,"ng":"2026-04-15","s":"GGGGGGGMMAAMAAAAMMMGGGGGGGGGGGGGGGGGMMGMMAAMMMGGGGGGGGGGGGGG"},{"a":214,"n":"NGC 3718","o":"New Mexico","g":36,"ng":"2026-04-15","s":"GGGGGGGMMAAAAAAAAAMMGGGGGGGGGGGGGGGGMMMAAAAAAMMGGGGGGGGGGGGG"},{"a":322,"n":"UGC 06527","o":"New Mexico","g":36,"ng":"2026-04-15","s":"GGGGGGGMMAAAAAAAAAMMGGGGGGGGGGGGGGGGMMMAAAAAAMMGGGGGGGGGGGGG"},{"a":234,"n":"NGC 3738","o":"New Mexico","g":37,"ng":"2026-04-15","s":"GGGGGGGGMAAAAAAAAAMMGGGGGGGGGGGGGGGGMMMAAAAAAMMGGGGGGGGGGGGG"},{"a":280,"n":"NGC 3769 + A","o":"New Mexico","g":36,"ng":"2026-04-15","s":"GGGGGGGGMAAAAAAAAAMMGGGGGGGGGGGGGGGGMMMAAAAAAAMMGGGGGGGGGGGG"},{"a":320,"n":"NGC 3750","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGMAAAAAAAAAAAMGGGGGGGGGGGGGGGMAAAAAAAAAAMMGGGGGGGGGGG"},{"a":294,"n":"NGC 3786 + 88","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGGMAAAAAAAAAAMMGGGGGGGGGGGGGGGMAAAAAAAAAMMGGGGGGGGGGGG"},{"a":83,"n":"NGC 3800 + 3799","o":"New Mexico","g":33,"ng":"2026-04-15","s":"GGGGGGGGMAAAAAAAAAAAMMGGGGGGGGGGGGGGMAAAAAAAAAAMMGGGGGGGGGGG"},{"a":87,"n":"NGC 3808 + A","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGMAAAAAAAAAAAMGGGGGGGGGGGGGGGMAAAAAAAAAAMMGGGGGGGGGGG"},{"a":161,"n":"UGC 06665","o":"New Mexico","g":33,"ng":"2026-04-15","s":"GGGGGGGGGAAAAAAAAAAAAMGGGGGGGGGGGGGGMMAAAAAAAAAAMMGGGGGGGGGG"},{"a":115,"n":"UGC 06678","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGMAAAAAAAAAAAMGGGGGGGGGGGGGGGMAAAAAAAAAAMMGGGGGGGGGGG"},{"a":248,"n":"Wild's Triplet","o":"New Mexico","g":33,"ng":"2026-04-15","s":"GGGGGGGGGAAAAAAAAAAAAMGGGGGGGGGGGGGGMMAAAAAAAAAAMMGGGGGGGGGG"},{"a":224,"n":"NGC 3921","o":"New Mexico","g":36,"ng":"2026-04-15","s":"GGGGGGGGMAAAAAAAAAMMGGGGGGGGGGGGGGGGMMMAAAAAAMMMGGGGGGGGGGGG"},{"a":62,"n":"UGC 06865","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGGMAAAAAAAAAAMMGGGGGGGGGGGGGGGMMAAAAAAAAMMGGGGGGGGGGGG"},{"a":289,"n":"NGC 3981","o":"New Mexico","g":33,"ng":"2026-04-15","s":"GGGGGGGGGMAAAAAAAAAAAAGGGGGGGGGGGGGGGMMAAAAAAAAAAMMGGGGGGGGG"},{"a":313,"n":"NGC 3994 + 95","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGMAAAAAAAAAAMMGGGGGGGGGGGGGGGMMAAAAAAAAAMMGGGGGGGGGGG"},{"a":194,"n":"UGC 06945","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGMAAAAAAAAAAMMGGGGGGGGGGGGGGGMMAAAAAAAAAMMGGGGGGGGGGG"},{"a":305,"n":"NGC 4016 + 17","o":"New Mexico","g":33,"ng":"2026-04-15","s":"GGGGGGGGMAAAAAAAAAAAMMGGGGGGGGGGGGGGMAAAAAAAAAAMMGGGGGGGGGGG"},{"a":138,"n":"NGC 4015","o":"New Mexico","g":33,"ng":"2026-04-15","s":"GGGGGGGGMAAAAAAAAAAAMMGGGGGGGGGGGGGGMAAAAAAAAAAMMGGGGGGGGGGG"},{"a":22,"n":"NGC 4027","o":"New Mexico","g":33,"ng":"2026-04-15","s":"GGGGGGGGGMAAAAAAAAAAAAGGGGGGGGGGGGGGGMMAAAAAAAAAAMMGGGGGGGGG"},{"a":244,"n":"NGC 4038 + 39","o":"New Mexico","g":33,"ng":"2026-04-15","s":"GGGGGGGGGMAAAAAAAAAAAAGGGGGGGGGGGGGGGMMAAAAAAAAAAMMGGGGGGGGG"},{"a":18,"n":"NGC 4088","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGGMAAAAAAAAAMMMGGGGGGGGGGGGGGGMMMAAAAAAAMMGGGGGGGGGGGG"},{"a":97,"n":"UGC 07085A","o":"New Mexico","g":33,"ng":"2026-04-15","s":"GGGGGGGGMAAAAAAAAAAAMMGGGGGGGGGGGGGGMMAAAAAAAAAMMGGGGGGGGGGG"},{"a":260,"n":"UGC 07230","o":"New Mexico","g":33,"ng":"2026-04-15","s":"GGGGGGGGGAAAAAAAAAAAAMGGGGGGGGGGGGGGMMAAAAAAAAAAMMGGGGGGGGGG"},{"a":160,"n":"NGC 4194","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGGMAAAAAAAAAMMMGGGGGGGGGGGGGGGMMMAAAAAAMMMGGGGGGGGGGGG"},{"a":106,"n":"NGC 4211 + A","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGAAAAAAAAAAAMMGGGGGGGGGGGGGGMMAAAAAAAAAMMGGGGGGGGGGG"},{"a":120,"n":"NGC 4438","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGAAAAAAAAAAAAMGGGGGGGGGGGGGGGMAAAAAAAAAAMMGGGGGGGGGG"},{"a":134,"n":"MESSIER 49","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGAAAAAAAAAAAAMGGGGGGGGGGGGGGGMAAAAAAAAAAMMGGGGGGGGGG"},{"a":269,"n":"NGC 4490 + 85","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGAAAAAAAAAAMMMGGGGGGGGGGGGGGMMMAAAAAAAAMMGGGGGGGGGGG"},{"a":152,"n":"MESSIER 87","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGAAAAAAAAAAAAMGGGGGGGGGGGGGGGMAAAAAAAAAAMMGGGGGGGGGG"},{"a":175,"n":"IC 3481+A + 83","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGAAAAAAAAAAAAMGGGGGGGGGGGGGGGMAAAAAAAAAAMMGGGGGGGGGG"},{"a":76,"n":"MESSIER 90","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGAAAAAAAAAAAAMGGGGGGGGGGGGGGGMAAAAAAAAAAMMGGGGGGGGGG"},{"a":211,"n":"MCG+07-26-034","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGAAAAAAAAAAAMMGGGGGGGGGGGGGGMMMAAAAAAAAMMGGGGGGGGGGG"},{"a":149,"n":"IC 0803","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGAAAAAAAAAAAAMGGGGGGGGGGGGGGGMAAAAAAAAAAMMGGGGGGGGGG"},{"a":23,"n":"NGC 4618","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGAAAAAAAAAAAMMGGGGGGGGGGGGGGMMMAAAAAAAAMMGGGGGGGGGGG"},{"a":34,"n":"NGC 4615+13+14","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGAAAAAAAAAAAAMGGGGGGGGGGGGGGGMAAAAAAAAAAMMGGGGGGGGGG"},{"a":281,"n":"NGC 4631 + 27","o":"New Mexico","g":33,"ng":"2026-04-15","s":"GGGGGGGGGAAAAAAAAAAAMMGGGGGGGGGGGGGGMMMAAAAAAAAAMMGGGGGGGGGG"},{"a":116,"n":"MESSIER 60","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGMAAAAAAAAAAAMGGGGGGGGGGGGGGGMAAAAAAAAAAAMGGGGGGGGGG"},{"a":189,"n":"NGC 4651","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGAAAAAAAAAAAAMGGGGGGGGGGGGGGGMAAAAAAAAAAMMGGGGGGGGGG"},{"a":163,"n":"NGC 4670","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGAAAAAAAAAAAAMGGGGGGGGGGGGGGGMMAAAAAAAAAMMGGGGGGGGGG"},{"a":242,"n":"NGC 4676A + B","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGAAAAAAAAAAAMMGGGGGGGGGGGGGGGMMAAAAAAAAAMMGGGGGGGGGG"},{"a":159,"n":"NGC 4747","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGAAAAAAAAAAAAMGGGGGGGGGGGGGGGMMAAAAAAAAAMMGGGGGGGGGG"},{"a":265,"n":"IC 3862","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGAAAAAAAAAAAMMGGGGGGGGGGGGGGGMMAAAAAAAAAMMGGGGGGGGGG"},{"a":277,"n":"NGC 4809 + 10","o":"New Mexico","g":33,"ng":"2026-04-15","s":"GGGGGGGGGMAAAAAAAAAAAAGGGGGGGGGGGGGGGMMAAAAAAAAAAMMGGGGGGGGG"},{"a":266,"n":"NGC 4861","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGAAAAAAAAAAAMMGGGGGGGGGGGGGGGMMAAAAAAAAAMMGGGGGGGGGG"},{"a":176,"n":"NGC 4933A + B","o":"New Mexico","g":33,"ng":"2026-04-15","s":"GGGGGGGGGMMAAAAAAAAAAAGGGGGGGGGGGGGGGGMAAAAAAAAAAAMMGGGGGGGG"},{"a":139,"n":"MCG+05-31-135","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGMAAAAAAAAAAAMGGGGGGGGGGGGGGGMMAAAAAAAAAMMGGGGGGGGGG"},{"a":196,"n":"Herzog 21","o":"New Mexico","g":33,"ng":"2026-04-15","s":"GGGGGGGGGMAAAAAAAAAAAMGGGGGGGGGGGGGGGMMAAAAAAAAAAMMGGGGGGGGG"},{"a":60,"n":"ARP 060","o":"New Mexico","g":33,"ng":"2026-04-15","s":"GGGGGGGGGMAAAAAAAAAAAMGGGGGGGGGGGGGGGMMAAAAAAAAAAMMGGGGGGGGG"},{"a":238,"n":"UGC 08335","o":"New Mexico","g":37,"ng":"2026-04-15","s":"GGGGGGGGGMMMAAAAAAMMMMGGGGGGGGGGGGGGGGGMMAAAAMMMMGGGGGGGGGGG"},{"a":57,"n":"MCG+03-34-012","o":"New Mexico","g":33,"ng":"2026-04-15","s":"GGGGGGGGGMAAAAAAAAAAAAGGGGGGGGGGGGGGGMMAAAAAAAAAAMMGGGGGGGGG"},{"a":193,"n":"IC 0883","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGMAAAAAAAAAAAMGGGGGGGGGGGGGGGMMAAAAAAAAAMMGGGGGGGGGG"},{"a":204,"n":"UGC 08454","o":"New Mexico","g":47,"ng":"2026-04-15","s":"GGGGGGGGGMMMAAMMMMGGGGGGGGGGGGGGGGGGGGGGGMMMMGGGGGGGGGGGGGGG"},{"a":153,"n":"NGC 5128","o":"Australia","g":33,"ng":"2026-04-15","s":"GGGGGGGGGGMAAAAAAAAAAAMGGGGGGGGGGGGGGGMAAAAAAAAAAAAMGGGGGGGG"},{"a":40,"n":"IC 4271","o":"New Mexico","g":33,"ng":"2026-04-15","s":"GGGGGGGGGMAAAAAAAAAAAMGGGGGGGGGGGGGGGMMAAAAAAAAAMMMGGGGGGGGG"},{"a":85,"n":"MESSIER 51","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGGGMAAAAAAAAAAMMGGGGGGGGGGGGGGGGMAAAAAAAAMMMGGGGGGGGGG"},{"a":334,"n":"UGC 08498","o":"New Mexico","g":33,"ng":"2026-04-15","s":"GGGGGGGGGMAAAAAAAAAAAMGGGGGGGGGGGGGGGMMAAAAAAAAAMMMGGGGGGGGG"},{"a":104,"n":"NGC 5218 + 16","o":"New Mexico","g":37,"ng":"2026-04-15","s":"GGGGGGGGGMMMAAAAAAMMMMGGGGGGGGGGGGGGGGGMMAAAAMMMMGGGGGGGGGGG"},{"a":36,"n":"UGC 08548","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGMAAAAAAAAAAAMGGGGGGGGGGGGGGGGMAAAAAAAAAAMMGGGGGGGGG"},{"a":183,"n":"UGC 08560","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGMAAAAAAAAAAAMGGGGGGGGGGGGGGGGMAAAAAAAAAAMMGGGGGGGGG"},{"a":288,"n":"NGC 5221 + 22","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGMAAAAAAAAAAAAGGGGGGGGGGGGGGGGMAAAAAAAAAAMMGGGGGGGGG"},{"a":326,"n":"UGC 08610","o":"New Mexico","g":33,"ng":"2026-04-15","s":"GGGGGGGGGMMAAAAAAAAAAAGGGGGGGGGGGGGGGGMAAAAAAAAAAAMMGGGGGGGG"},{"a":33,"n":"UGC 08613","o":"New Mexico","g":33,"ng":"2026-04-15","s":"GGGGGGGGGMMAAAAAAAAAAAGGGGGGGGGGGGGGGGMAAAAAAAAAAAMMGGGGGGGG"},{"a":240,"n":"NGC 5257 + 58","o":"New Mexico","g":33,"ng":"2026-04-15","s":"GGGGGGGGGMMAAAAAAAAAAAGGGGGGGGGGGGGGGGMAAAAAAAAAAAMMGGGGGGGG"},{"a":239,"n":"NGC 5278 + 79","o":"New Mexico","g":36,"ng":"2026-04-15","s":"GGGGGGGGGMMMAAAAAAAMMMGGGGGGGGGGGGGGGGGMMAAAAAMMMMGGGGGGGGGG"},{"a":84,"n":"NGC 5395 + 94","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGMMAAAAAAAAAAMGGGGGGGGGGGGGGGGMAAAAAAAAAAMMGGGGGGGGG"},{"a":111,"n":"NGC 5421","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGMMAAAAAAAAAAAGGGGGGGGGGGGGGGGMAAAAAAAAAAMMGGGGGGGGG"},{"a":26,"n":"MESSIER 101","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGGGMMMAAAAAAAAMMGGGGGGGGGGGGGGGGGMMAAAAAAMMMMGGGGGGGGG"},{"a":271,"n":"NGC 5426 + 27","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGGMAAAAAAAAAAAMGGGGGGGGGGGGGGGGAAAAAAAAAAAAMGGGGGGGG"},{"a":117,"n":"IC 0982 + 983","o":"New Mexico","g":33,"ng":"2026-04-15","s":"GGGGGGGGGMMAAAAAAAAAAAGGGGGGGGGGGGGGGGMAAAAAAAAAAAMMGGGGGGGG"},{"a":79,"n":"NGC 5490C","o":"New Mexico","g":33,"ng":"2026-04-15","s":"GGGGGGGGGMMAAAAAAAAAAAGGGGGGGGGGGGGGGGMAAAAAAAAAAAMMGGGGGGGG"},{"a":199,"n":"NGC 5544 + 45","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGMMAAAAAAAAAAAGGGGGGGGGGGGGGGGGAAAAAAAAAAMMMGGGGGGGG"},{"a":45,"n":"UGC 09178","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGGGMMMAAAAAAAAMMGGGGGGGGGGGGGGGGGMMAAAAAAAMMMGGGGGGGGG"},{"a":286,"n":"NGC 5566 +60+69","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGGMMAAAAAAAAAAMGGGGGGGGGGGGGGGGAAAAAAAAAAAAMGGGGGGGG"},{"a":69,"n":"NGC 5579 + 80","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGMMMAAAAAAAAAAGGGGGGGGGGGGGGGGGAAAAAAAAAAMMMGGGGGGGG"},{"a":178,"n":"NGC 5613","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGMMMAAAAAAAAAAGGGGGGGGGGGGGGGGGAAAAAAAAAAMMMGGGGGGGG"},{"a":49,"n":"NGC 5665","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGGMMAAAAAAAAAAMGGGGGGGGGGGGGGGGAAAAAAAAAAAAMGGGGGGGG"},{"a":95,"n":"IC 4461 + 62","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGGGGMMAAAAAAAAAAGGGGGGGGGGGGGGGGGAAAAAAAAAAAMMGGGGGGGG"},{"a":274,"n":"NGC 5679A +B+C","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGGMMAAAAAAAAAAMGGGGGGGGGGGGGGGGAAAAAAAAAAAAMGGGGGGGG"},{"a":241,"n":"UGC 09425","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGGGGMMAAAAAAAAAAGGGGGGGGGGGGGGGGGAAAAAAAAAAAMMGGGGGGGG"},{"a":171,"n":"NGC 5718","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGGMMAAAAAAAAAAMGGGGGGGGGGGGGGGGAAAAAAAAAAAAMGGGGGGGG"},{"a":297,"n":"NGC 5754 + 55","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGMMMAAAAAAAAAAGGGGGGGGGGGGGGGGGMAAAAAAAAAAMMGGGGGGGG"},{"a":64,"n":"UGC 09503","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGGGGMMAAAAAAAAAAGGGGGGGGGGGGGGGGGAAAAAAAAAAAAMGGGGGGGG"},{"a":47,"n":"CGCG 105-026","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGGGGMMAAAAAAAAAAGGGGGGGGGGGGGGGGGAAAAAAAAAAAAMGGGGGGGG"},{"a":328,"n":"UGC 09532","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGGGGMMAAAAAAAAAAGGGGGGGGGGGGGGGGGAAAAAAAAAAAAMGGGGGGGG"},{"a":261,"n":"MCG-02-38-016","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGGGMAAAAAAAAAAMMGGGGGGGGGGGGGGGMAAAAAAAAAAAAGGGGGGGG"},{"a":173,"n":"UGC 09561","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGGMMAAAAAAAAAAMGGGGGGGGGGGGGGGGAAAAAAAAAAAAMGGGGGGGG"},{"a":177,"n":"MCG+04-35-017","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGGGGMMAAAAAAAAAAGGGGGGGGGGGGGGGGGMAAAAAAAAAAAMGGGGGGGG"},{"a":302,"n":"UGC 09618","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGGGGMMAAAAAAAAAAGGGGGGGGGGGGGGGGGMAAAAAAAAAAAMGGGGGGGG"},{"a":136,"n":"NGC 5820","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGMMMAAAAAAAAAMGGGGGGGGGGGGGGGGGMMAAAAAAAMMMMGGGGGGGG"},{"a":42,"n":"NGC 5829+IC4526","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGGMMAAAAAAAAAAMGGGGGGGGGGGGGGGGMAAAAAAAAAAAMGGGGGGGG"},{"a":254,"n":"NGC 5917","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGGGMAAAAAAAAAAAMGGGGGGGGGGGGGGGMAAAAAAAAAAAAGGGGGGGG"},{"a":90,"n":"NGC 5930 + 29","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGGGGMMAAAAAAAAAAGGGGGGGGGGGGGGGGGMMAAAAAAAAAMMGGGGGGGG"},{"a":91,"n":"NGC 5953 + 54","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGGGMAAAAAAAAAAMMGGGGGGGGGGGGGGGMMAAAAAAAAAAAGGGGGGGG"},{"a":220,"n":"IC 4553","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGGGGGMAAAAAAAAAAMGGGGGGGGGGGGGGGGMMAAAAAAAAAAAGGGGGGGG"},{"a":72,"n":"NGC 5994 + 96","o":"New Mexico","g":34,"ng":"2026-04-15","s":"GGGGGGGGGGGMAAAAAAAAAAMMGGGGGGGGGGGGGGGMMAAAAAAAAAAAGGGGGGGG"},{"a":109,"n":"UGC 10053","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGGGMMMAAAAAMMMMMGGGGGGGGGGGGGGGGGMGAAAMMMMMMMMGGGGGGGG"},{"a":218,"n":"CGCG 107-052","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGGGGGGAAAAAAAAAAMMGGGGGGGGGGGGGGGMMAAAAAAAAAAAGGGGGGGG"},{"a":324,"n":"UGC 10143","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGGGGGGAAAAAAAAAAMMGGGGGGGGGGGGGGGMMAAAAAAAAAAAGGGGGGGG"},{"a":122,"n":"NGC 6040A + B","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGGGGGGAAAAAAAAAAMMGGGGGGGGGGGGGGGMMAAAAAAAAAAAGGGGGGGG"},{"a":101,"n":"UGC 10169 + 164","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGGGGGGAAAAAAAAAAMMGGGGGGGGGGGGGGGMMAAAAAAAAAAAGGGGGGGG"},{"a":71,"n":"NGC 6045","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGGGGGGAAAAAAAAAAMMGGGGGGGGGGGGGGGMMAAAAAAAAAAAGGGGGGGG"},{"a":209,"n":"NGC 6052","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGGGGGGAAAAAAAAAAMMGGGGGGGGGGGGGGGMMAAAAAAAAAAAGGGGGGGG"},{"a":272,"n":"NGC 6054","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGGGGGGAAAAAAAAAAMMGGGGGGGGGGGGGGGMMAAAAAAAAAAAGGGGGGGG"},{"a":172,"n":"IC 1178","o":"New Mexico","g":35,"ng":"2026-04-15","s":"GGGGGGGGGGGGAAAAAAAAAAMMGGGGGGGGGGGGGGGMMAAAAAAAAAAAGGGGGGGG"},{"a":188,"n":"UGC 10214","o":"New Mexico","g":36,"ng":"2026-04-15","s":"GGGGGGGGGGGMAAAAAAAAAAGGGGGGGGGGGGGGGGGMMAAAAAAAAMMMGGGGGGGG"},{"a":2,"n":"UGC 10310","o":"New Mexico","g":37,"ng":"2026-04-15","s":"GGGGGGGGGGGGAAAAAAAAAAGGGGGGGGGGGGGGGGGMMAAAAAAAAAAMGGGGGGGG"},{"a":66,"n":"UGC 10396","o":"New Mexico","g":38,"ng":"2026-04-15","s":"GGGGGGGGGGGGAAAAAAAAAAGGGGGGGGGGGGGGGGGGMAAAAAAAAAAMGGGGGGGG"},{"a":185,"n":"NGC 6217","o":"New Mexico","g":37,"ng":"2026-04-15","s":"GGGGGGGGGMMGAAMMMMMMMMGGGGGGGGGGGGGGGGGGGMMMMMMMMMMMGGGGGGGG"},{"a":73,"n":"IC 1222","o":"New Mexico","g":38,"ng":"2026-04-15","s":"GGGGGGGGGGGGAAAAAAAAAAGGGGGGGGGGGGGGGGGGMAAAAAAAAAAAGGGGGGGG"},{"a":125,"n":"UGC 10491","o":"New Mexico","g":37,"ng":"2026-04-15","s":"GGGGGGGGGGGGAAAAAAAAAAMGGGGGGGGGGGGGGGGGMAAAAAAAAAAAGGGGGGGG"},{"a":330,"n":"I Zw 167","o":"New Mexico","g":39,"ng":"2026-04-15","s":"GGGGGGGGGGGGAAAAAAAAAAGGGGGGGGGGGGGGGGGGGAAAAAAAAAAMGGGGGGGG"},{"a":103,"n":"UGC 10586","o":"New Mexico","g":38,"ng":"2026-04-15","s":"GGGGGGGGGGGGAAAAAAAAAAMGGGGGGGGGGGGGGGGGGAAAAAAAAAAAGGGGGGGG"},{"a":312,"n":"MCG+08-31-004","o":"New Mexico","g":39,"ng":"2026-04-15","s":"GGGGGGGGGGGGAAAAAAAAAAGGGGGGGGGGGGGGGGGGGAAAAAAAAAAAGGGGGGGG"},{"a":208,"n":"MCG+08-31-010","o":"New Mexico","g":39,"ng":"2026-04-15","s":"GGGGGGGGGGGGAAAAAAAAAAGGGGGGGGGGGGGGGGGGGAAAAAAAAAAAGGGGGGGG"},{"a":293,"n":"NGC 6286","o":"New Mexico","g":39,"ng":"2026-04-15","s":"GGGGGGGGGGGGAAAAAAAAAAGGGGGGGGGGGGGGGGGGGAAAAAAAAMMMGGGGGGGG"},{"a":32,"n":"UGC 10770","o":"New Mexico","g":39,"ng":"2026-04-15","s":"GGGGGGGGGGGGAAAAAAAAAAGGGGGGGGGGGGGGGGGGGAAAAAAAAAMMGGGGGGGG"},{"a":124,"n":"NGC 6361","o":"New Mexico","g":39,"ng":"2026-04-15","s":"GGGGGGGGGGGGAAAAAAAAAMGGGGGGGGGGGGGGGGGGGAAAAAAAAMMMGGGGGGGG"},{"a":102,"n":"UGC 10814","o":"New Mexico","g":39,"ng":"2026-04-15","s":"GGGGGGGGGGGGAAAAAAAAAAGGGGGGGGGGGGGGGGGGGAAAAAAAAAAAGGGGGGGG"},{"a":30,"n":"NGC 6365A + B","o":"New Mexico","g":39,"ng":"2026-04-15","s":"GGGGGGGGGGGGAAAAAAAMMMGGGGGGGGGGGGGGGGGGGAAAAAMMMMMMGGGGGGGG"},{"a":311,"n":"IC 1259 Field","o":"New Mexico","g":39,"ng":"2026-04-15","s":"GGGGGGGGGGGGAAAAAAAAAAGGGGGGGGGGGGGGGGGGGAAAAAAAAAAAGGGGGGGG"},{"a":310,"n":"IC 1259","o":"New Mexico","g":39,"ng":"2026-04-15","s":"GGGGGGGGGGGGAAAAAAAAAAGGGGGGGGGGGGGGGGGGGAAAAAAAAAAAGGGGGGGG"},{"a":38,"n":"NGC 6412","o":"New Mexico","g":38,"ng":"2026-04-15","s":"GGGGGGGGGMGGAMMMMMMMMMGGGGGGGGGGGGGGGGGGGMMMMMMMMMMMGGGGGGGG"},{"a":81,"n":"NGC 6621 + 22","o":"New Mexico","g":39,"ng":"2026-04-15","s":"GGGGGGGGGGGGMMMMMMMMMMGGGGGGGGGGGGGGGGGGGMMMMMMMMMMMGGGGGGGG"},{"a":249,"n":"UGC 12891","o":"New Mexico","g":34,"ng":"2026-04-19","s":"MAMMGGGGGGGGGGGGGGGGMMGMMMAAMMMGGGGGGGGGGGGGGGGMMAAAAAAAAMMG"},{"a":112,"n":"NGC 7805 + 06","o":"New Mexico","g":34,"ng":"2026-04-19","s":"MMMMGGGGGGGGGGGGGGGGMMGMMMMAMMMMGGGGGGGGGGGGGGGGMMAAAAAAAMMG"},{"a":130,"n":"IC 5378","o":"New Mexico","g":34,"ng":"2026-04-19","s":"AAMMGGGGGGGGGGGGGGGGMMGMAMAAAAMGGGGGGGGGGGGGGGGMMAAAAAAAAMMG"},{"a":51,"n":"MCG-02-01-24","o":"New Mexico","g":33,"ng":"2026-04-18","s":"AMMGGGGGGGGGGGGGGGGMMAMAAAAAAMMGGGGGGGGGGGGGGGMMAAAAAAAAAMGG"},{"a":144,"n":"NGC 7828","o":"New Mexico","g":33,"ng":"2026-04-18","s":"AMMGGGGGGGGGGGGGGGGMMAMAAAAAAMMGGGGGGGGGGGGGGGMMAAAAAAAAAMGG"},{"a":146,"n":"VV 790","o":"New Mexico","g":33,"ng":"2026-04-18","s":"AAMGGGGGGGGGGGGGGGGMMAMAAAAAAMMGGGGGGGGGGGGGGGMMAAAAAAAAAMGG"},{"a":246,"n":"NGC 7838","o":"New Mexico","g":33,"ng":"2026-04-19","s":"AAAMGGGGGGGGGGGGGGGGMAMMAMAAAAMGGGGGGGGGGGGGGGGMMAAAAAAAAMMG"},{"a":235,"n":"NGC 0014","o":"New Mexico","g":33,"ng":"2026-04-19","s":"AAAMGGGGGGGGGGGGGGGGMMGMAMAAAAMMGGGGGGGGGGGGGGGMMAAAAAAAAMMG"},{"a":113,"n":"NGC 0070","o":"New Mexico","g":35,"ng":"2026-04-19","s":"MMMMGGGGGGGGGGGGGGGGGMGMMMMAMMMMGGGGGGGGGGGGGGGGMMAAMAAAAMMG"},{"a":256,"n":"MCG-02-01-52","o":"New Mexico","g":33,"ng":"2026-04-18","s":"AAMGGGGGGGGGGGGGGGGMMAMMAAAAAMMGGGGGGGGGGGGGGGMMAAAAAAAAAMGG"},{"a":65,"n":"NGC 0091","o":"New Mexico","g":35,"ng":"2026-04-19","s":"MAAMGGGGGGGGGGGGGGGGGMGMMMMAAAMMGGGGGGGGGGGGGGGGMMAAAAAAAAMG"},{"a":35,"n":"UGC 00212 +comp","o":"New Mexico","g":33,"ng":"2026-04-19","s":"AAMMGGGGGGGGGGGGGGGGMAMMAMAAAAMGGGGGGGGGGGGGGGGMMAAAAAAAAMMG"},{"a":201,"n":"UGC 00224","o":"New Mexico","g":33,"ng":"2026-04-19","s":"AAAMGGGGGGGGGGGGGGGGMAMMAMAAAAMGGGGGGGGGGGGGGGGMMAAAAAAAAMMG"},{"a":100,"n":"IC 0018 + 19","o":"New Mexico","g":34,"ng":"2026-04-18","s":"AAMGGGGGGGGGGGGGGGGMMAMMAAAAAMMGGGGGGGGGGGGGGGGMAAAAAAAAAMGG"},{"a":19,"n":"NGC 0145","o":"New Mexico","g":33,"ng":"2026-04-19","s":"AAMMGGGGGGGGGGGGGGGGMAMMAMAAAAMGGGGGGGGGGGGGGGGMMAAAAAAAAMMG"},{"a":282,"n":"NGC 0169","o":"New Mexico","g":33,"ng":"2026-04-20","s":"MAAMMGGGGGGGGGGGGGGGGMGMMMMAMAMMGGGGGGGGGGGGGGGGMMAAAAAAAAMM"},{"a":127,"n":"NGC 0191","o":"New Mexico","g":33,"ng":"2026-04-19","s":"AAMMGGGGGGGGGGGGGGGGMAMMAMAAAAMGGGGGGGGGGGGGGGGMMAAAAAAAAMMG"},{"a":168,"n":"MESSIER 32","o":"New Mexico","g":38,"ng":"2026-04-15","s":"GMMMMGGGGGGGGGGGGGGGGGGGMGMMMMMMGGGGGGGGGGGGGGGGGMMAMMAMAMMM"},{"a":231,"n":"IC 1575","o":"New Mexico","g":33,"ng":"2026-04-19","s":"AAAMGGGGGGGGGGGGGGGGMMMMAMAAAAMGGGGGGGGGGGGGGGGMMAAAAAAAAMMG"},{"a":230,"n":"IC 0051","o":"New Mexico","g":34,"ng":"2026-04-19","s":"MAMMGGGGGGGGGGGGGGGGMAMMAMAAAMMGGGGGGGGGGGGGGGGMMAAAAAAAAMGG"},{"a":140,"n":"NGC 0275 + 74","o":"New Mexico","g":34,"ng":"2026-04-19","s":"AAMMGGGGGGGGGGGGGGGGMMGMAMAAAAMGGGGGGGGGGGGGGGGMMAAAAAAAAMMG"},{"a":251,"n":"VV 674","o":"New Mexico","g":34,"ng":"2026-04-19","s":"MMMMGGGGGGGGGGGGGGGGMAMMAMAAAMMGGGGGGGGGGGGGGGGMMAAAAAAAAMGG"},{"a":121,"n":"MCG-01-03-051","o":"New Mexico","g":33,"ng":"2026-04-19","s":"AAAMGGGGGGGGGGGGGGGGMMGMAMAAAAMMGGGGGGGGGGGGGGGMMAAAAAAAAMMG"},{"a":59,"n":"NGC 0341","o":"New Mexico","g":34,"ng":"2026-04-19","s":"MAMMGGGGGGGGGGGGGGGGMMGMAMAAAAMGGGGGGGGGGGGGGGGMMAAAAAAAAMMG"},{"a":331,"n":"Pisces Cloud","o":"New Mexico","g":36,"ng":"2026-04-20","s":"MMMMMGGGGGGGGGGGGGGGGGGGMGMMMMMMMGGGGGGGGGGGGGGGGMMAMAAAAMMM"},{"a":236,"n":"IC 1623","o":"New Mexico","g":34,"ng":"2026-04-19","s":"MMMMGGGGGGGGGGGGGGGGMMMMAMAAMMMGGGGGGGGGGGGGGGGMMAAAAAAAAMGG"},{"a":11,"n":"UGC 00717","o":"New Mexico","g":34,"ng":"2026-04-20","s":"MAAAMGGGGGGGGGGGGGGGGMGGMMMAAAAMGGGGGGGGGGGGGGGGMMAAMAAAAAAM"},{"a":164,"n":"NGC 0455","o":"New Mexico","g":33,"ng":"2026-04-20","s":"MAAMMGGGGGGGGGGGGGGGGMGMMMMAAAAMGGGGGGGGGGGGGGGGMMAAAAAAAAMM"},{"a":128,"n":"UGC 00827","o":"New Mexico","g":34,"ng":"2026-04-20","s":"MAAAMGGGGGGGGGGGGGGGGMGGMMMAAAAMMGGGGGGGGGGGGGGGGMAAMAAAAAAM"},{"a":88,"n":"VV 445","o":"New Mexico","g":34,"ng":"2026-04-20","s":"MAAAMGGGGGGGGGGGGGGGGMGGMMMAAAAMMGGGGGGGGGGGGGGGGMAAMAAAAAAM"},{"a":119,"n":"UGC 00849","o":"New Mexico","g":34,"ng":"2026-04-20","s":"MAAAMGGGGGGGGGGGGGGGGMGGMMMAAAAMMGGGGGGGGGGGGGGGGMAAMAAAAAAM"},{"a":48,"n":"CGCG 436-026","o":"New Mexico","g":34,"ng":"2026-04-20","s":"MAAAMGGGGGGGGGGGGGGGGMGGMMMAAAAMMGGGGGGGGGGGGGGGGMAAMAAAAAAM"},{"a":227,"n":"NGC 0474","o":"New Mexico","g":33,"ng":"2026-04-20","s":"MAAMMGGGGGGGGGGGGGGGGMGMMMMAAAAMGGGGGGGGGGGGGGGGMMAAAAAAAAMM"},{"a":67,"n":"UGC 00892","o":"New Mexico","g":33,"ng":"2026-04-20","s":"MAAMMGGGGGGGGGGGGGGGGMGMMMMAAAAMGGGGGGGGGGGGGGGGMMAAAAAAAAMM"},{"a":8,"n":"NGC 0497","o":"New Mexico","g":33,"ng":"2026-04-20","s":"MAAMMGGGGGGGGGGGGGGGGMGMMMMAAAAMGGGGGGGGGGGGGGGGMMAAAAAAAAMM"},{"a":70,"n":"UGC 00934","o":"New Mexico","g":36,"ng":"2026-04-21","s":"MMAAMMGGGGGGGGGGGGGGGGGGGGMMMMAMMGGGGGGGGGGGGGGGGMMAMMAAAAAM"},{"a":229,"n":"NGC 0508 + 07","o":"New Mexico","g":37,"ng":"2026-04-15","s":"GMMAMMGGGGGGGGGGGGGGGGGGGGMMMMAMMGGGGGGGGGGGGGGGGMMAMMAAAMMM"},{"a":157,"n":"NGC 0520","o":"New Mexico","g":34,"ng":"2026-04-20","s":"MAAAMGGGGGGGGGGGGGGGGMGGMMMAAAAMGGGGGGGGGGGGGGGGMMAAAAAAAAMM"},{"a":158,"n":"NGC 0523","o":"New Mexico","g":37,"ng":"2026-04-15","s":"GMMMMMGGGGGGGGGGGGGGGGGGGGMMMMAMMGGGGGGGGGGGGGGGGMMAMMAAAMMM"},{"a":133,"n":"NGC 0541","o":"New Mexico","g":33,"ng":"2026-04-20","s":"MAAMMGGGGGGGGGGGGGGGGMGMMMMAAAAMGGGGGGGGGGGGGGGGMMAAAAAAAAMM"},{"a":308,"n":"NGC 0545 + 47","o":"New Mexico","g":33,"ng":"2026-04-20","s":"MAAMMGGGGGGGGGGGGGGGGMGMMMMAAAAMGGGGGGGGGGGGGGGGMMAAAAAAAAMM"},{"a":98,"n":"UGC 01095 +comp","o":"New Mexico","g":37,"ng":"2026-04-15","s":"GMMAMMGGGGGGGGGGGGGGGGGGGGMMMMAMMGGGGGGGGGGGGGGGGMMAMMAAAAAM"},{"a":306,"n":"UGC 01102","o":"New Mexico","g":34,"ng":"2026-04-20","s":"MAAAMGGGGGGGGGGGGGGGGMGGMMMAMAAMGGGGGGGGGGGGGGGGMMAAMAAAAAAM"},{"a":4,"n":"MCG-02-05-50+A","o":"New Mexico","g":35,"ng":"2026-04-19","s":"MMMMGGGGGGGGGGGGGGGGGMGMMMMAMMMMGGGGGGGGGGGGGGGGMMAAMAAAAMMG"},{"a":228,"n":"IC 0162","o":"New Mexico","g":35,"ng":"2026-04-21","s":"MAAAMMGGGGGGGGGGGGGGGGGGMGMAMAAAMGGGGGGGGGGGGGGGGMMAMAAAAAAM"},{"a":31,"n":"IC 0167","o":"New Mexico","g":36,"ng":"2026-04-21","s":"MMAAMMGGGGGGGGGGGGGGGGGGGGMMMAAAMGGGGGGGGGGGGGGGGMMAMMAAAAAM"},{"a":75,"n":"NGC 0702","o":"New Mexico","g":35,"ng":"2026-04-20","s":"MMAMMGGGGGGGGGGGGGGGGMGGMGMAMAAMGGGGGGGGGGGGGGGGMMAAMAAAAAMM"},{"a":56,"n":"UGC 01432","o":"New Mexico","g":36,"ng":"2026-04-21","s":"MMAAAMGGGGGGGGGGGGGGGGGGGGMMMAAAMGGGGGGGGGGGGGGGGMMAMMAAAAAM"},{"a":166,"n":"NGC 0750 + 51","o":"New Mexico","g":38,"ng":"2026-04-15","s":"GMMAMMGMGGGGGGGGGGGGGGGGGGGMMMAAMGGGGGGGGGGGGGGGGGMMMMAMAMAM"},{"a":126,"n":"UGC 01449","o":"New Mexico","g":36,"ng":"2026-04-20","s":"MMAAMGGGGGGGGGGGGGGGGGGGMGMAMAAMMGGGGGGGGGGGGGGGGMMAMAAAAAAM"},{"a":78,"n":"NGC 0772 + 770","o":"New Mexico","g":37,"ng":"2026-04-21","s":"MMAAAMGGGGGGGGGGGGGGGGGGGGMMMAAAMGGGGGGGGGGGGGGGGGMAMMAAAAAM"},{"a":29,"n":"NGC 6946","o":"New Mexico","g":41,"ng":"2026-04-15","s":"GGGGGGGGGGGGMGGGMMMMMMGGGGGGGGGGGGGGGGGGGGGMMMMMMAAAMMMGGGGG"},{"a":325,"n":"ESO 601-G018","o":"New Mexico","g":33,"ng":"2026-04-16","s":"MGGGGGGGGGGGGGGGMMAAAAAAAAAAMGGGGGGGGGGGGGGGMAAAAAAAAAAAMGGG"},{"a":169,"n":"NGC 7236 + 37","o":"New Mexico","g":35,"ng":"2026-04-17","s":"MMGGGGGGGGGGGGGGGGMMAAAAAAAAMGGGGGGGGGGGGGGGGMMAAAAAAAAAAGGG"},{"a":278,"n":"NGC 7253A + B","o":"New Mexico","g":36,"ng":"2026-04-17","s":"MMGGGGGGGGGGGGGGGGMMAAMMAMAAMGGGGGGGGGGGGGGGGGMMAAAAAAAAMGGG"},{"a":226,"n":"NGC 7252","o":"New Mexico","g":34,"ng":"2026-04-16","s":"MGGGGGGGGGGGGGGGGMAAAAAAAAAAMGGGGGGGGGGGGGGGMAAAAAAAAAAAMGGG"},{"a":93,"n":"NGC 7284 + 85","o":"New Mexico","g":34,"ng":"2026-04-16","s":"MGGGGGGGGGGGGGGGGMAAAAAAAAAAMGGGGGGGGGGGGGGGMMAAAAAAAAAAMGGG"},{"a":14,"n":"NGC 7314","o":"New Mexico","g":34,"ng":"2026-04-16","s":"MGGGGGGGGGGGGGGGGMAAAAAAAAAAMGGGGGGGGGGGGGGGMMAAAAAAAAAAMGGG"},{"a":319,"n":"Stephan's Quint","o":"New Mexico","g":37,"ng":"2026-04-17","s":"MMGGGGGGGGGGGGGGGGGMMAMMAMMAMGGGGGGGGGGGGGGGGGMMAAAAAAAAAGGG"},{"a":3,"n":"MCG-01-57-016","o":"New Mexico","g":34,"ng":"2026-04-17","s":"AMGGGGGGGGGGGGGGGGMAAAAAAAAAMMGGGGGGGGGGGGGGGMMAAAAAAAAAAGGG"},{"a":15,"n":"NGC 7393","o":"New Mexico","g":34,"ng":"2026-04-17","s":"AMGGGGGGGGGGGGGGGGMMAAAAAAAAMMGGGGGGGGGGGGGGGMMAAAAAAAAAAGGG"},{"a":110,"n":"MCG-03-58-011","o":"New Mexico","g":34,"ng":"2026-04-17","s":"AMGGGGGGGGGGGGGGGMMAAAAAAAAAMGGGGGGGGGGGGGGGGMAAAAAAAAAAAGGG"},{"a":314,"n":"MCG-03-58-009","o":"New Mexico","g":33,"ng":"2026-04-18","s":"AMMGGGGGGGGGGGGGGGMMAAAAAAAAAMGGGGGGGGGGGGGGGMMAAAAAAAAAAGGG"},{"a":13,"n":"NGC 7448","o":"New Mexico","g":34,"ng":"2026-04-18","s":"AMMGGGGGGGGGGGGGGGGMMAMAAAAAMMGGGGGGGGGGGGGGGGMMAAAAAAAAAMGG"},{"a":298,"n":"NGC 7469","o":"New Mexico","g":34,"ng":"2026-04-18","s":"AMMGGGGGGGGGGGGGGGGMAAMAAAAAAMGGGGGGGGGGGGGGGGMMAAAAAAAAAMGG"},{"a":99,"n":"NGC 7550 + 49","o":"New Mexico","g":33,"ng":"2026-04-18","s":"MMMGGGGGGGGGGGGGGGGMMAMMAAAAMMMGGGGGGGGGGGGGGGMMAAAAAAAAAMGG"},{"a":170,"n":"NGC 7578A + B","o":"New Mexico","g":33,"ng":"2026-04-18","s":"MMMGGGGGGGGGGGGGGGGMMAMMAAAAMMMGGGGGGGGGGGGGGGMMAAAAAAAAAMGG"},{"a":223,"n":"NGC 7585","o":"New Mexico","g":33,"ng":"2026-04-18","s":"AMMGGGGGGGGGGGGGGGMMAAMAAAAAAMGGGGGGGGGGGGGGGGMAAAAAAAAAAMGG"},{"a":92,"n":"NGC 7603 + comp","o":"New Mexico","g":34,"ng":"2026-04-18","s":"AAMGGGGGGGGGGGGGGGGMAAMAAAAAAMGGGGGGGGGGGGGGGGMMAAAAAAAAAMGG"},{"a":150,"n":"NGC 7609","o":"New Mexico","g":33,"ng":"2026-04-18","s":"AAMGGGGGGGGGGGGGGGGMMAMAAAAAAMMGGGGGGGGGGGGGGGMMAAAAAAAAAMGG"},{"a":212,"n":"NGC 7625","o":"New Mexico","g":33,"ng":"2026-04-18","s":"AMMGGGGGGGGGGGGGGGGMMAMMAAAAAMMGGGGGGGGGGGGGGGMMAAAAAAAAAMGG"},{"a":182,"n":"NGC 7674","o":"New Mexico","g":33,"ng":"2026-04-18","s":"AAMGGGGGGGGGGGGGGGGMMAMAAAAAAMMGGGGGGGGGGGGGGGMMAAAAAAAAAMGG"},{"a":28,"n":"NGC 7678","o":"New Mexico","g":35,"ng":"2026-04-18","s":"MMMGGGGGGGGGGGGGGGGGMAMMAMAAMMMGGGGGGGGGGGGGGGGMMAAAAAAAAMGG"},{"a":216,"n":"NGC 7679 + 82","o":"New Mexico","g":33,"ng":"2026-04-18","s":"AAMGGGGGGGGGGGGGGGGMMAMAAAAAAMMGGGGGGGGGGGGGGGMMAAAAAAAAAMGG"},{"a":46,"n":"UGC 12665","o":"New Mexico","g":35,"ng":"2026-04-19","s":"MMMMGGGGGGGGGGGGGGGGMMGMMMMAMMMGGGGGGGGGGGGGGGGMMAAAAAAAAMGG"},{"a":284,"n":"NGC 7714 + 15","o":"New Mexico","g":33,"ng":"2026-04-18","s":"AAMGGGGGGGGGGGGGGGGMMAMAAAAAAMMGGGGGGGGGGGGGGGMMAAAAAAAAAMGG"},{"a":222,"n":"NGC 7727","o":"New Mexico","g":33,"ng":"2026-04-18","s":"AMMGGGGGGGGGGGGGGGMMAAMAAAAAAMGGGGGGGGGGGGGGGGMAAAAAAAAAAMGG"},{"a":295,"n":"MCG-01-60-021","o":"New Mexico","g":33,"ng":"2026-04-18","s":"AAMGGGGGGGGGGGGGGGGMMAMAAAAAAMMGGGGGGGGGGGGGGGMMAAAAAAAAAMGG"},{"a":86,"n":"NGC 7753 + 52","o":"New Mexico","g":34,"ng":"2026-04-19","s":"MMMMGGGGGGGGGGGGGGGGMMGMMMMAMMMGGGGGGGGGGGGGGGGMMAAAAAAAAMMG"},{"a":68,"n":"NGC 7757(56?)","o":"New Mexico","g":33,"ng":"2026-04-19","s":"AAMMGGGGGGGGGGGGGGGMMAMAAAAAAAMGGGGGGGGGGGGGGGGMAAAAAAAAAMGG"},{"a":323,"n":"NGC 7783","o":"New Mexico","g":32,"ng":"2026-04-19","s":"AAMMGGGGGGGGGGGGGGGMMAMAAAAAAAMGGGGGGGGGGGGGGGMMAAAAAAAAAMGG"},{"a":262,"n":"UGC 12856","o":"New Mexico","g":33,"ng":"2026-04-19","s":"AAMMGGGGGGGGGGGGGGGGMMMMAMAAAAMGGGGGGGGGGGGGGGGMMAAAAAAAAMMG"},{"a":50,"n":"IC 1520","o":"New Mexico","g":34,"ng":"2026-04-18","s":"AMMGGGGGGGGGGGGGGGGMAAMAAAAAAMGGGGGGGGGGGGGGGGMMAAAAAAAAAMGG"},{"a":290,"n":"IC 0195 + 196","o":"New Mexico","g":36,"ng":"2026-04-21","s":"MMAAAMGGGGGGGGGGGGGGGGGGGGMMMAAAMGGGGGGGGGGGGGGGGMMAMMAAAAAM"},{"a":74,"n":"UGC 01626","o":"New Mexico","g":40,"ng":"2026-04-15","s":"GGMMMMGMGGGGGGGGGGGGGGGGGGGMGMMMMMGGGGGGGGGGGGGGGGMMGMMMAMMM"},{"a":318,"n":"NGC 0833 Group","o":"New Mexico","g":35,"ng":"2026-04-20","s":"MMMMMGGGGGGGGGGGGGGGGMGGMGMMMMMMGGGGGGGGGGGGGGGGMMAAMAAAAMMM"},{"a":10,"n":"UGC 01775","o":"New Mexico","g":36,"ng":"2026-04-21","s":"MMAAMMGGGGGGGGGGGGGGGGGGGGMMMAAAMGGGGGGGGGGGGGGGGMMAMMAAAAAM"},{"a":273,"n":"UGC 01810 + 13","o":"New Mexico","g":39,"ng":"2026-04-15","s":"GGMMMMGMGMGGGGGGGGGGGGGGGGGMGMMAMMGGGGGGGGGGGGGGGGMMGMMMAMMM"},{"a":145,"n":"ARP 145","o":"New Mexico","g":40,"ng":"2026-04-15","s":"GGMMMMMMGMGGGGGGGGGGGGGGGGGGGMMMMMGGGGGGGGGGGGGGGGGMGMMMMMMM"},{"a":54,"n":"MCG-01-07-007","o":"New Mexico","g":37,"ng":"2026-04-15","s":"GMMMMGGGGGGGGGGGGGGGGGGGMGMMMMMMMGGGGGGGGGGGGGGGGMMAMMAAAMMM"},{"a":276,"n":"NGC 0935+IC1801","o":"New Mexico","g":38,"ng":"2026-04-15","s":"GMAAAMGMGGGGGGGGGGGGGGGGGGGMMMAAMMGGGGGGGGGGGGGGGGMMGMAMAAAA"},{"a":309,"n":"NGC 0942 + 43","o":"New Mexico","g":38,"ng":"2026-04-15","s":"GMMMMGGGGGGGGGGGGGGGGGGGMGMMMMMMGGGGGGGGGGGGGGGGGMMAMMAMAMMM"},{"a":258,"n":"UGC 02140","o":"New Mexico","g":37,"ng":"2026-04-15","s":"GMAAAMMMGGGGGGGGGGGGGGGGGGGMMMAAAMGGGGGGGGGGGGGGGGMMGMAMAAAA"},{"a":333,"n":"NGC 1024","o":"New Mexico","g":37,"ng":"2026-04-15","s":"GMAAAMGMGGGGGGGGGGGGGGGGGGGMMMAAMMGGGGGGGGGGGGGGGGMMMMAMAAAA"},{"a":135,"n":"NGC 1023","o":"New Mexico","g":40,"ng":"2026-04-15","s":"GGMMAMMMGMGGGGGGGGGGGGGGGGGGGMMAMMGGGGGGGGGGGGGGGGGMGMMMMMMA"},{"a":37,"n":"MESSIER 77","o":"New Mexico","g":39,"ng":"2026-04-15","s":"GMMAMMGGGGGGGGGGGGGGGGGGGGGMMMAMMGGGGGGGGGGGGGGGGGMAMMAMAMAM"},{"a":77,"n":"NGC 1097","o":"Australia","g":46,"ng":"2026-04-15","s":"GGGGGGGGGGGGGGGGGGGGMMGGMGMGGGGGGGGGGGGGGGGGGGGMMMAAMMMMMGGG"},{"a":131,"n":"MCG-03-08-25","o":"New Mexico","g":41,"ng":"2026-04-15","s":"GMMMMGGGGGGGGGGGGGGGGGGGGGGMGMMMGGGGGGGGGGGGGGGGGMMAMMAMAMMM"},{"a":190,"n":"UGC 02320","o":"New Mexico","g":38,"ng":"2026-04-15","s":"GMMAAMMMGGGGGGGGGGGGGGGGGGGMGMAAAMGGGGGGGGGGGGGGGGMMGMAMAAAA"},{"a":200,"n":"NGC 1134","o":"New Mexico","g":38,"ng":"2026-04-15","s":"GMMAAMMMGGGGGGGGGGGGGGGGGGGMGMAAAMGGGGGGGGGGGGGGGGMMGMAMAAAA"},{"a":118,"n":"NGC 1144 + 43","o":"New Mexico","g":40,"ng":"2026-04-15","s":"GMMAMMGMGGGGGGGGGGGGGGGGGGGMGMMMMGGGGGGGGGGGGGGGGGMMGMAMAMAM"},{"a":179,"n":"NPM1G -04.0134","o":"New Mexico","g":40,"ng":"2026-04-15","s":"GMMMMMGMGGGGGGGGGGGGGGGGGGGMGMMMMGGGGGGGGGGGGGGGGGMMGMAMAMMM"},{"a":108,"n":"ESO 547-G002&3","o":"New Mexico","g":50,"ng":"2026-04-15","s":"GGGGGGGGGGGGGGGGGGGGGMGGGGGMGGGGGGGGGGGGGGGGGGGGGMMAMMAMMGGG"},{"a":332,"n":"IC 1892","o":"New Mexico","g":50,"ng":"2026-04-15","s":"GGGGGGGGGGGGGGGGGGGGGMGGGGGMGGGGGGGGGGGGGGGGGGGGGMMAMMMMMGGG"},{"a":41,"n":"NGC 1232 + A","o":"New Mexico","g":51,"ng":"2026-04-15","s":"GGGGGGGGGGGGGGGGGGGGGGGGGGGMGGGGGGGGGGGGGGGGGGGGGMMAMMMMMGGG"},{"a":304,"n":"NGC 1241 + 42","o":"New Mexico","g":42,"ng":"2026-04-15","s":"GGMMMMGGGGGGGGGGGGGGGGGGGGGMGMMMMGGGGGGGGGGGGGGGGGMMGMMMMMMM"},{"a":147,"n":"IC 029  8","o":"New Mexico","g":39,"ng":"2026-04-15","s":"GMMMMMGMGGGGGGGGGGGGGGGGGGGMGMMAMMGGGGGGGGGGGGGGGGMMGMMMAMMM"},{"a":279,"n":"NGC 1253 + A","o":"New Mexico","g":40,"ng":"2026-04-15","s":"GGMMMMGMGGGGGGGGGGGGGGGGGGGMGMMMMMGGGGGGGGGGGGGGGGMMGMMMAMMM"},{"a":154,"n":"NGC 1316","o":"Australia","g":49,"ng":"2026-04-15","s":"GGGGGGGGGGGMGGGGGGGGMMGGGGGGGGGGGGGGGGGGGGGGGGGMMMAAMMGGMGGG"},{"a":39,"n":"NGC 1347","o":"New Mexico","g":53,"ng":"2026-04-15","s":"GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGMMMGMMMMGGG"},{"a":219,"n":"UGC 02812","o":"New Mexico","g":41,"ng":"2026-04-15","s":"GGMMMMMMGMGGGGGGGGGGGGGGGGGGGGMMMMGGGGGGGGGGGGGGGGGMGMMMMMMM"},{"a":213,"n":"IC 0356","o":"New Mexico","g":52,"ng":"2026-04-15","s":"GGGGGGGMMMMGMMMGGGGGGGGGGGGGGGGGGGGGGGGGGMGGGGGGGGGGGGGGGGGG"},{"a":20,"n":"UGC 03014","o":"New Mexico","g":42,"ng":"2026-04-15","s":"GGGMMMMMMMMGMGGGGGGGGGGGGGGGGGMMMMMGGGGGGGGGGGGGGGGGGGMGMGMM"},{"a":210,"n":"NGC 1569","o":"New Mexico","g":47,"ng":"2026-04-15","s":"GGGGGMMMMAMMAMMGGGGGGGGGGGGGGGGGGMGGMGGGGMGGGGGGGGGGGGGGGGGG"},{"a":186,"n":"NGC 1614","o":"New Mexico","g":46,"ng":"2026-04-15","s":"GGGGMMMMMMMGMMGGGGGGGGGGGGGGGGGMMMGGGGGGGGGGGGGGGGGGGGGGMGGM"},{"a":61,"n":"UGC 03104","o":"New Mexico","g":42,"ng":"2026-04-15","s":"GGGMMMMMMMMGMMGGGGGGGGGGGGGGGGGMMMMGMGGGGGGGGGGGGGGGGGGGMGMM"},{"a":180,"n":"MCG-01-13-034","o":"New Mexico","g":45,"ng":"2026-04-15","s":"GGGGMMMAMAMGMMGGGGGGGGGGGGGGGGGMMMMGMGGGGGGGGGGGGGGGGGGGGGGM"},{"a":259,"n":"NGC 1741","o":"New Mexico","g":44,"ng":"2026-04-15","s":"GGGGMMMAMAMMMMGGGGGGGGGGGGGGGGGGMMMGMGGGGMGGGGGGGGGGGGGGGGGM"},{"a":187,"n":"MCG-02-13-040A","o":"New Mexico","g":48,"ng":"2026-04-15","s":"GGGGGMMMMAMGMMGGGGGGGGGGGGGGGGGGMMGGMGGGGMGGGGGGGGGGGGGGGGGG"},{"a":52,"n":"CGCG 421-027","o":"New Mexico","g":40,"ng":"2026-04-15","s":"GGGGMMMAAAMMAMMGGGGGGGGGGGGGGGGMMMMMMMGGGMGGGGGGGGGGGGGGGGGM"},{"a":327,"n":"NGC 1875","o":"New Mexico","g":40,"ng":"2026-04-15","s":"GGGGMMMAAAMMAMMGGGGGGGGGGGGGGGGMMMMMMMGGGMGGGGGGGGGGGGGGGGGM"},{"a":123,"n":"NGC 1888 + 89","o":"New Mexico","g":48,"ng":"2026-04-15","s":"GGGGGGMMMAMMAMMGGGGGGGGGGGGGGGGGGMGGMGGGGMGGGGGGGGGGGGGGGGGG"},{"a":184,"n":"NGC 1961","o":"New Mexico","g":49,"ng":"2026-04-15","s":"GGGGGGGMMAMMAMMGGGGGGGGGGGGGGGGGGGGGMGGGGMMGGGGGGGGGGGGGGGGG"},{"a":96,"n":"UGC 03528A","o":"New Mexico","g":48,"ng":"2026-04-15","s":"GGGGGGGMGMMMAMMMMGGGGGGGGGGGGGGGGGGGGGGGGMMMGGGGGGGGGGGGGGGG"},{"a":141,"n":"UGC 03730","o":"New Mexico","g":45,"ng":"2026-04-15","s":"GGGGGGGMMAMMAAMMGGGGGGGGGGGGGGGGGGGGMMGMGMMMGGGGGGGGGGGGGGGG"},{"a":25,"n":"NGC 2276","o":"New Mexico","g":48,"ng":"2026-04-15","s":"GGGGGGGMGMMMAAMMMGGGGGGGGGGGGGGGGGGGGGGGGMMMGGGGGGGGGGGGGGGG"},{"a":114,"n":"NGC 2300+2276","o":"New Mexico","g":48,"ng":"2026-04-15","s":"GGGGGGGMGMMMAAMMMGGGGGGGGGGGGGGGGGGGGGGGGMMMGGGGGGGGGGGGGGGG"},{"a":250,"n":"IRAS F07327+3529","o":"New Mexico","g":38,"ng":"2026-04-15","s":"GGGGGGMAAAAAAAAMMGGGGGGGGGGGGGGGGMAAAAMAMAMMGGGGGGGGGGGGGGGG"},{"a":165,"n":"NGC 2418","o":"New Mexico","g":38,"ng":"2026-04-15","s":"GGGGGGMAAAAAAAAMMGGGGGGGGGGGGGGGGMMAAAAAMAAMGGGGGGGGGGGGGGGG"},{"a":17,"n":"UGC 03972","o":"New Mexico","g":44,"ng":"2026-04-15","s":"GGGGGGGMMAAMAAMMMGGGGGGGGGGGGGGGGGGGMMGMGMMMGGGGGGGGGGGGGGGG"},{"a":143,"n":"NGC 2444","o":"New Mexico","g":38,"ng":"2026-04-15","s":"GGGGGGMAAAAAAAAMMGGGGGGGGGGGGGGGGMMAAAMAMAMMGGGGGGGGGGGGGGGG"}]}
+;
+const TELESCOPES = {"T2":{"fov_x":72.6,"fov_y":48.6,"rate40":26.0},"T5":{"fov_x":60.6,"fov_y":40.8,"rate40":38.0},"T11":{"fov_x":54.3,"fov_y":36.2,"rate40":102.0},"T14":{"fov_x":238.8,"fov_y":238.8,"rate40":46.0},"T20":{"fov_x":233.7,"fov_y":155.8,"rate40":48.0},"T21":{"fov_x":49.2,"fov_y":32.8,"rate40":54.0},"T25":{"fov_x":36.2,"fov_y":24.2,"rate40":215.0},"T26":{"fov_x":80.4,"fov_y":54.0,"rate40":263.0},"T68":{"fov_x":130.2,"fov_y":87.0,"rate40":0.0},"T24":{"fov_x":31.6,"fov_y":21.1,"rate40":110.0},"T8":{"fov_x":238.8,"fov_y":238.8,"rate40":60.0},"T17":{"fov_x":42.4,"fov_y":28.3,"rate40":69.0},"T30":{"fov_x":41.6,"fov_y":27.8,"rate40":118.0},"T32":{"fov_x":42.4,"fov_y":28.3,"rate40":94.0},"T33":{"fov_x":37.0,"fov_y":37.0,"rate40":0.0},"T59":{"fov_x":37.2,"fov_y":37.2,"rate40":118.0},"T70":{"fov_x":469.8,"fov_y":355.2,"rate40":61.0},"T71":{"fov_x":161.4,"fov_y":108.0,"rate40":68.0},"T72":{"fov_x":26.93,"fov_y":21.53,"rate40":149.0},"T73":{"fov_x":31.8,"fov_y":21.0,"rate40":147.0},"T74":{"fov_x":NaN,"fov_y":NaN,"rate40":NaN},"T75":{"fov_x":137.4,"fov_y":91.8,"rate40":153.0},"T18":{"fov_x":73.6,"fov_y":49.1,"rate40":44.0},"T80":{"fov_x":622.2,"fov_y":415.8,"rate40":63.0}};
+
+// ===== OBSERVATORIES =====
+const OBS = {
+  NM:{name:"New Mexico",lat:33.0,lon:-107.0,elev:1400,utcOff:-7,minEl:30},
+  SP:{name:"Spain",    lat:38.0,lon:-3.5,   elev:1200,utcOff:2, minEl:30},
+  AU:{name:"Australia",lat:-31.3,lon:149.1, elev:1100,utcOff:10,minEl:30},
+  CL:{name:"Chile",   lat:-30.0,lon:-70.7,  elev:1500,utcOff:-4,minEl:30},
+};
+
+const SITE_OBS = {
+  "New Mexico / Spain":   ["NM","SP"],
+  "New Mexico / Australia":["NM","AU"],
+  "Any site":             ["NM","SP","CL","AU"],
+  "Australia":            ["AU"],
+  "New Mexico":           ["NM"],
+  "Spain":                ["SP"],
+  "Chile":                ["CL"],
+};
+
+const TEL_TIERS = [
+  [0,3.0,  ["T17","T32","T21","T11","T25"]],
+  [3.0,7.0,["T11","T21","T26","T30","T17"]],
+  [7.0,20.0,["T5","T20","T26","T71","T75"]],
+  [20.0,999,["T14","T8","T70","T80"]],
+];
+
+// Telescopes available at each observatory (from itelescopesystems.xlsx)
+const OBS_TELESCOPES = {
+  NM: ["T2","T5","T11","T14","T20","T21","T25","T26","T68"],   // Utah Desert Remote Obs
+  AU: ["T8","T17","T30","T32","T33","T59"],                    // Siding Springs, Australia
+  SP: ["T18","T80"],                                           // Spain (AstroCamp + EEyE)
+  CL: ["T70","T71","T72","T73","T75"],                         // Deep Sky Chile
+};
+
+const MOON_THRESH = [[25,20],[50,40],[75,60],[101,90]];
+const RISK_COL = {G:"#97C459",M:"#EF9F27",A:"#E24B4A"};
+const SEA_COUNTS = {Spring:149,Summer:58,Autumn:83,Winter:48};
+
+// ===== STATE =====
+let statuses = {};
+let imgLog = [];
+let starRating = 3;
+let plannerResults = [];
+let acpPlans = [];  // [{text, filename}] — one entry per telescope group
+
+try{statuses=JSON.parse(localStorage.getItem('arp_st')||'{}');}catch(e){}
+try{imgLog=JSON.parse(localStorage.getItem('arp_log')||'[]');}catch(e){}
+
+function saveState(){
+  try{localStorage.setItem('arp_st',JSON.stringify(statuses));}catch(e){}
+  updateHeader();
+}
+function saveLog(){
+  try{localStorage.setItem('arp_log',JSON.stringify(imgLog));}catch(e){}
+  updateHeader();
+}
+function getStatus(a){return statuses[a]||'Pending';}
+function targetName(a){const t=TARGETS.find(x=>x.a===a);return t?t.n:'Unknown';}
+
+// ===== ASTRONOMY ENGINE =====
+function toRad(d){return d*Math.PI/180;}
+function toDeg(r){return r*180/Math.PI;}
+
+function jd(date){
+  const y=date.getUTCFullYear(),m=date.getUTCMonth()+1,d=date.getUTCDate();
+  const h=date.getUTCHours()+date.getUTCMinutes()/60+date.getUTCSeconds()/3600;
+  let A=Math.floor(y/100),B=2-A+Math.floor(A/4);
+  return Math.floor(365.25*(y+4716))+Math.floor(30.6001*(m+1))+d+h/24+B-1524.5;
+}
+
+function lst(date,lonDeg){
+  const j=jd(date);
+  const T=(j-2451545.0)/36525;
+  let gmst=280.46061837+360.98564736629*(j-2451545)+T*T*(0.000387933-T/38710000);
+  gmst=((gmst%360)+360)%360;
+  return ((gmst+lonDeg)%360+360)%360;
+}
+
+function radec2altaz(raH,decDeg,latDeg,lstDeg){
+  const ha=toRad((lstDeg - raH*15 + 360)%360);
+  const dec=toRad(decDeg),lat=toRad(latDeg);
+  const sinAlt=Math.sin(dec)*Math.sin(lat)+Math.cos(dec)*Math.cos(lat)*Math.cos(ha);
+  const alt=toDeg(Math.asin(Math.max(-1,Math.min(1,sinAlt))));
+  const cosAz=(-Math.sin(dec)+sinAlt*Math.sin(lat))/(Math.cos(Math.asin(sinAlt))*Math.cos(lat));
+  const az=((Math.sin(ha)>0?360:0)+toDeg(Math.acos(Math.max(-1,Math.min(1,cosAz)))))%360;
+  return{alt,az};
+}
+
+function sunPos(jdN){
+  const n=jdN-2451545.0;
+  const L=(280.460+0.9856474*n)%360;
+  const g=toRad((357.528+0.9856003*n)%360);
+  const lambda=toRad(L+1.915*Math.sin(g)+0.020*Math.sin(2*g));
+  const eps=toRad(23.439-0.0000004*n);
+  const ra=toDeg(Math.atan2(Math.cos(eps)*Math.sin(lambda),Math.cos(lambda)))/15;
+  const dec=toDeg(Math.asin(Math.sin(eps)*Math.sin(lambda)));
+  return{ra:(ra+24)%24,dec};
+}
+
+function moonPhasePos(jdN){
+  const D=jdN-2451545.0;
+  const M=toRad((357.5291+0.98560028*D)%360);
+  const Mm=toRad((134.9634+13.06499295*D)%360);
+  const F=toRad((93.2721+13.22935023*D)%360);
+  const L0=(218.3166+13.176396*D)%360;
+  const L=L0+6.289*Math.sin(Mm)-1.274*Math.sin(2*F-Mm)+0.658*Math.sin(2*F)+0.214*Math.sin(2*Mm)-0.186*Math.sin(M)-0.059*Math.sin(2*F+Mm-2*M)-0.057*Math.sin(2*F-Mm-M)+0.053*Math.sin(2*F+Mm)+0.046*Math.sin(2*F-M)+0.041*Math.sin(Mm-M);
+  const beta=5.128*Math.sin(F)+0.281*Math.sin(Mm+F)-0.280*Math.sin(F-Mm)-0.173*Math.sin(2*F-F);
+  const lRad=toRad(L),bRad=toRad(beta);
+  const eps=toRad(23.439);
+  const ra=toDeg(Math.atan2(Math.sin(lRad)*Math.cos(eps)-Math.tan(bRad)*Math.sin(eps),Math.cos(lRad)))/15;
+  const dec=toDeg(Math.asin(Math.sin(bRad)*Math.cos(eps)+Math.cos(bRad)*Math.sin(eps)*Math.sin(lRad)));
+  const elong=((L-sunPos(jdN).ra*15)%360+360)%360;
+  const phase=50*(1-Math.cos(toRad(elong)));
+  return{ra:((ra%24)+24)%24,dec,phase};
+}
+
+function angSep(ra1H,dec1D,ra2H,dec2D){
+  const r1=toRad(ra1H*15),d1=toRad(dec1D);
+  const r2=toRad(ra2H*15),d2=toRad(dec2D);
+  const x=Math.cos(d1)*Math.cos(d2)*Math.cos(r1-r2)+Math.sin(d1)*Math.sin(d2);
+  return toDeg(Math.acos(Math.max(-1,Math.min(1,x))));
+}
+
+function moonRisk(phase,sep){
+  const minSep=MOON_THRESH.find(([p])=>phase<p)[1];
+  const margin=sep-minSep;
+  return margin>=20?'G':margin>=0?'M':'A';
+}
+
+// Find rise/transit/set by scanning in steps
+function findCrossing(fn,t0,t1,target,rising){
+  let lo=t0,hi=t1,mid;
+  for(let i=0;i<40;i++){mid=(lo+hi)/2;(fn(mid)>target)===rising?hi=mid:lo=mid;}
+  return mid;
+}
+
+function getAltAtTime(raH,decDeg,latDeg,lonDeg,msUTC){
+  const d=new Date(msUTC);
+  const l=lst(d,lonDeg);
+  return radec2altaz(raH,decDeg,latDeg,l).alt;
+}
+
+function findDarkWindow(obs,dateLocal){
+  const {lat,lon,utcOff,minEl}=obs;
+  // Start scan from midnight UTC of the selected date — safe regardless of timezone
+  const midnightUTC=new Date(dateLocal);
+  midnightUTC.setUTCHours(0,0,0,0);
+
+  const sunAlt=(msUTC)=>{
+    const d=new Date(msUTC);
+    const s=sunPos(jd(d));
+    return radec2altaz(s.ra,s.dec,lat,lst(d,lon)).alt;
+  };
+
+  // Scan full 48h window to handle any UTC offset (e.g. UTC+10 for Australia)
+  let eveMs=null,mornMs=null;
+  for(let i=0;i<1440;i++){
+    const ms=midnightUTC.getTime()+i*60000;
+    const alt=sunAlt(ms);
+    // Find first crossing below -18 deg that occurs after local noon
+    const localHour=(new Date(ms).getUTCHours()+24+utcOff)%24;
+    if(alt<-18&&localHour>=12){eveMs=ms;break;}
+  }
+  if(!eveMs) return null;
+
+  // Find morning twilight scanning forward from eve
+  for(let i=1;i<720;i++){
+    const ms=eveMs+i*60000;
+    if(sunAlt(ms)>-18){mornMs=ms;break;}
+  }
+  if(!mornMs) return null;
+  return{eveMs,mornMs,darkHrs:(mornMs-eveMs)/3600000};
+}
+
+function computeTargetWindow(raH,decDeg,obs,eveMs,mornMs){
+  const {lat,lon,minEl}=obs;
+  const altFn=ms=>getAltAtTime(raH,decDeg,lat,lon,ms);
+
+  const altEve=altFn(eveMs),altMorn=altFn(mornMs);
+  let startMs=null,endMs=null;
+
+  if(altEve>=minEl){startMs=eveMs;}
+  else{
+    // scan for rise
+    for(let i=0;i<720;i++){
+      const ms=eveMs+i*60000;
+      if(ms>=mornMs)break;
+      if(altFn(ms)>=minEl){startMs=ms;break;}
+    }
+  }
+  if(!startMs)return null;
+
+  if(altMorn>=minEl){endMs=mornMs;}
+  else{
+    for(let i=1;i<720;i++){
+      const ms=startMs+i*60000;
+      if(ms>=mornMs){endMs=mornMs;break;}
+      if(altFn(ms)<minEl){endMs=ms;break;}
+    }
+  }
+  if(!endMs||endMs<=startMs)return null;
+
+  const hrs=(endMs-startMs)/3600000;
+  if(hrs<0.25)return null;
+
+  // Transit: find max alt
+  let bestAlt=-99,transitMs=startMs;
+  for(let i=0;i<=(endMs-startMs)/60000;i+=2){
+    const ms=startMs+i*60000;
+    const a=altFn(ms);
+    if(a>bestAlt){bestAlt=a;transitMs=ms;}
+  }
+
+  return{startMs,endMs,transitMs,hrs:Math.round(hrs*10)/10};
+}
+
+function msToLocal(ms,utcOff){
+  const d=new Date(ms+utcOff*3600000);
+  return ('0'+d.getUTCHours()).slice(-2)+':'+('0'+d.getUTCMinutes()).slice(-2);
+}
+
+function assignTelescope(sz,obsKey){
+  const allowed=new Set(OBS_TELESCOPES[obsKey]||Object.keys(TELESCOPES));
+  // Walk tiers: find first telescope at this observatory with adequate FOV
+  for(const [mn,mx,tels] of TEL_TIERS){
+    if(sz>=mn&&sz<mx){
+      const candidates=tels.filter(t=>allowed.has(t));
+      for(const t of candidates){
+        if(TELESCOPES[t]){
+          const {fov_x,fov_y}=TELESCOPES[t];
+          if(fov_x&&fov_y&&sz*1.5<=Math.min(fov_x,fov_y))return t;
+        }
+      }
+      if(candidates.length)return candidates[0];
+    }
+  }
+  // No tier matched — pick best-fitting observatory telescope by FOV
+  const fits=[...allowed].filter(t=>{
+    const tel=TELESCOPES[t];
+    return tel&&tel.fov_x&&tel.fov_y&&sz*1.5<=Math.min(tel.fov_x,tel.fov_y);
+  });
+  if(fits.length)return fits[0];
+  // Last resort: largest FOV telescope at observatory
+  return [...allowed].sort((a,b)=>{
+    const fa=TELESCOPES[a]?.fov_x||0,fb=TELESCOPES[b]?.fov_x||0;
+    return fb-fa;
+  })[0]||'T17';
+}
+
+function estimatePts(strategy,tel){
+  const rate=TELESCOPES[tel]?.rate40;
+  if(!rate)return null;
+  const expSecs=strategy==='LRGB'?(6+3+3+3)*300:6*300;
+  return Math.round((expSecs+180)/60*rate);
+}
+
+// ===== APP STATE HELPERS =====
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+function showPane(id,btn){
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+  document.getElementById('pane-'+id).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(id==='moon')renderMoon();
+  if(id==='log'){renderLog();renderLogStats();}
+  if(id==='export')renderExport();
+  if(id==='visibility')renderVisibility();
+}
+
+function updateHeader(){
+  const done=Object.values(statuses).filter(s=>s==='Done').length;
+  document.getElementById('hdr-done').textContent=done+' imaged';
+  document.getElementById('hdr-pct').textContent=Math.round(done/338*100)+'%';
+  document.getElementById('hdr-log').textContent=imgLog.length+' log entries';
+  const mp=MOON.phases[0];
+  document.getElementById('hdr-moon').textContent='Moon: '+mp.toFixed(0)+'%';
+  if(document.getElementById('ov-done'))renderOverview();
+}
+
+// ===== OVERVIEW =====
+function renderOverview(){
+  const done=Object.values(statuses).filter(s=>s==='Done').length;
+  document.getElementById('ov-done').textContent=done;
+  document.getElementById('ov-pct').textContent=Math.round(done/338*100)+'% complete';
+  document.getElementById('ov-remain').textContent=338-done;
+  const logN=imgLog.length;
+  document.getElementById('ov-log').textContent=logN;
+  const expMin=imgLog.reduce((s,e)=>s+(e.exp||0),0);
+  document.getElementById('ov-exp').textContent=expMin>=60?Math.round(expMin/6)/10+'h total':expMin+'min total';
+
+  const seas=['Spring','Summer','Autumn','Winter'];
+  document.getElementById('ov-seasons').innerHTML=seas.map(s=>{
+    const tot=SEA_COUNTS[s];
+    const doneSeas=TARGETS.filter(t=>t.sea===s&&getStatus(t.a)==='Done').length;
+    const pct=Math.round(doneSeas/tot*100);
+    return`<div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+        <span class="badge sea-${s}">${s}</span>
+        <span style="font-size:12px;color:var(--text2)">${doneSeas}/${tot} · ${pct}%</span>
+      </div>
+      <div class="progress-bg"><div class="progress-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+
+  // Moon phase strip overview (next 30 days avg)
+  const dayGood=[];
+  const nTargets=MOON.targets.length;
+  for(let i=0;i<30&&i<MOON.days;i++){
+    const cnt=MOON.targets.filter(t=>t.s[i]==='G').length;
+    dayGood.push(cnt);
+  }
+  document.getElementById('ov-moon-strip').innerHTML=MOON.dates.slice(0,30).map((d,i)=>{
+    const g=dayGood[i],pct=Math.round(g/nTargets*100);
+    const col=g>220?'#97C459':g>150?'#EF9F27':'#E24B4A';
+    const label=d.slice(5); // MM-DD
+    return`<span class="strip-day" style="background:${col};width:14px;height:14px" title="${d}: ${g} good targets (${pct}%)"></span>`;
+  }).join('');
+  document.getElementById('ov-moon-dates').textContent=
+    'New moon: '+MOON.new+' · Full moon: '+MOON.full;
+
+  const reimage=imgLog.filter(e=>e.quality<=2);
+  if(reimage.length>0){
+    document.getElementById('ov-reimage').innerHTML=reimage.map(e=>
+      `<div style="padding:6px 0;border-bottom:0.5px solid var(--border);font-size:13px">
+        <strong>Arp ${e.arp}</strong> — ${e.name} — ${e.date} — ${'★'.repeat(e.quality)}${'☆'.repeat(5-e.quality)} — <span style="color:var(--text2)">${e.notes||'no notes'}</span>
+       </div>`).join('');
+  } else {
+    document.getElementById('ov-reimage').innerHTML='<div class="empty-state">No re-image candidates yet.</div>';
+  }
+}
+
+// ===== SESSION PLANNER =====
+function computePlanner(){
+  const dateVal=document.getElementById('pl-date').value;
+  const obsKey=document.getElementById('pl-site').value;
+  const minHrs=parseFloat(document.getElementById('pl-minhrs').value)||1;
+  const moonF=document.getElementById('pl-moon').value;
+
+  const obs=OBS[obsKey];
+  const dateLocal=new Date(dateVal+'T12:00:00');
+
+  document.getElementById('pl-summary').textContent='Computing... (this may take a few seconds)';
+  document.getElementById('pl-table').innerHTML='';
+
+  setTimeout(()=>{
+    const dark=findDarkWindow(obs,dateLocal);
+    if(!dark){document.getElementById('pl-summary').textContent='No dark window found for this date/site.';return;}
+
+    // Moon at midnight
+    const midMs=(dark.eveMs+dark.mornMs)/2;
+    const moonData=moonPhasePos(jd(new Date(midMs)));
+
+    const results=[];
+    for(const tgt of TARGETS){
+      const compatSites=SITE_OBS[tgt.site]||['NM'];
+      if(!compatSites.includes(obsKey))continue;
+
+      const _coords=getCoords(tgt);
+    const win=computeTargetWindow(_coords.ra,_coords.dec,obs,dark.eveMs,dark.mornMs);
+      if(!win||win.hrs<minHrs)continue;
+
+      const _c=getCoords(tgt);
+      const moonSep=angSep(_c.ra,_c.dec,moonData.ra,moonData.dec);
+      const risk=moonRisk(moonData.phase,moonSep);
+      if(moonF==='G'&&risk!=='G')continue;
+      if(moonF==='GM'&&risk==='A')continue;
+
+      const tel=assignTelescope(tgt.sz,obsKey);
+      const pts=estimatePts(tgt.flt,tel);
+
+      results.push({
+        ...tgt,
+        ra:_c.ra,dec:_c.dec,
+        startMs:win.startMs,endMs:win.endMs,transitMs:win.transitMs,
+        startLocal:msToLocal(win.startMs,obs.utcOff),
+        endLocal:msToLocal(win.endMs,obs.utcOff),
+        transitLocal:msToLocal(win.transitMs,obs.utcOff),
+        hrs:win.hrs,
+        moonPhase:Math.round(moonData.phase*10)/10,
+        moonSep:Math.round(moonSep*10)/10,
+        risk,tel,pts,
+      });
+    }
+
+    results.sort((a,b)=>a.transitMs-b.transitMs);
+    plannerResults=results;
+
+    const totalPts=results.reduce((s,t)=>s+(t.pts||0),0);
+    document.getElementById('pl-summary').innerHTML=
+      `<strong>${obs.name}</strong> · Dark: ${msToLocal(dark.eveMs,obs.utcOff)}–${msToLocal(dark.mornMs,obs.utcOff)} (${Math.round(dark.darkHrs*10)/10}h) · Moon: ${Math.round(moonData.phase)}% · <strong>${results.length}</strong> targets observable · ~${totalPts.toLocaleString()} pts total`;
+
+    // Populate telescope filter
+    const tels=[...new Set(results.map(t=>t.tel))].sort();
+    const telSel=document.getElementById('pl-tel-f');
+    telSel.innerHTML='<option value="">All telescopes</option>'+tels.map(t=>`<option>${t}</option>`).join('');
+
+    // Update vis night info
+    document.getElementById('vis-night-info').textContent=
+      ` | ${obs.name} · ${dateVal} · Dark: ${msToLocal(dark.eveMs,obs.utcOff)}–${msToLocal(dark.mornMs,obs.utcOff)}`;
+
+    filterPlanner();
+    filterVisibility();
+    toast(`${results.length} targets computed`);
+  },50);
+}
+
+function filterPlanner(){
+  const q=document.getElementById('pl-search').value.toLowerCase();
+  const tel=document.getElementById('pl-tel-f').value;
+  const flt=document.getElementById('pl-flt-f').value;
+  const hideDone=document.getElementById('pl-hide-done').checked;
+
+  const data=plannerResults.filter(t=>{
+    if(q&&!String(t.a).includes(q)&&!t.n.toLowerCase().includes(q))return false;
+    if(tel&&t.tel!==tel)return false;
+    if(flt&&t.flt!==flt)return false;
+    if(hideDone&&getStatus(t.a)==='Done')return false;
+    return true;
+  });
+
+  const totalPts=data.reduce((s,t)=>s+(t.pts||0),0);
+  document.getElementById('pl-count').textContent=`${data.length} shown · ~${totalPts.toLocaleString()} pts`;
+
+  document.getElementById('pl-table').innerHTML=data.map(t=>{
+    const st=getStatus(t.a);
+    return`<tr class="data-row" onclick="cycleStatus(${t.a})">
+      <td style="font-weight:500">${t.a}</td>
+      <td>${t.n}</td>
+      <td><span class="badge sea-${t.sea}">${t.sea}</span></td>
+      <td style="font-size:12px;font-variant-numeric:tabular-nums">${t.startLocal}–${t.endLocal}</td>
+      <td style="font-weight:500">${t.transitLocal}</td>
+      <td>${t.hrs}h</td>
+      <td style="font-size:12px">${t.moonPhase}%</td>
+      <td style="font-size:12px">${t.moonSep}°</td>
+      <td><span class="badge ${t.risk}">${t.risk==='G'?'Good':t.risk==='M'?'Marginal':'Avoid'}</span></td>
+      <td>${t.tel}</td>
+      <td><span class="badge" style="background:${t.flt==='LRGB'?'var(--amber-bg)':'var(--blue-bg)'};color:${t.flt==='LRGB'?'var(--amber)':'var(--blue)'}">${t.flt}</span></td>
+      <td style="font-size:12px">${t.pts?t.pts.toLocaleString():'—'}</td>
+      <td><span class="badge ${st==='Done'?'done':st==='Scheduled'?'sched':st==='Skipped'?'skip':'pending'}">${st}</span></td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="13" class="empty-state">No results. Run "Compute session" first, or adjust filters.</td></tr>';
+}
+
+function cycleStatus(arp){
+  const cur=getStatus(arp);
+  const nxt={Pending:'Scheduled',Scheduled:'Done',Done:'Skipped',Skipped:'Pending'};
+  statuses[arp]=nxt[cur]||'Pending';
+  saveState();filterPlanner();filterVisibility();
+  toast(`Arp ${arp} → ${statuses[arp]}`);
+}
+
+function generateACP(){
+  const dateVal=document.getElementById('pl-date').value||new Date().toISOString().split('T')[0];
+  const obsKey=document.getElementById('pl-site').value;
+  const obs=OBS[obsKey];
+
+  // Only include targets explicitly marked Scheduled
+  const data=plannerResults.filter(t=>getStatus(t.a)==='Scheduled');
+
+  if(data.length===0){
+    toast('No targets marked Scheduled. Click rows in the table to mark targets as Scheduled first.');
+    return;
+  }
+
+  // Group targets by telescope — one ACP file per telescope
+  const tels=[...new Set(data.map(t=>t.tel))];
+
+  const fmtTime=s=>{
+    const h=Math.floor(s/3600),m=Math.floor((s%3600)/60);
+    return h>0?`${h}h ${String(m).padStart(2,'0')}m`:`${m}m`;
+  };
+
+  // Build one plan per telescope group
+  acpPlans=[];
+  for(const tel of tels){
+    const group=data.filter(t=>t.tel===tel);
+    const groupPts=group.reduce((s,t)=>s+(t.pts||0),0);
+    let imagingSecs=0;
+    group.forEach(t=>{ imagingSecs+=t.flt==='LRGB'?(2+1+1+1)*300*3:2*300*3; });
+    const totalSecs=imagingSecs+group.length*180+300;
+
+    const lines=[
+      `; ============================================================`,
+      `; Arp Catalog Nightly Session Plan`,
+      `; Date        : ${dateVal}`,
+      `; Observatory : ${obs.name}`,
+      `; Telescope   : ${tel}`,
+      `; Targets     : ${group.length}`,
+      `; Imaging time : ${fmtTime(imagingSecs)}  (shutter-open only)`,
+      `; Total duration: ${fmtTime(totalSecs)}  (imaging + slew/overhead)`,
+      `; Est. cost   : ~${groupPts.toLocaleString()} pts (session billing, Plan-40)`,
+      `; Plan tier   : Plan-40`,
+      `; Generated   : Arp Project Dashboard`,
+      `; ============================================================`,
+      ``,`#BillingMethod Session`,`#RESUME`,`#FIRSTLAST`,``,`#repeat 3`,``
+    ];
+
+    for(const t of group){
+      const name=`Arp${String(t.a).padStart(3,'0')}_${t.n.replace(/[^a-zA-Z0-9+\-]/g,'_')}`;
+      const raDec=t.ra.toFixed(6);
+      const decDec=t.dec.toFixed(6);
+      const moonStr=`moon ${t.moonPhase.toFixed(0)}% sep ${t.moonSep.toFixed(0)}deg`;
+      let filters,counts,intervals,binnings;
+      if(t.flt==='LRGB'){
+        filters='Luminance,Red,Green,Blue';counts='2,1,1,1';
+        intervals='300,300,300,300';binnings='1,2,2,2';
+      } else {
+        filters='Luminance';counts='2';intervals='300';
+        binnings=(t.sz<3?'2':'1');
+      }
+      lines.push(`; --- Arp ${t.a}: ${t.n}  [${t.hrs}h window, transit ${t.transitLocal}, ${moonStr}] ---`);
+      lines.push(`#count ${counts}`);
+      lines.push(`#interval ${intervals}`);
+      lines.push(`#binning ${binnings}`);
+      lines.push(`#filter ${filters}`);
+      lines.push(`${name}\t${raDec}\t${decDec}`);
+      lines.push('');
+    }
+    lines.push('#shutdown');
+
+    const isoDate=dateVal.replace(/-/g,'');
+    const filename=group.length===1
+      ? `Arp${String(group[0].a).padStart(3,'0')}-${tel}-${isoDate}.txt`
+      : `Arp_Session_${tel}_${dateVal}.txt`;
+    acpPlans.push({text:lines.join('\n'),filename});
+  }
+
+  // Preview: show first plan; indicate if more files exist
+  const firstPlan=acpPlans[0];
+  const multiNote=acpPlans.length>1
+    ? ` (+${acpPlans.length-1} more: ${acpPlans.slice(1).map(p=>p.filename).join(', ')})` : '';
+  document.getElementById('acp-pre').textContent=firstPlan.text;
+  document.getElementById('acp-filename').textContent=firstPlan.filename+multiNote;
+  // Update download button label
+  document.getElementById('acp-dl-btn').textContent=
+    acpPlans.length>1?`Download all (${acpPlans.length} files)`:'Download .txt';
+  document.getElementById('acp-out').style.display='block';
+  document.getElementById('acp-out').scrollIntoView({behavior:'smooth'});
+}
+
+function copyACP(){
+  const text=acpPlans.length>0?acpPlans[0].text:'';
+  navigator.clipboard.writeText(text).then(()=>toast('Copied!')).catch(()=>toast('Select text to copy manually'));
+}
+function downloadACP(){
+  acpPlans.forEach((plan,i)=>{
+    setTimeout(()=>{
+      const a=document.createElement('a');
+      a.href='data:text/plain;charset=utf-8,'+encodeURIComponent(plan.text);
+      a.download=plan.filename;
+      a.click();
+    },i*300);  // 300ms stagger — browsers need a moment between downloads
+  });
+  toast(acpPlans.length>1?`Downloading ${acpPlans.length} files...`:'Downloaded');
+}
+
+// ===== VISIBILITY =====
+function filterVisibility(){
+  const q=document.getElementById('vis-search').value.toLowerCase();
+  const minHrs=parseFloat(document.getElementById('vis-minhrs').value)||0;
+  const moonF=document.getElementById('vis-moon-f').value;
+  const sortBy=document.getElementById('vis-sort').value;
+
+  let data=plannerResults.filter(t=>{
+    if(q&&!String(t.a).includes(q)&&!t.n.toLowerCase().includes(q))return false;
+    if(t.hrs<minHrs)return false;
+    if(moonF==='G'&&t.risk!=='G')return false;
+    if(moonF==='GM'&&t.risk==='A')return false;
+    return true;
+  });
+
+  if(sortBy==='transit')data=[...data].sort((a,b)=>a.transitMs-b.transitMs);
+  else if(sortBy==='hours')data=[...data].sort((a,b)=>b.hrs-a.hrs);
+  else data=[...data].sort((a,b)=>a.a-b.a);
+
+  document.getElementById('vis-count').textContent=`${data.length} targets`;
+
+  if(!data.length){
+    document.getElementById('vis-table').innerHTML='<tr><td colspan="12" class="empty-state">No results. Run "Compute session" first.</td></tr>';
+    return;
+  }
+
+  const nightStartMs=Math.min(...plannerResults.map(t=>t.startMs));
+  const nightEndMs=Math.max(...plannerResults.map(t=>t.endMs));
+  const span=nightEndMs-nightStartMs||1;
+
+  document.getElementById('vis-table').innerHTML=data.map(t=>{
+    const barW=140;
+    const s=Math.round((t.startMs-nightStartMs)/span*barW);
+    const e=Math.round((t.endMs-nightStartMs)/span*barW);
+    const tr=Math.round((t.transitMs-nightStartMs)/span*barW);
+    const st=getStatus(t.a);
+    return`<tr>
+      <td style="font-weight:500">${t.a}</td>
+      <td style="font-size:12px">${t.n}</td>
+      <td style="font-size:12px;font-variant-numeric:tabular-nums">${t.startLocal}</td>
+      <td style="font-weight:500">${t.transitLocal}</td>
+      <td style="font-size:12px;font-variant-numeric:tabular-nums">${t.endLocal}</td>
+      <td><div class="vis-bar" style="width:${barW}px"><div class="vis-fill" style="left:${s}px;width:${Math.max(4,e-s)}px"></div><div class="vis-transit" style="left:${tr}px"></div></div></td>
+      <td style="font-size:12px">${t.hrs}h</td>
+      <td style="font-size:12px">${t.moonPhase}%</td>
+      <td style="font-size:12px">${t.moonSep}°</td>
+      <td><span class="badge ${t.risk}">${t.risk==='G'?'Good':t.risk==='M'?'Marg':'Avoid'}</span></td>
+      <td style="font-size:12px">${t.tel}</td>
+      <td><span class="badge ${st==='Done'?'done':'pending'}" style="font-size:10px">${st}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+// ===== MOON CALENDAR =====
+function renderMoon(){
+  const tonight={G:0,M:0,A:0};
+  MOON.targets.forEach(t=>{const r=t.s[0]||'A';tonight[r]=(tonight[r]||0)+1;});
+  document.getElementById('moon-metrics').innerHTML=`
+    <div class="metric"><div class="lbl">Good tonight</div><div class="val" style="color:var(--green)">${tonight.G}</div><div class="sub">of ${MOON.targets.length} targets</div></div>
+    <div class="metric"><div class="lbl">Marginal</div><div class="val" style="color:var(--amber)">${tonight.M}</div><div class="sub">borderline</div></div>
+    <div class="metric"><div class="lbl">Avoid</div><div class="val" style="color:var(--red)">${tonight.A}</div><div class="sub">moon too close</div></div>
+    <div class="metric"><div class="lbl">Moon phase</div><div class="val">${Math.round(MOON.phases[0])}%</div><div class="sub">New: ${MOON.new} · Full: ${MOON.full}</div></div>`;
+
+  // Bar chart
+  const dayGood=[];
+  for(let i=0;i<30&&i<MOON.days;i++) dayGood.push(MOON.targets.filter(t=>t.s[i]==='G').length);
+  const maxG=Math.max(...dayGood)||1;
+  document.getElementById('moon-bar-chart').innerHTML=dayGood.map((g,i)=>{
+    const h=Math.round(g/maxG*90);
+    const col=g>220?'#97C459':g>150?'#EF9F27':'#E24B4A';
+    return`<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;min-width:0">
+      <div style="background:${col};height:${h}px;border-radius:2px 2px 0 0" title="${MOON.dates[i]}: ${g} targets"></div>
+    </div>`;
+  }).join('');
+  document.getElementById('moon-bar-labels').innerHTML=dayGood.map((_,i)=>{
+    const d=MOON.dates[i];
+    return`<div style="flex:1;text-align:center;min-width:0;overflow:hidden">${i%7===0?d.slice(5):''}</div>`;
+  }).join('');
+
+  document.getElementById('moon-gen-date').textContent=MOON.gen;
+
+  // Date ruler
+  document.getElementById('moon-ruler').innerHTML=MOON.dates.map((d,i)=>`<div style="width:9px;flex-shrink:0;font-size:8px;color:var(--text3);writing-mode:vertical-rl;transform:rotate(180deg);height:28px;overflow:hidden;text-align:center">${i%7===0?d.slice(5):''}</div>`).join('');
+
+  filterMoon();
+}
+
+function filterMoon(){
+  const q=document.getElementById('moon-search').value.toLowerCase();
+  const rf=document.getElementById('moon-risk-f').value;
+  const data=MOON.targets.filter(t=>{
+    if(q&&!String(t.a).includes(q)&&!t.n.toLowerCase().includes(q))return false;
+    if(rf&&t.s[0]!==rf)return false;
+    return true;
+  });
+  document.getElementById('moon-count').textContent=`${data.length} targets`;
+  document.getElementById('moon-strips').innerHTML=data.map(t=>{
+    const tonight=t.s[0]||'A';
+    const cells=t.s.split('').map(r=>`<span class="strip-day" style="background:${RISK_COL[r]||'#ccc'}" title="${r}"></span>`).join('');
+    return`<div style="display:flex;align-items:center;gap:3px;margin-bottom:1px">
+      <div style="width:28px;font-size:11px;color:var(--text2);text-align:right;flex-shrink:0">${t.a}</div>
+      <div style="width:140px;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;padding:0 4px">${t.n}</div>
+      <div style="width:56px;flex-shrink:0"><span class="badge ${tonight}" style="font-size:10px">${tonight==='G'?'Good':tonight==='M'?'Marg':'Avoid'}</span></div>
+      <div>${cells}</div>
+      <div style="font-size:10px;color:var(--text3);margin-left:4px;flex-shrink:0">${t.g}d</div>
+    </div>`;
+  }).join('');
+}
+
+// ===== IMAGING LOG =====
+let curStars=3;
+function setStars(n){
+  curStars=n;
+  document.querySelectorAll('.star-interactive').forEach((s,i)=>{
+    s.style.color=i<n?'#EF9F27':'var(--border2)';
+  });
+}
+
+function addLog(){
+  const arp=parseInt(document.getElementById('log-arp').value);
+  const date=document.getElementById('log-date').value;
+  if(!arp||!date){toast('Arp # and date are required');return;}
+  const tgt=TARGETS.find(t=>t.a===arp);
+  imgLog.unshift({
+    id:Date.now(),arp,name:tgt?tgt.n:'Unknown',
+    date,tel:document.getElementById('log-tel').value,
+    exp:parseInt(document.getElementById('log-exp').value)||0,
+    flt:document.getElementById('log-flt').value,
+    quality:curStars,
+    notes:document.getElementById('log-notes').value.trim(),
+  });
+  statuses[arp]='Done';
+  saveState();saveLog();
+  clearLogForm();renderLog();renderLogStats();
+  toast(`Arp ${arp} logged ✓`);
+}
+
+function clearLogForm(){
+  document.getElementById('log-arp').value='';
+  document.getElementById('log-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('log-exp').value='';
+  document.getElementById('log-notes').value='';
+  setStars(3);
+}
+
+function deleteLog(id){
+  imgLog=imgLog.filter(e=>e.id!==id);
+  saveLog();renderLog();renderLogStats();updateHeader();
+  toast('Entry deleted');
+}
+
+function renderLog(){
+  const q=document.getElementById('log-search').value.toLowerCase();
+  const qf=document.getElementById('log-qual-f').value;
+  let data=imgLog.filter(e=>{
+    if(q&&!String(e.arp).includes(q)&&!e.name.toLowerCase().includes(q))return false;
+    if(qf==='5'&&e.quality<5)return false;
+    if(qf==='3'&&e.quality<3)return false;
+    if(qf==='2'&&e.quality>2)return false;
+    return true;
+  });
+  const empty=document.getElementById('log-empty');
+  empty.style.display=data.length?'none':'block';
+  document.getElementById('log-count').textContent=`${data.length} entries`;
+  document.getElementById('log-table').innerHTML=data.map(e=>`<tr>
+    <td style="font-size:12px">${e.date}</td>
+    <td style="font-weight:500">${e.arp}</td>
+    <td style="font-size:12px">${e.name}</td>
+    <td style="font-size:12px">${e.tel}</td>
+    <td style="font-size:12px">${e.flt}</td>
+    <td style="font-size:12px">${e.exp}min</td>
+    <td style="color:#EF9F27">${'★'.repeat(e.quality)}${'☆'.repeat(5-e.quality)}</td>
+    <td style="font-size:12px;color:var(--text2);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.notes||'—'}</td>
+    <td><button class="btn" style="font-size:11px;padding:2px 8px" onclick="deleteLog(${e.id})">Delete</button></td>
+  </tr>`).join('');
+}
+
+function renderLogStats(){
+  const n=imgLog.length;
+  const unique=new Set(imgLog.map(e=>e.arp)).size;
+  const totalExp=imgLog.reduce((s,e)=>s+(e.exp||0),0);
+  const avgQ=n?Math.round(imgLog.reduce((s,e)=>s+e.quality,0)/n*10)/10:null;
+  document.getElementById('log-stats-grid').innerHTML=`
+    <div class="metric"><div class="lbl">Sessions</div><div class="val">${n}</div></div>
+    <div class="metric"><div class="lbl">Unique targets</div><div class="val">${unique}</div></div>
+    <div class="metric"><div class="lbl">Total exposure</div><div class="val">${totalExp>=60?Math.round(totalExp/6)/10+'h':totalExp+'m'}</div></div>
+    <div class="metric"><div class="lbl">Avg quality</div><div class="val">${avgQ?avgQ+'★':'—'}</div></div>`;
+  const reimage=imgLog.filter(e=>e.quality<=2);
+  document.getElementById('log-reimage-panel').innerHTML=reimage.length?`
+    <div class="card-title" style="margin-top:12px">Re-image candidates (≤2★)</div>
+    ${reimage.map(e=>`<div style="font-size:13px;padding:5px 0;border-bottom:0.5px solid var(--border)"><strong>Arp ${e.arp}</strong> (${e.name}) — ${e.date} — ${'★'.repeat(e.quality)} — ${e.notes||'—'}</div>`).join('')}`:'';
+}
+
+function exportLog(){
+  const rows=[['Date','Arp #','Name','Telescope','Filters','Exposure (min)','Quality','Notes']];
+  imgLog.forEach(e=>rows.push([e.date,e.arp,e.name,e.tel,e.flt,e.exp,e.quality,e.notes||'']));
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='arp_imaging_log.csv';a.click();toast('Log exported');
+}
+
+// ===== PROGRESS EXPORT =====
+function renderExport(){
+  const done=Object.values(statuses).filter(s=>s==='Done').length;
+  const reimage=imgLog.filter(e=>e.quality<=2).length;
+  document.getElementById('exp-summary').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 24px">
+      <div><span style="color:var(--text2)">Total targets</span> <strong>338</strong></div>
+      <div><span style="color:var(--text2)">Completed</span> <strong style="color:var(--accent)">${done}</strong></div>
+      <div><span style="color:var(--text2)">Remaining</span> <strong>${338-done}</strong></div>
+      <div><span style="color:var(--text2)">Progress</span> <strong>${Math.round(done/338*100)}%</strong></div>
+      <div><span style="color:var(--text2)">Log sessions</span> <strong>${imgLog.length}</strong></div>
+      <div><span style="color:var(--text2)">Re-image queue</span> <strong>${reimage}</strong></div>
+    </div>`;
+
+  const seas=['Spring','Summer','Autumn','Winter'];
+  document.getElementById('exp-seasons').innerHTML=`<table>
+    <thead><tr><th>Season</th><th>Total</th><th>Done</th><th>Left</th><th>Progress</th></tr></thead>
+    <tbody>${seas.map(s=>{
+      const tot=SEA_COUNTS[s];
+      const d=TARGETS.filter(t=>t.sea===s&&getStatus(t.a)==='Done').length;
+      const pct=Math.round(d/tot*100);
+      return`<tr><td><span class="badge sea-${s}">${s}</span></td><td>${tot}</td><td style="color:var(--green);font-weight:500">${d}</td><td>${tot-d}</td>
+        <td><div class="progress-bg" style="width:80px;display:inline-block"><div class="progress-fill" style="width:${pct}%"></div></div> <span style="font-size:11px">${pct}%</span></td></tr>`;
+    }).join('')}</tbody></table>`;
+
+  renderExpTable();
+}
+
+function renderExpTable(){
+  const season=document.getElementById('exp-season').value;
+  const statusF=document.getElementById('exp-status').value;
+  const reimageArps=new Set(imgLog.filter(e=>e.quality<=2).map(e=>e.arp));
+  const logByArp={};
+  imgLog.forEach(e=>{if(!logByArp[e.arp])logByArp[e.arp]=[];logByArp[e.arp].push(e);});
+
+  let data=TARGETS.filter(t=>{
+    if(season&&t.sea!==season)return false;
+    const s=getStatus(t.a);
+    if(statusF==='remaining'&&s==='Done')return false;
+    if(statusF==='done'&&s!=='Done')return false;
+    if(statusF==='reimage'&&!reimageArps.has(t.a))return false;
+    return true;
+  });
+
+  document.getElementById('exp-count').textContent=`${data.length} targets`;
+
+  document.getElementById('exp-table').innerHTML=data.map(t=>{
+    const logs=logByArp[t.a]||[];
+    const bestQ=logs.length?Math.max(...logs.map(e=>e.quality)):null;
+    const lastDate=logs.length?[...logs].sort((a,b)=>b.date.localeCompare(a.date))[0].date:'—';
+    const st=getStatus(t.a);
+    const raH=Math.floor(t.ra),raM=Math.floor((t.ra-raH)*60);
+    const raStr=`${String(raH).padStart(2,'0')}h ${String(raM).padStart(2,'0')}m`;
+    const decStr=(t.dec>=0?'+':'')+t.dec.toFixed(1)+'°';
+    const tel=assignTelescope(t.sz,'NM');
+    return`<tr>
+      <td style="font-weight:500">${t.a}</td>
+      <td style="font-size:12px">${t.n}</td>
+      <td><span class="badge sea-${t.sea}">${t.sea}</span></td>
+      <td style="font-size:12px">${raStr}</td>
+      <td style="font-size:12px">${decStr}</td>
+      <td style="font-size:12px">${t.sz}'</td>
+      <td style="font-size:12px">${tel}</td>
+      <td><span class="badge" style="background:${t.flt==='LRGB'?'var(--amber-bg)':'var(--blue-bg)'};color:${t.flt==='LRGB'?'var(--amber)':'var(--blue)'};font-size:10px">${t.flt}</span></td>
+      <td><span class="badge ${st==='Done'?'done':'pending'}" style="font-size:10px">${st}</span></td>
+      <td style="font-size:12px">${logs.length||'—'}</td>
+      <td style="font-size:12px">${lastDate}</td>
+      <td style="color:#EF9F27">${bestQ?'★'.repeat(bestQ):'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function exportCSV(){
+  const season=document.getElementById('exp-season').value;
+  const statusF=document.getElementById('exp-status').value;
+  const reimageArps=new Set(imgLog.filter(e=>e.quality<=2).map(e=>e.arp));
+  const logByArp={};
+  imgLog.forEach(e=>{if(!logByArp[e.arp])logByArp[e.arp]=[];logByArp[e.arp].push(e);});
+  let data=TARGETS.filter(t=>{
+    if(season&&t.sea!==season)return false;
+    const s=getStatus(t.a);
+    if(statusF==='remaining'&&s==='Done')return false;
+    if(statusF==='done'&&s!=='Done')return false;
+    if(statusF==='reimage'&&!reimageArps.has(t.a))return false;
+    return true;
+  });
+  const rows=[['Arp #','Name','Season','RA (hours)','Dec (deg)','Size (arcmin)','Filter Strategy','Status','Log entries','Last imaged','Best quality']];
+  data.forEach(t=>{
+    const logs=logByArp[t.a]||[];
+    const bestQ=logs.length?Math.max(...logs.map(e=>e.quality)):'';
+    const lastDate=logs.length?[...logs].sort((a,b)=>b.date.localeCompare(a.date))[0].date:'';
+    rows.push([t.a,t.n,t.sea,t.ra.toFixed(4),t.dec.toFixed(4),t.sz,t.flt,getStatus(t.a),logs.length,lastDate,bestQ]);
+  });
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download=`arp_${statusF}_${season||'all'}.csv`;a.click();toast('CSV exported');
+}
+
+function exportTargetList(){
+  const season=document.getElementById('exp-season').value;
+  let data=TARGETS.filter(t=>(!season||t.sea===season)&&getStatus(t.a)!=='Done');
+  const lines=['# Arp remaining targets — ACP planner input','# Generated by Arp Project Dashboard',''];
+  data.forEach(t=>lines.push(`Arp${String(t.a).padStart(3,'0')}  ; ${t.n}  (${t.flt}, ${t.sz}', ${t.sea})`));
+  const a=document.createElement('a');
+  a.href='data:text/plain;charset=utf-8,'+encodeURIComponent(lines.join('\n'));
+  a.download=`arp_remaining_${season||'all'}.txt`;a.click();toast('Target list exported');
+}
+
+function exportStatus(){
+  const rows=[['Arp #','Status'],...Object.entries(statuses).map(([a,s])=>[a,s])];
+  const csv=rows.map(r=>r.join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='arp_status.csv';a.click();toast('Status exported');
+}
+
+// ===== INIT =====
+document.getElementById('pl-date').value=new Date().toISOString().split('T')[0];
+document.getElementById('log-date').value=new Date().toISOString().split('T')[0];
+
+// Auto-load arp_ned_coords.csv from same folder if present
+(function autoLoadNed(){
+  fetch('arp_ned_coords.csv')
+    .then(r=>{
+      if(!r.ok) return null;  // file not found — silently skip
+      return r.text();
+    })
+    .then(text=>{
+      if(!text) return;
+      const lines=text.split('\n').filter(l=>l.trim());
+      if(lines.length<2) return;
+      const headers=lines[0].split(',').map(h=>h.trim().replace(/"/g,''));
+      const arpIdx=headers.indexOf('arp');
+      const raIdx=headers.indexOf('ra_hours');
+      const decIdx=headers.indexOf('dec_deg');
+      const srcIdx=headers.indexOf('source');
+      if(arpIdx<0||raIdx<0||decIdx<0) return;
+      let count=0;
+      NED_COORDS={};
+      for(let i=1;i<lines.length;i++){
+        const cols=lines[i].split(',').map(c=>c.trim().replace(/"/g,''));
+        if(!cols[arpIdx]) continue;
+        if(srcIdx>=0&&cols[srcIdx]!=='NED') continue;
+        const arp=parseInt(cols[arpIdx]);
+        const ra=parseFloat(cols[raIdx]);
+        const dec=parseFloat(cols[decIdx]);
+        if(!isNaN(arp)&&!isNaN(ra)&&!isNaN(dec)){NED_COORDS[arp]={ra,dec};count++;}
+      }
+      if(count>0){
+        document.getElementById('hdr-ned').textContent=`Coords: NED (${count})`;
+        document.getElementById('hdr-ned').style.color='var(--accent)';
+      }
+    })
+    .catch(()=>{});  // network error or CORS — silently skip
+})();
+document.getElementById('exp-season').addEventListener('change',renderExpTable);
+document.getElementById('exp-status').addEventListener('change',renderExpTable);
+
+// Pre-populate telescope filter from known telescope data
+(function(){
+  const allTels=Object.keys(TELESCOPES).filter(t=>TELESCOPES[t].rate40>0||TELESCOPES[t].rate40===0).sort((a,b)=>{
+    const n1=parseInt(a.replace('T','')),n2=parseInt(b.replace('T',''));
+    return n1-n2;
+  });
+  const sel=document.getElementById('pl-tel-f');
+  sel.innerHTML='<option value="">All telescopes</option>'+allTels.map(t=>`<option value="${t}">${t}</option>`).join('');
+})();
+
+updateHeader();
+renderOverview();
+renderMoon();
+</script>
+</body>
+</html>
