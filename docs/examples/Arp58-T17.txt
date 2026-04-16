@@ -1,0 +1,26 @@
+; ============================================================
+; Arp Catalog Nightly Session Plan
+; Date        : 2026-04-17
+; Observatory : Australia
+; Targets     : 1
+; Imaging time : 30m  (shutter-open only)
+; Total duration: 38m  (imaging + slew/overhead)
+; Est. cost   : ~2,277 pts (session billing, Plan-40)
+; Plan tier   : Plan-40
+; Generated   : Arp Project Dashboard
+; ============================================================
+
+#BillingMethod Session
+#RESUME
+#FIRSTLAST
+
+#repeat 5
+
+; --- Arp 58: UGC 04457  [2.1h window, transit 19:03, moon 0% sep 98deg] ---
+#count 2
+#interval 300
+#binning 1
+#filter Luminance
+Arp058_UGC_04457	8.532679	19.211510
+
+#shutdown

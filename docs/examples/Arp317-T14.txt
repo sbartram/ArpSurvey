@@ -1,0 +1,26 @@
+; ============================================================
+; Arp Catalog Nightly Session Plan
+; Date        : 2026-04-15
+; Observatory : New Mexico
+; Targets     : 1
+; Imaging time : 1h 15m  (shutter-open only)
+; Total duration: 1h 23m  (imaging + slew/overhead)
+; Est. cost   : ~3,588 pts (session billing, Plan-40)
+; Plan tier   : Plan-40
+; Generated   : Arp Project Dashboard
+; ============================================================
+
+#BillingMethod Session
+#RESUME
+#FIRSTLAST
+
+#repeat 3
+
+; --- Arp 317: MESSIER 65 + 66  [5.9h window, transit 21:50, moon 2% sep 154deg] ---
+#count 2,1,1,1
+#interval 300,300,300,300
+#binning 1,2,2,2
+#filter Luminance,Red,Green,Blue
+Arp317_MESSIER_65_+_66	11.315532	13.092310
+
+#shutdown

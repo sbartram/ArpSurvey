@@ -1,0 +1,27 @@
+; ============================================================
+; Arp Catalog Nightly Session Plan
+; Date        : 2026-04-15
+; Observatory : New Mexico
+; Telescope   : T14
+; Targets     : 1
+; Imaging time : 1h 15m  (shutter-open only)
+; Total duration: 1h 23m  (imaging + slew/overhead)
+; Est. cost   : ~3,588 pts (session billing, Plan-40)
+; Plan tier   : Plan-40
+; Generated   : Arp Project Dashboard
+; ============================================================
+
+#BillingMethod Session
+#RESUME
+#FIRSTLAST
+
+#repeat 3
+
+; --- Arp 244: NGC 4038 + 39  [4.2h window, transit 22:37, moon 6% sep 160deg] ---
+#count 2,1,1,1
+#interval 300,300,300,300
+#binning 1,2,2,2
+#filter Luminance,Red,Green,Blue
+Arp244_NGC_4038_+_39	12.031393	-18.867620
+
+#shutdown

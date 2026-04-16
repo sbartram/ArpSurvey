@@ -1,0 +1,27 @@
+; ============================================================
+; Arp Catalog Nightly Session Plan
+; Date        : 2026-04-20
+; Observatory : Australia
+; Telescope   : T30
+; Targets     : 1
+; Imaging time : 30m  (shutter-open only)
+; Total duration: 38m  (imaging + slew/overhead)
+; Est. cost   : ~3,894 pts (session billing, Plan-40)
+; Plan tier   : Plan-40
+; Generated   : Arp Project Dashboard
+; ============================================================
+
+#BillingMethod Session
+#RESUME
+#FIRSTLAST
+
+#repeat 5
+
+; --- Arp 240: NGC 5257 + 58  [7.1h window, transit 23:48, moon 14% sep 129deg] ---
+#count 2
+#interval 300
+#binning 1
+#filter Luminance
+Arp240_NGC_5257_+_58	13.664703	0.839850
+
+#shutdown

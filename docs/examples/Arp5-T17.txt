@@ -1,0 +1,26 @@
+; ============================================================
+; Arp Catalog Nightly Session Plan
+; Date        : 2026-04-17
+; Observatory : Australia
+; Targets     : 1
+; Imaging time : 30m  (shutter-open only)
+; Total duration: 38m  (imaging + slew/overhead)
+; Est. cost   : ~2,277 pts (session billing, Plan-40)
+; Plan tier   : Plan-40
+; Generated   : Arp Project Dashboard
+; ============================================================
+
+#BillingMethod Session
+#RESUME
+#FIRSTLAST
+
+#repeat 5
+
+; --- Arp 5: NGC 3664  [6.2h window, transit 21:45, moon 0% sep 143deg] ---
+#count 2
+#interval 300
+#binning 1
+#filter Luminance
+Arp005_NGC_3664	11.406733	3.325180
+
+#shutdown
