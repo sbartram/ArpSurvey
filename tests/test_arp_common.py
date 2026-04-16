@@ -124,3 +124,95 @@ def test_parse_catalog_coords_two_part_ra():
 
 def test_risk_labels_complete():
     assert RISK_LABELS == {"G": "Good", "M": "Marginal", "A": "Avoid"}
+
+
+# ---------------------------------------------------------------------------
+# Data loaders
+# ---------------------------------------------------------------------------
+
+import pandas as pd
+
+from arp_common import (
+    load_targets, load_telescopes, load_rates, load_ned_coords,
+    PLAN_TIERS,
+)
+
+
+def test_load_targets_default_sheet():
+    df = load_targets()
+    assert isinstance(df, pd.DataFrame)
+    assert len(df) > 300  # Arp catalog has 338 objects
+    # All column names should be stripped of whitespace
+    for col in df.columns:
+        assert col == col.strip()
+    # Key columns must be present
+    assert "Arp #" in df.columns
+    assert "Common Name" in df.columns
+    assert "RA (J2000)" in df.columns
+    assert "Dec (J2000)" in df.columns
+    assert "Size (arcmin)" in df.columns
+
+
+def test_load_targets_spring_sheet_is_subset():
+    """Spring (Now) sheet has RA 8h-14h targets — fewer than All Objects."""
+    all_df = load_targets()
+    spring_df = load_targets(sheet_name="Spring (Now)")
+    assert len(spring_df) < len(all_df)
+    assert len(spring_df) > 50  # has ~149 targets
+
+
+def test_load_targets_missing_sheet_raises():
+    """Nonexistent sheet name must raise (type of exception varies by pandas/openpyxl)."""
+    with pytest.raises(Exception):
+        load_targets(sheet_name="Definitely Not A Sheet Name")
+
+
+def test_load_telescopes_structure():
+    df = load_telescopes()
+    assert isinstance(df, pd.DataFrame)
+    assert "T11" in df.index  # known iTelescope in the fleet
+    assert "FOV X (arcmins)" in df.columns
+    assert "FOV Y (arcmins)" in df.columns
+
+
+def test_load_rates_nested_structure():
+    rates = load_rates()
+    assert isinstance(rates, dict)
+    assert len(rates) > 0
+    for tel_id, tel_rates in rates.items():
+        assert tel_id.startswith("T")
+        assert set(tel_rates.keys()) == {"session", "exposure"}
+        for billing_mode in ("session", "exposure"):
+            # Every plan tier should be a key
+            for plan in PLAN_TIERS:
+                assert plan in tel_rates[billing_mode]
+
+
+def test_load_rates_values_are_float_or_none():
+    """Bug 1 regression guard: invalid rate values must not raise, must become None."""
+    rates = load_rates()
+    for tel_id, tel_rates in rates.items():
+        for billing_mode in ("session", "exposure"):
+            for plan, value in tel_rates[billing_mode].items():
+                assert value is None or isinstance(value, float), \
+                    f"{tel_id}.{billing_mode}.{plan} = {value!r} (type: {type(value).__name__})"
+
+
+def test_load_ned_coords_present():
+    """arp_ned_coords.csv exists in repo — should load successfully."""
+    coords = load_ned_coords()
+    assert isinstance(coords, dict)
+    assert len(coords) > 300  # most of 338 targets
+    # Each value is (ra_hours, dec_deg)
+    for arp_num, (ra_h, dec_d) in coords.items():
+        assert isinstance(arp_num, int)
+        assert 0 <= ra_h < 24
+        assert -90 <= dec_d <= 90
+
+
+def test_load_ned_coords_missing_file(monkeypatch, tmp_path):
+    """If arp_ned_coords.csv doesn't exist, return empty dict (no exception)."""
+    # Point DATA_DIR to an empty tmp directory
+    import arp_common
+    monkeypatch.setattr(arp_common, "DATA_DIR", tmp_path)
+    assert arp_common.load_ned_coords() == {}
