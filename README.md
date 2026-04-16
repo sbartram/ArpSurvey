@@ -474,3 +474,9 @@ Full ACP directive reference: [support.itelescope.net](https://support.itelescop
 | `#DEFOCUS` | off | Slight defocus for photometry applications |
 
 **Output files:** Each imaging request produces a raw 16-bit FITS file, a calibrated FITS file (bias, dark, and flat applied), and a JPEG preview. `#TIFF` adds a 16-bit TIFF. `#VPHOT` sends the calibrated FITS to the VPhot server for variable star photometry.
+
+---
+
+## License
+
+Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for details.
