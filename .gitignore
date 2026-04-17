@@ -24,3 +24,4 @@ venv/
 # Git worktrees
 .worktrees/
 .claude/settings.local.json
+k8s/secret.yaml
