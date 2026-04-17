@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Arp Catalog{% endblock %} — iTelescope Project</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-M06VwgoUOHG3FN0UchwWKqh9jS4ejwpoL0yjF3EVljtsxFwFETEYMkyNl5lXbJ5/" crossorigin="anonymous">
+</head>
+<body>
+<div class="app">
+
+<header>
+  <div>
+    <div class="header-title">Arp Catalog &middot; iTelescope Project</div>
+    <div class="header-sub">338 peculiar galaxies &middot; Plan-40 membership</div>
+  </div>
+  <div class="header-meta">
+    {% block header_meta %}{% endblock %}
+  </div>
+</header>
+
+<nav class="nav">
+  <a href="{{ url_for('overview.index') }}" class="{% if request.endpoint == 'overview.index' %}active{% endif %}">Overview</a>
+  <a href="{{ url_for('planner.index') }}" class="{% if request.endpoint and request.endpoint.startswith('planner.') %}active{% endif %}">Tonight's plan</a>
+  <a href="{{ url_for('visibility.index') }}" class="{% if request.endpoint and request.endpoint.startswith('visibility.') %}active{% endif %}">Visibility</a>
+  <a href="{{ url_for('moon.index') }}" class="{% if request.endpoint and request.endpoint.startswith('moon.') %}active{% endif %}">Moon calendar</a>
+  <a href="{{ url_for('log.index') }}" class="{% if request.endpoint and request.endpoint.startswith('log.') %}active{% endif %}">Imaging log</a>
+  <a href="{{ url_for('export.index') }}" class="{% if request.endpoint and request.endpoint.startswith('export.') %}active{% endif %}">Progress export</a>
+  <a href="{{ url_for('generator.index') }}" class="{% if request.endpoint and request.endpoint.startswith('generator.') %}active{% endif %}">ACP generator</a>
+  <a href="{{ url_for('files.index') }}" class="{% if request.endpoint and request.endpoint.startswith('files.') %}active{% endif %}">Files</a>
+</nav>
+
+<div class="main">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="card" style="border-left:3px solid var(--accent);margin-bottom:12px">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+</div>
+
+</div>
+</body>
+</html>
