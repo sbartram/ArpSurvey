@@ -1,8 +1,47 @@
 {% extends "base.html" %}
 {% block title %}Visibility{% endblock %}
+
 {% block content %}
-<div class="card">
-  <div class="card-title">Target visibility</div>
-  <div class="empty-state">Visibility checker — implementation pending</div>
+{% if session_info %}
+<div style="font-size:12px;color:var(--text3);margin-bottom:12px">
+  Showing results from last computed session: {{ session_info.site }} on {{ session_info.date }}
+  (computed {{ session_info.computed }}) &middot; {{ session_info.count }} targets
+</div>
+{% endif %}
+
+<div class="filter-row">
+  <input type="text" name="search" placeholder="Search Arp # or name" style="width:180px"
+         hx-get="/visibility/filter" hx-target="#vis-table" hx-swap="innerHTML"
+         hx-trigger="input changed delay:300ms"
+         hx-include="[name='min_hours'],[name='moon_filter'],[name='sort']">
+  <select name="min_hours"
+          hx-get="/visibility/filter" hx-target="#vis-table" hx-swap="innerHTML"
+          hx-trigger="change"
+          hx-include="[name='search'],[name='moon_filter'],[name='sort']">
+    <option value="0">Any duration</option>
+    <option value="2">2+ hours</option>
+    <option value="4">4+ hours</option>
+    <option value="6">6+ hours</option>
+  </select>
+  <select name="moon_filter"
+          hx-get="/visibility/filter" hx-target="#vis-table" hx-swap="innerHTML"
+          hx-trigger="change"
+          hx-include="[name='search'],[name='min_hours'],[name='sort']">
+    <option value="">Any moon rating</option>
+    <option value="G">Good only</option>
+    <option value="GM">Good + marginal</option>
+  </select>
+  <select name="sort"
+          hx-get="/visibility/filter" hx-target="#vis-table" hx-swap="innerHTML"
+          hx-trigger="change"
+          hx-include="[name='search'],[name='min_hours'],[name='moon_filter']">
+    <option value="transit">Sort by transit</option>
+    <option value="hours">Sort by obs hours</option>
+    <option value="arp">Sort by Arp #</option>
+  </select>
+</div>
+
+<div id="vis-table">
+  {% include "partials/visibility_table.html" %}
 </div>
 {% endblock %}
