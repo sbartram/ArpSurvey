@@ -1,8 +1,45 @@
 {% extends "base.html" %}
 {% block title %}Progress Export{% endblock %}
+
 {% block content %}
+<div class="grid2">
+  <div class="card">
+    <div class="card-title">Project summary</div>
+    <div style="font-size:13px;line-height:2">
+      <div>Total targets: <strong>{{ total }}</strong></div>
+      <div>Imaged (Done): <strong style="color:var(--accent)">{{ done }}</strong> ({{ done_pct }}%)</div>
+      <div>Scheduled: <strong>{{ scheduled }}</strong></div>
+      <div>Skipped: <strong>{{ skipped }}</strong></div>
+      <div>Remaining: <strong>{{ remaining }}</strong></div>
+      <div>Total exposure: <strong>{{ total_exposure_hrs }}h</strong></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Season breakdown</div>
+    {% for s in season_data %}
+    <div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
+        <span>{{ s.name }}</span>
+        <span style="color:var(--text2)">{{ s.done }}/{{ s.total }} ({{ s.pct }}%)</span>
+      </div>
+      <div class="progress-bg">
+        <div class="progress-fill" style="width:{{ s.pct }}%"></div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
 <div class="card">
-  <div class="card-title">Progress export</div>
-  <div class="empty-state">Progress export — implementation pending</div>
+  <div class="card-title">Download</div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <a href="/export/csv" class="btn">Target status CSV</a>
+    <a href="/export/targets" class="btn">Target coordinates CSV</a>
+    <a href="/export/status-json" class="btn">Status JSON</a>
+  </div>
+  <div style="font-size:11px;color:var(--text3);margin-top:8px">
+    Status CSV includes all 338 targets with current status. Coordinates CSV includes RA/Dec (catalog + NED). JSON export is compatible with the standalone dashboard's localStorage format.
+  </div>
 </div>
 {% endblock %}
