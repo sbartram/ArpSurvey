@@ -33,7 +33,7 @@ ArpSurvey/
 │   │   ├── targets.py           # PATCH /targets/<id>/status, POST /import/localstorage
 │   │   ├── planner.py           # GET /planner, POST /planner/compute, POST /planner/generate-acp
 │   │   ├── visibility.py        # GET /visibility
-│   │   ├── moon.py              # GET /moon, POST /moon/regenerate
+│   │   ├── moon.py              # GET /moon, POST /moon/regenerate, GET /moon/status
 │   │   ├── log.py               # GET /log, POST /log, DELETE /log/<id>, GET /log/export
 │   │   ├── export.py            # GET /export, GET /export/csv, GET /export/targets, GET /export/status-json
 │   │   ├── generator.py         # GET /generator, POST /generator/run — ACP batch generation
@@ -177,6 +177,7 @@ Metadata for each moon calendar computation (global phase data, generation info)
 | Column | Type | Constraints | Notes |
 |--------|------|-------------|-------|
 | id | serial | PK | |
+| status | varchar(20) | NOT NULL DEFAULT 'computing' | "computing" or "complete" |
 | generated_at | timestamp | NOT NULL | When the computation ran |
 | days | integer | NOT NULL | Number of days computed |
 | site_key | varchar(30) | NOT NULL | Observatory used |
@@ -238,11 +239,12 @@ Stored ACP plan files.
 
 | Route | Method | Returns | Trigger |
 |-------|--------|---------|---------|
-| `/planner/compute` | POST | Planner results table | "Compute session" button |
+| `/planner/compute` | POST | Planner results table | "Compute session" button. Form params: `date` (YYYY-MM-DD), `site` (observatory key), `min_hours` (int), `moon_filter` ("" / "GM" / "G") |
 | `/planner/generate-acp` | POST | ACP preview + download link | "Generate ACP plan" button |
 | `/targets/<id>/status` | PATCH | Updated status badge | Click on status cell (in `routes/targets.py`) |
 | `/visibility/filter` | GET | Filtered visibility table | Filter/sort controls |
-| `/moon/regenerate` | POST | Refreshed moon page content | "Regenerate" button |
+| `/moon/regenerate` | POST | "Computing..." indicator | "Regenerate" button (starts background computation) |
+| `/moon/status` | GET | Moon page content or "computing..." | HTMX poll (every 3s while computation runs) |
 | `/moon/filter` | GET | Filtered moon strips | Filter controls |
 | `/log` | POST | Updated log table + stats | "Save observation" button |
 | `/log/<id>` | DELETE | Updated log table | Delete button on row |
@@ -295,7 +297,7 @@ All time values use Python `datetime` objects (UTC). The service converts to/fro
 - `compute_moon_data(targets, days, site_key)` → list of `{target_id, night_date, phase, separation, risk}`
 - Bulk computation, writes to `moon_data` table and inserts a `moon_calendar_runs` metadata row
 - `POST /moon/regenerate` accepts an optional `days` parameter (default 90)
-- Computation takes ~25 seconds for 338 targets × 90 days — runs in a background thread via `threading.Thread`. The route returns immediately with a "computing..." indicator. The moon page uses HTMX polling (`hx-trigger="every 3s"`) against `GET /moon/status` to check completion and swap in the results.
+- Computation takes ~25 seconds for 338 targets × 90 days — runs in a background thread. The route inserts a `moon_calendar_runs` row with a `status` column set to `"computing"` and returns immediately with a "computing..." indicator. The background thread updates the row to `status="complete"` when done. The moon page uses HTMX polling (`hx-trigger="every 3s"`) against `GET /moon/status` to check the `moon_calendar_runs` row status — this is safe across multiple Gunicorn workers since the state is in the database, not in-process memory.
 
 ### ned.py
 - `fetch_ned_coords(arp_number, name)` → `{ra_hours, dec_degrees}` or None
@@ -493,6 +495,8 @@ spec:
 
 ### secret.yaml.template
 
+**Important:** `k8s/secret.yaml` (the filled-in copy) must be added to `.gitignore` to prevent committing credentials.
+
 ```yaml
 apiVersion: v1
 kind: Secret
@@ -543,9 +547,9 @@ python scripts/migrate_data.py --database-url postgresql://... --dry-run
 **Steps:**
 1. Read `Arp_Seasonal_Plan.xlsx` per-season sheets to determine season membership
 2. Read "All Objects" sheet via `load_targets()` for full target data
-3. Parse RA/Dec via existing `parse_ra()`/`parse_dec()` functions
+3. Parse RA/Dec via existing `parse_ra()`/`parse_dec()` functions — these return decimal hours and decimal degrees respectively, matching `targets.ra_hours` and `targets.dec_degrees`. Do NOT use `parse_catalog_coords()` which converts RA to degrees.
 4. Insert into `targets` table (upsert by arp_number)
-5. Read `arp_ned_coords.csv` via `load_ned_coords()` — update NED columns
+5. Read `arp_ned_coords.csv` directly via `pandas.read_csv()` (not `load_ned_coords()`, which discards `ned_name`) — update `ned_ra_hours`, `ned_dec_degrees`, and `ned_name` columns on matching target rows
 6. Read `itelescopesystems.xlsx` via `load_telescopes()` — insert into `telescopes`
 7. Read imaging rates via `load_rates()` — insert into `telescope_rates`
 8. Read `arp_moon_data.json` — bulk insert into `moon_data`
