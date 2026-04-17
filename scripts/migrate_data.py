@@ -216,7 +216,11 @@ def import_moon_data(session):
         days=data["days"],
         site_key="New Mexico",
         start_date=date.fromisoformat(data["generated"]),
-        phase_calendar=data.get("phase_cal", []),
+        phase_calendar=[
+            {"date": entry.get("d", entry.get("date")),
+             "phase_pct": entry.get("p", entry.get("phase_pct"))}
+            for entry in data.get("phase_cal", [])
+        ],
         next_new_moon=date.fromisoformat(data["next_new"]) if data.get("next_new") else None,
         next_full_moon=date.fromisoformat(data["next_full"]) if data.get("next_full") else None,
     )
