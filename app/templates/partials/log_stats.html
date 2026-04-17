@@ -1,1 +1,20 @@
-<!-- log stats -->
+<div id="log-stats-panel" hx-swap-oob="innerHTML">
+<div class="grid2">
+  <div class="metric">
+    <div class="lbl">Total observations</div>
+    <div class="val">{{ stats.total_logs }}</div>
+  </div>
+  <div class="metric">
+    <div class="lbl">Total exposure</div>
+    <div class="val">{{ stats.total_exposure_hrs }}h</div>
+  </div>
+  <div class="metric">
+    <div class="lbl">Unique targets</div>
+    <div class="val">{{ stats.unique_targets }}</div>
+  </div>
+  <div class="metric">
+    <div class="lbl">Avg quality</div>
+    <div class="val">{{ stats.avg_quality }}\u2605</div>
+  </div>
+</div>
+</div>

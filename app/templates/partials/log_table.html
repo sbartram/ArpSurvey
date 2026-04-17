@@ -1,1 +1,33 @@
-<!-- log table -->
+{% if logs %}
+<div class="tbl-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th><th>Arp #</th><th>Name</th><th>Telescope</th>
+        <th>Filters</th><th>Exposure</th><th>Quality</th><th>Notes</th><th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for log in logs %}
+      <tr>
+        <td>{{ log.date_imaged }}</td>
+        <td>{{ log.target.arp_number }}</td>
+        <td>{{ log.target.name }}</td>
+        <td>{{ log.telescope.telescope_id if log.telescope else "" }}</td>
+        <td>{{ log.filter_strategy }}</td>
+        <td>{{ log.exposure_minutes or "" }} min</td>
+        <td>{{ "\u2605" * log.quality }}{{ "\u2606" * (5 - log.quality) }}</td>
+        <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis">{{ log.notes or "" }}</td>
+        <td>
+          <button class="btn" style="padding:2px 8px;font-size:11px"
+                  hx-delete="/log/{{ log.id }}" hx-target="#log-results" hx-swap="innerHTML"
+                  hx-confirm="Delete this log entry?">Del</button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">No observations logged yet.</div>
+{% endif %}
