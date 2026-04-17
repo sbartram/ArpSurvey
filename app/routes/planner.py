@@ -35,7 +35,6 @@ def compute():
 
     obs_date = datetime.date.fromisoformat(date_str)
 
-    # Load all targets
     targets = db.session.query(Target).all()
     target_dicts = [{
         "arp_number": t.arp_number, "name": t.name,
@@ -44,24 +43,29 @@ def compute():
         "best_site": t.best_site,
     } for t in targets]
 
-    # Compute session
     results = compute_session(obs_date, site_key, target_dicts, min_hours, moon_filter)
 
-    # Get dark window for display
+    # Assign telescopes to each result
+    tels_df = load_telescopes()
+    for r in results:
+        size = r.get("size_arcmin") or 3.0
+        r["telescope"] = assign_telescope(size, site_key, tels_df)
+
+    # Dark window for display
     eve_dt, morn_dt = dark_window(site_key, obs_date)
     utc_offset = OBSERVATORIES[site_key]["utc_offset"]
     eve_local = (eve_dt + datetime.timedelta(hours=utc_offset)).strftime("%H:%M")
     morn_local = (morn_dt + datetime.timedelta(hours=utc_offset)).strftime("%H:%M")
     dark_hrs = round((morn_dt - eve_dt).total_seconds() / 3600, 1)
 
-    # Build target status lookup for badges
+    # Target status lookup
     status_lookup = {t.arp_number: {"status": t.status, "id": t.id} for t in targets}
     for r in results:
         info = status_lookup.get(r["arp"], {})
         r["target_status"] = info.get("status", "Pending")
         r["target_id"] = info.get("id")
 
-    # Store in session_results
+    # Store session results
     session_result = SessionResult(
         site_key=site_key,
         date_local=obs_date,
@@ -71,6 +75,10 @@ def compute():
     )
     db.session.add(session_result)
     db.session.commit()
+
+    # Collect unique telescopes and filter strategies for filter dropdowns
+    telescopes = sorted(set(r["telescope"] for r in results))
+    strategies = sorted(set(r["filter_strategy"] for r in results))
 
     summary = {
         "date": date_str, "site": site_key,
@@ -82,12 +90,60 @@ def compute():
     }
 
     return render_template("partials/planner_table.html",
-                           results=results, summary=summary)
+                           results=results, summary=summary,
+                           telescopes=telescopes, strategies=strategies)
+
+
+@bp.route("/planner/filter")
+def filter_planner():
+    last = db.session.query(SessionResult).order_by(
+        SessionResult.computed_at.desc()
+    ).first()
+    if not last or not last.results:
+        return '<div class="empty-state">No session data.</div>'
+
+    results = list(last.results)
+
+    # Apply filters
+    search = request.args.get("search", "").strip().lower()
+    telescope = request.args.get("telescope", "")
+    strategy = request.args.get("strategy", "")
+    sort_by = request.args.get("sort", "transit")
+    hide_done = request.args.get("hide_done", "") == "on"
+
+    if search:
+        results = [r for r in results
+                   if search in str(r["arp"]) or search in r["name"].lower()]
+    if telescope:
+        results = [r for r in results if r.get("telescope") == telescope]
+    if strategy:
+        results = [r for r in results if r.get("filter_strategy") == strategy]
+    if hide_done:
+        results = [r for r in results if r.get("target_status") != "Done"]
+
+    # Sort
+    sort_keys = {
+        "arp": lambda r: r["arp"],
+        "name": lambda r: r["name"].lower(),
+        "transit": lambda r: r["transit"],
+        "hours": lambda r: r["hours"],
+        "moon": lambda r: r["moon"]["phase_pct"],
+        "sep": lambda r: r["moon"]["separation_deg"],
+        "risk": lambda r: {"G": 0, "M": 1, "A": 2}.get(r["moon"]["risk"], 3),
+        "telescope": lambda r: r.get("telescope", ""),
+        "filters": lambda r: r.get("filter_strategy", ""),
+        "status": lambda r: r.get("target_status", ""),
+    }
+    reverse = sort_by.startswith("-")
+    sort_field = sort_by.lstrip("-")
+    key_fn = sort_keys.get(sort_field, sort_keys["transit"])
+    results.sort(key=key_fn, reverse=reverse)
+
+    return render_template("partials/planner_rows.html", results=results)
 
 
 @bp.route("/planner/generate-acp", methods=["POST"])
 def generate_acp():
-    # Get the most recent session results
     last = db.session.query(SessionResult).order_by(
         SessionResult.computed_at.desc()
     ).first()
@@ -98,11 +154,10 @@ def generate_acp():
     site_key = last.site_key
     obs_date = last.date_local
 
-    # Group targets by telescope
     tel_groups = {}
     for r in last.results:
         size = r.get("size_arcmin") or 3.0
-        tel_id = assign_telescope(size, site_key, tels_df)
+        tel_id = r.get("telescope") or assign_telescope(size, site_key, tels_df)
         tel_groups.setdefault(tel_id, []).append(r)
 
     params = {"exposure": 300, "count": 2, "repeat": 3, "plan_tier": "Plan-40", "binning": 1}
@@ -125,8 +180,7 @@ def generate_acp():
             metadata_=params,
         )
         db.session.add(plan)
-        generated.append({"filename": filename, "telescope": tel_id, "targets": len(group),
-                          "plan_id": None})
+        generated.append({"filename": filename, "telescope": tel_id, "targets": len(group)})
 
     db.session.commit()
 

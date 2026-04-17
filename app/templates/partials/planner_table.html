@@ -5,36 +5,55 @@
   ({{ summary.good }} good, {{ summary.marginal }} marginal, {{ summary.avoid }} avoid)
 </div>
 
+<div class="filter-row" id="planner-filters">
+  <input type="text" name="search" placeholder="Search Arp # or name" style="width:180px"
+         hx-get="/planner/filter" hx-target="#planner-tbody" hx-swap="innerHTML"
+         hx-trigger="input changed delay:300ms"
+         hx-include="#planner-filters">
+  <select name="telescope"
+          hx-get="/planner/filter" hx-target="#planner-tbody" hx-swap="innerHTML"
+          hx-trigger="change" hx-include="#planner-filters">
+    <option value="">All telescopes</option>
+    {% for t in telescopes %}
+    <option value="{{ t }}">{{ t }}</option>
+    {% endfor %}
+  </select>
+  <select name="strategy"
+          hx-get="/planner/filter" hx-target="#planner-tbody" hx-swap="innerHTML"
+          hx-trigger="change" hx-include="#planner-filters">
+    <option value="">All filters</option>
+    {% for s in strategies %}
+    <option value="{{ s }}">{{ s }}</option>
+    {% endfor %}
+  </select>
+  <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+    <input type="checkbox" name="hide_done"
+           hx-get="/planner/filter" hx-target="#planner-tbody" hx-swap="innerHTML"
+           hx-trigger="change" hx-include="#planner-filters"> Hide done
+  </label>
+  <span style="font-size:12px;color:var(--text3)">{{ results|length }} targets</span>
+</div>
+
 {% if results %}
 <div class="tbl-wrap">
   <table>
     <thead>
       <tr>
-        <th>Arp</th><th>Name</th><th>Window</th><th>Transit</th>
-        <th>Hrs</th><th>Moon%</th><th>Sep</th><th>Risk</th>
-        <th>Filters</th><th>Status</th>
+        <th style="cursor:pointer" hx-get="/planner/filter?sort=arp" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Arp</th>
+        <th style="cursor:pointer" hx-get="/planner/filter?sort=name" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Name</th>
+        <th>Window</th>
+        <th style="cursor:pointer" hx-get="/planner/filter?sort=transit" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Transit</th>
+        <th style="cursor:pointer" hx-get="/planner/filter?sort=hours" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Hrs</th>
+        <th style="cursor:pointer" hx-get="/planner/filter?sort=moon" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Moon%</th>
+        <th style="cursor:pointer" hx-get="/planner/filter?sort=sep" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Sep</th>
+        <th style="cursor:pointer" hx-get="/planner/filter?sort=risk" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Risk</th>
+        <th style="cursor:pointer" hx-get="/planner/filter?sort=telescope" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Telescope</th>
+        <th style="cursor:pointer" hx-get="/planner/filter?sort=filters" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Filters</th>
+        <th style="cursor:pointer" hx-get="/planner/filter?sort=status" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Status</th>
       </tr>
     </thead>
-    <tbody>
-      {% for r in results %}
-      <tr>
-        <td>{{ r.arp }}</td>
-        <td>{{ r.name }}</td>
-        <td style="white-space:nowrap">{{ r.start_local }}–{{ r.end_local }}</td>
-        <td>{{ r.transit_local }}</td>
-        <td>{{ r.hours }}</td>
-        <td>{{ r.moon.phase_pct }}%</td>
-        <td>{{ r.moon.separation_deg }}&deg;</td>
-        <td><span class="badge {{ r.moon.risk }}">{{ r.moon.risk }}</span></td>
-        <td>{{ r.filter_strategy }}</td>
-        <td>
-          {% set css = {"Pending": "pending", "Scheduled": "sched", "Done": "done", "Skip": "skip"} %}
-          <span class="badge {{ css.get(r.target_status, 'pending') }}"
-                hx-patch="/targets/{{ r.target_id }}/status" hx-swap="outerHTML"
-                style="cursor:pointer">{{ r.target_status }}</span>
-        </td>
-      </tr>
-      {% endfor %}
+    <tbody id="planner-tbody">
+      {% include "partials/planner_rows.html" %}
     </tbody>
   </table>
 </div>

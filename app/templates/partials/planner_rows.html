@@ -1,0 +1,23 @@
+{% for r in results %}
+<tr>
+  <td>{{ r.arp }}</td>
+  <td>{{ r.name }}</td>
+  <td style="white-space:nowrap">{{ r.start_local }}–{{ r.end_local }}</td>
+  <td>{{ r.transit_local }}</td>
+  <td>{{ r.hours }}</td>
+  <td>{{ r.moon.phase_pct }}%</td>
+  <td>{{ r.moon.separation_deg }}&deg;</td>
+  <td><span class="badge {{ r.moon.risk }}">{{ r.moon.risk }}</span></td>
+  <td>{{ r.telescope }}</td>
+  <td>{{ r.filter_strategy }}</td>
+  <td>
+    {% set css = {"Pending": "pending", "Scheduled": "sched", "Done": "done", "Skip": "skip"} %}
+    <span class="badge {{ css.get(r.target_status, 'pending') }}"
+          hx-patch="/targets/{{ r.target_id }}/status" hx-swap="outerHTML"
+          style="cursor:pointer">{{ r.target_status }}</span>
+  </td>
+</tr>
+{% endfor %}
+{% if not results %}
+<tr><td colspan="11" class="empty-state">No targets match the current filters.</td></tr>
+{% endif %}
