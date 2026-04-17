@@ -21,14 +21,14 @@
 </header>
 
 <nav class="nav">
-  <a href="{{ url_for('overview.index') }}" class="{% if request.endpoint == 'overview.index' %}active{% endif %}">Overview</a>
-  <a href="{{ url_for('planner.index') }}" class="{% if request.endpoint and request.endpoint.startswith('planner.') %}active{% endif %}">Tonight's plan</a>
-  <a href="{{ url_for('visibility.index') }}" class="{% if request.endpoint and request.endpoint.startswith('visibility.') %}active{% endif %}">Visibility</a>
-  <a href="{{ url_for('moon.index') }}" class="{% if request.endpoint and request.endpoint.startswith('moon.') %}active{% endif %}">Moon calendar</a>
-  <a href="{{ url_for('log.index') }}" class="{% if request.endpoint and request.endpoint.startswith('log.') %}active{% endif %}">Imaging log</a>
-  <a href="{{ url_for('export.index') }}" class="{% if request.endpoint and request.endpoint.startswith('export.') %}active{% endif %}">Progress export</a>
-  <a href="{{ url_for('generator.index') }}" class="{% if request.endpoint and request.endpoint.startswith('generator.') %}active{% endif %}">ACP generator</a>
-  <a href="{{ url_for('files.index') }}" class="{% if request.endpoint and request.endpoint.startswith('files.') %}active{% endif %}">Files</a>
+  <a href="/" class="{% if request.path == '/' %}active{% endif %}">Overview</a>
+  <a href="/planner" class="{% if request.path.startswith('/planner') %}active{% endif %}">Tonight's plan</a>
+  <a href="/visibility" class="{% if request.path.startswith('/visibility') %}active{% endif %}">Visibility</a>
+  <a href="/moon" class="{% if request.path.startswith('/moon') %}active{% endif %}">Moon calendar</a>
+  <a href="/log" class="{% if request.path.startswith('/log') %}active{% endif %}">Imaging log</a>
+  <a href="/export" class="{% if request.path.startswith('/export') %}active{% endif %}">Progress export</a>
+  <a href="/generator" class="{% if request.path.startswith('/generator') %}active{% endif %}">ACP generator</a>
+  <a href="/files" class="{% if request.path.startswith('/files') %}active{% endif %}">Files</a>
 </nav>
 
 <div class="main">
