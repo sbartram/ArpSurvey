@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request
-from arp_common import SEASON_SHEETS, PLAN_TIERS, load_telescopes
+from arp_common import SEASON_SHEETS, PLAN_TIERS, SITE_TELESCOPES, load_telescopes
 from app import db
 from app.models import Target, Telescope, GeneratedPlan
 from app.services.acp import assign_telescope, build_plan
@@ -61,7 +61,12 @@ def run():
             } for t in batch]
 
             filename = f"Arp_{season}_{tel_id}_batch{batch_num:02d}.txt"
-            result = build_plan(target_dicts, tel_id, season, params, filename=filename)
+            # Determine observatory from telescope
+            obs_name = next(
+                (site for site, tels in SITE_TELESCOPES.items() if tel_id in tels),
+                "Unknown"
+            )
+            result = build_plan(target_dicts, tel_id, obs_name, params, filename=filename)
 
             # Look up telescope DB record for FK
             tel_record = db.session.query(Telescope).filter_by(telescope_id=tel_id).first()

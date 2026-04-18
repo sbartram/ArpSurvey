@@ -77,17 +77,21 @@ def format_duration(total_secs):
     return f"{h}h {m:02d}m" if h > 0 else f"{m}m"
 
 
-def build_plan(targets, telescope_id, season, params, filename=None):
+def build_plan(targets, telescope_id, observatory, params, filename=None,
+               date_str=None, cost_points=None):
     """
     Generate an ACP plan from target data.
 
     Args:
         targets: List of dicts with keys: arp, name, ra_hours, dec_degrees,
-                 size_arcmin, filter_strategy, magnitude (optional)
+                 size_arcmin, filter_strategy, magnitude (optional),
+                 transit_local, hours, moon (optional — for session plans)
         telescope_id: Telescope string ID (e.g. "T20")
-        season: Season name
+        observatory: Observatory name (e.g. "New Mexico")
         params: Dict with keys: exposure, count, repeat, plan_tier, binning
         filename: Plan filename for the header (optional)
+        date_str: Observation date string for the header (optional)
+        cost_points: Estimated cost in points (optional)
 
     Returns dict: {filename, content, duration_secs, cost_points}
     """
@@ -101,7 +105,7 @@ def build_plan(targets, telescope_id, season, params, filename=None):
     lrgb_counts = compute_lrgb_counts(count)
     lum_counts = [count]
 
-    plan_name = filename or f"Arp_{season}_{telescope_id}_batch01"
+    plan_name = filename or f"Arp_{observatory}_{telescope_id}_batch01"
 
     exposure_secs = 0
     for t in targets:
@@ -119,14 +123,18 @@ def build_plan(targets, telescope_id, season, params, filename=None):
 
     lines = []
     lines.append(f"; ============================================================")
-    lines.append(f"; Arp Catalog Observing Plan")
-    lines.append(f"; Plan Name    : {plan_name}")
-    lines.append(f"; Telescope    : {telescope_id}")
-    lines.append(f"; Observatory  : {season}")
-    lines.append(f"; Targets      : {len(targets)}")
-    lines.append(f"; Imaging time : {format_duration(imaging_secs)}")
-    lines.append(f"; Total duration: {format_duration(total_secs)}")
-    lines.append(f"; Generated    : Arp ACP Generator on {now_str}")
+    lines.append(f"; Arp Catalog Nightly Session Plan")
+    if date_str:
+        lines.append(f"; Date        : {date_str}")
+    lines.append(f"; Observatory : {observatory}")
+    lines.append(f"; Telescope   : {telescope_id}")
+    lines.append(f"; Targets     : {len(targets)}")
+    lines.append(f"; Imaging time : {format_duration(imaging_secs)}  (shutter-open only)")
+    lines.append(f"; Total duration: {format_duration(total_secs)}  (imaging + slew/overhead)")
+    if cost_points is not None:
+        lines.append(f"; Est. cost    : ~{cost_points:,.0f} pts (session billing, {plan_tier})")
+    lines.append(f"; Plan tier    : {plan_tier}")
+    lines.append(f"; Generated    : ArpSurvey Server on {now_str}")
     lines.append(f"; ============================================================")
     lines.append("")
     lines.append("#BillingMethod Session")

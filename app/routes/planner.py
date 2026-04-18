@@ -189,7 +189,8 @@ def generate_acp():
         else:
             filename = f"arp-session-{tel_id}-{obs_date}.txt"
 
-        result = build_plan(target_dicts, tel_id, site_key, params, filename=filename)
+        result = build_plan(target_dicts, tel_id, site_key, params,
+                           filename=filename, date_str=str(obs_date))
 
         tel_record = db.session.query(Telescope).filter_by(telescope_id=tel_id).first()
         plan = GeneratedPlan(
