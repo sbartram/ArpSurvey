@@ -12,6 +12,13 @@
   <td>{{ r.telescope }}</td>
   <td>{{ r.filter_strategy }}</td>
   <td>
+    {% if r.snr %}
+      <span title="{{ r.snr_quality }}">{{ r.snr }}</span>
+    {% else %}
+      —
+    {% endif %}
+  </td>
+  <td>
     {% set css = {"Pending": "pending", "Scheduled": "sched", "Done": "done", "Skip": "skip"} %}
     <span class="badge {{ css.get(r.target_status, 'pending') }}"
           hx-patch="/targets/{{ r.target_id }}/status" hx-swap="outerHTML"
@@ -20,5 +27,5 @@
 </tr>
 {% endfor %}
 {% if not results %}
-<tr><td colspan="12" class="empty-state">No targets match the current filters.</td></tr>
+<tr><td colspan="13" class="empty-state">No targets match the current filters.</td></tr>
 {% endif %}

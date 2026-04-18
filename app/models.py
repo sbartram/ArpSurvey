@@ -16,6 +16,7 @@ class Target(db.Model):
     ned_dec_degrees = db.Column(db.Float)
     ned_name = db.Column(db.String(120))
     size_arcmin = db.Column(db.Float)
+    magnitude = db.Column(db.Float)         # V-band magnitude from VizieR catalog
     season = db.Column(db.String(20), nullable=False)
     best_site = db.Column(db.String(40))
     filter_strategy = db.Column(db.String(20))
@@ -43,6 +44,15 @@ class Telescope(db.Model):
     resolution = db.Column(db.Float)
     filters = db.Column(db.JSON)
     aperture_mm = db.Column(db.Float)
+    focal_length_mm = db.Column(db.Float)
+    pixel_size_um = db.Column(db.Float)
+    peak_qe = db.Column(db.Float)         # 0.0–1.0
+    full_well_e = db.Column(db.Integer)
+    camera_model = db.Column(db.String(80))
+    sensor_model = db.Column(db.String(80))
+    sensor_type = db.Column(db.String(20))  # CCD or CMOS
+    read_noise_e = db.Column(db.Float)      # e-/pixel
+    dark_current_e = db.Column(db.Float)    # e-/pixel/sec at operating temp
 
     rates = db.relationship("TelescopeRate", backref="telescope", lazy="dynamic")
 

@@ -8,6 +8,7 @@ from app.models import Target, SessionResult, GeneratedPlan, Telescope
 from app.services.session import compute_session
 from app.services.astronomy import dark_window
 from app.services.acp import build_plan, assign_telescope
+from app.services.snr import estimate_snr, snr_quality_label
 
 bp = Blueprint("planner", __name__)
 
@@ -45,11 +46,40 @@ def compute():
 
     results = compute_session(obs_date, site_key, target_dicts, min_hours, moon_filter)
 
-    # Assign telescopes to each result
+    # Assign telescopes and estimate SNR for each result
     tels_df = load_telescopes()
+    # Build magnitude lookup from DB targets
+    mag_lookup = {t.arp_number: t.magnitude for t in targets}
+
     for r in results:
         size = r.get("size_arcmin") or 3.0
-        r["telescope"] = assign_telescope(size, site_key, tels_df)
+        tel_id = assign_telescope(size, site_key, tels_df)
+        r["telescope"] = tel_id
+        r["magnitude"] = mag_lookup.get(r["arp"])
+
+        # SNR estimation
+        tel_record = db.session.query(Telescope).filter_by(telescope_id=tel_id).first()
+        if tel_record and r.get("magnitude") and r.get("peak_elevation"):
+            snr_result = estimate_snr(
+                target_mag=r["magnitude"],
+                target_size_arcmin=size,
+                telescope=tel_record,
+                site_key=site_key,
+                elevation_deg=r["peak_elevation"],
+                moon_phase_pct=r["moon"]["phase_pct"],
+                moon_sep_deg=r["moon"]["separation_deg"],
+                exposure_secs=300,
+                n_subs=6,  # typical: 2 per repeat × 3 repeats
+            )
+            if snr_result:
+                r["snr"] = snr_result["snr_total"]
+                r["snr_quality"] = snr_quality_label(snr_result["snr_total"])
+            else:
+                r["snr"] = None
+                r["snr_quality"] = "?"
+        else:
+            r["snr"] = None
+            r["snr_quality"] = "?"
 
     # Dark window for display
     eve_dt, morn_dt = dark_window(site_key, obs_date)
@@ -133,6 +163,7 @@ def filter_planner():
         "risk": lambda r: {"G": 0, "M": 1, "A": 2}.get(r["moon"]["risk"], 3),
         "telescope": lambda r: r.get("telescope", ""),
         "filters": lambda r: r.get("filter_strategy", ""),
+        "snr": lambda r: r.get("snr") or 0,
         "status": lambda r: r.get("target_status", ""),
     }
     reverse = sort_by.startswith("-")
