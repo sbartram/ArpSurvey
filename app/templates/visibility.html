@@ -3,9 +3,27 @@
 
 {% block content %}
 {% if session_info %}
-<div style="font-size:12px;color:var(--text3);margin-bottom:12px">
-  Showing results from last computed session: {{ session_info.site }} on {{ session_info.date }}
-  (computed {{ session_info.computed }}) &middot; {{ session_info.count }} targets
+<div class="grid4" style="margin-bottom:12px">
+  <div class="metric">
+    <div class="lbl">Observatory</div>
+    <div class="val" style="font-size:16px">{{ session_info.site }}</div>
+    <div class="sub">{{ session_info.utc_offset_str }}</div>
+  </div>
+  <div class="metric">
+    <div class="lbl">Date</div>
+    <div class="val" style="font-size:16px">{{ session_info.date }}</div>
+    <div class="sub">Computed {{ session_info.computed }}</div>
+  </div>
+  <div class="metric">
+    <div class="lbl">Dark window (local)</div>
+    <div class="val" style="font-size:16px">{{ session_info.eve_local }}–{{ session_info.morn_local }}</div>
+    <div class="sub">{{ session_info.dark_hrs }}h of darkness</div>
+  </div>
+  <div class="metric">
+    <div class="lbl">Observable targets</div>
+    <div class="val" style="font-size:16px">{{ session_info.count }}</div>
+    <div class="sub">All times in local ({{ session_info.utc_offset_str }})</div>
+  </div>
 </div>
 {% endif %}
 

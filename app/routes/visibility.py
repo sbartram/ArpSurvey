@@ -1,4 +1,7 @@
+import datetime
+
 from flask import Blueprint, render_template, request
+from arp_common import OBSERVATORIES
 
 from app import db
 from app.models import SessionResult
@@ -17,11 +20,26 @@ def index():
 
     if last and last.results:
         results = last.results
+        utc_offset = OBSERVATORIES.get(last.site_key, {}).get("utc_offset", 0)
+        sign = "+" if utc_offset >= 0 else ""
+
+        eve_local = ""
+        morn_local = ""
+        dark_hrs = ""
+        if last.eve_twilight and last.morn_twilight:
+            eve_local = (last.eve_twilight + datetime.timedelta(hours=utc_offset)).strftime("%H:%M")
+            morn_local = (last.morn_twilight + datetime.timedelta(hours=utc_offset)).strftime("%H:%M")
+            dark_hrs = round((last.morn_twilight - last.eve_twilight).total_seconds() / 3600, 1)
+
         session_info = {
             "site": last.site_key,
             "date": last.date_local.isoformat() if last.date_local else "",
             "computed": last.computed_at.strftime("%Y-%m-%d %H:%M") if last.computed_at else "",
             "count": len(results),
+            "utc_offset_str": f"UTC{sign}{utc_offset}",
+            "eve_local": eve_local,
+            "morn_local": morn_local,
+            "dark_hrs": dark_hrs,
         }
 
     return render_template("visibility.html", results=results, session_info=session_info)
