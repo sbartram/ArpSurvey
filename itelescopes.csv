@@ -1,0 +1,78 @@
+Telescope,Platform,Aperture (in),Aperature (mm),Focal Length (mm),F-Ratio,Optical Tube Assembly,Optical Design,Camera,Sensor Type,CMOS Sensor Model,Sensor Size / Format (mm),"Camera Angle
+(""Up"" = Deg. East of N)",FOV X (arcmins),FOV Y (arcmins),Pixel Size (µm),Resolution (arcsec / pixel),Sensor Megapixels,Array X,Array Y,Peak QE,Full Well,N/ABG,Recommended Max Exposure (seconds),Guiding,Mount,Filters,Notes,"Additional System Specifications
+(e.g. horizon limits, special notes)"
+,Utah Desert Remote Observatory (MPC U94),,,,,,,,Note: Sensors generally have 16-bit ADCs unless other values are provided,,,,,,,,,,,,,,,,,,,
+T2,One Shot Color,5.9,150,1105.1,f/7.3,Takahashi TOA-150,Apochromatic Refractor,QHY268C,"Color CMOS
+(RGGB Bayer)",Sony IMX571,"23.5 x 15.7
+(APS-C)",178.683º,72.6,48.6,3.76,"0.69""",26.4,6280,4210,90%,51Ke,—,300,MOAG with Loadstar SX2,Paramount GTS,None,"Large (26 MP, 16-bit) FITS files",Telescope System Information and Specs
+T5,Medium Deep Space,9.8,250,850,f/3.4,Takahashi Epsilon 250,Hyperbolic Flat-Field,SBIG ST-10XME,CCD,—,14.9 x 10.0,177º,60.6,40.8,6.8,"1.66""",3.2,2184,1472,85%,100Ke,NABG,300,External Guiding,Paramount PME,"Red Green Blue, Ha, SII, OIII, Clear and Johnson's Cousin's Photometric B,V, and I filters.",Non Anti Bloom Gate (NABG) CCD. Bright stars will bloom or bleed in long exposures. Keep your exposures short if very bright stars are in your target FoV.,Telescope System Information and Specs
+T11,Deep Space,20.1,510,"2280
+(0.66 reducer)",f/4.5,Planewave CDK20,Corrected Dall-Kirkham,FLI ProLine PL11002M,CCD,—,"36 x 24
+(Full Format)",186.9º,54.3,36.2,9,"0.81""",10.7,4008,2672,51%,60Ke,ABG,600,Active Guiding Disabled,Planewave Ascension 200HR,"AstroDon - Luminance, Red, Green, Blue. 3nm Ha3_50R, Sii3_50R, Oiii_50R. U, B, V, R, I",Optics more sensitive to stray light gradients (e.g. during full moon),Telescope System Information and Specs
+T14,Wide Field,4.2,106,530,f/5.0,Takahashi FSQ Fluorite,Petzval Apochromatic Refractor,SBIG STX-16803,CCD,—,36.8 x 36.8,90º,238.8,238.8,9,"3.5""",16.8,4096,4096,60%,100Ke,ABG,600,Unguided,Paramount ME,"LRGB, Ha (5nm), SII(5nm), OIII(5nm), V Filters",Dithering recommended,Telescope System Information and Specs
+T20,Wide Field,4.2,106,530,f/5.0,Takahashi FSQ-ED,Petzval Apochromatic Refractor,ZWO ASI2400C,"Color CMOS
+(14-bit ADC)
+(RGGB Bayer)",Sony IMX410,"36 x 24
+(Full Format)",358.4º,233.7,155.8,5.94,"2.31""",24.5,6072,4042,>80%,50Ke,ABG,300,Unguided,Paramount ME,"Optolong Lpro, Optolong LUltimate (Ha/OIII 3nm dual band), Astrodon Ha (3nm), SII (3nm) & OIII (5nm)",FoV Rotated 90° relative to T14 for different framing opportunities.,Telescope System Information and Specs
+T21,Deep Space,17.0,431,"1940
+(0.66 reducer)",f/4.5,Planewave CDK17,Corrected Dall-Kirkham,FLI-PL6303E,CCD,—,27.6 x 18.4,359º,49.2,32.8,9,"0.96""",6.3,3072,2048,68%,100Ke,NABG,600,Active Guiding Disabled,Planewave Ascension 200HR,"Astrodon LRGB 50mm unmounted, Astrodon Ha, SII, OIII, 5nm, 50 mm unmounted, Astrodon UBVRI John/Cousins",Photometry and Imaging system. Sensitive NABG CCD - susceptible to blooming artifacts from bright subjects,Telescope System Information and Specs
+T25,Deep Space,20.0,508,3454,f/6.8,Planewave CDK20,Corrected Dall-Kirkham,Player One Zeus 455M PRO,Mono CMOS,Sony IMX455,"36 x 24
+(Full Format)",251.9º,36.2,24.2,3.76,"0.23""",61.2,9576,6388,91%,71.6Ke,—,600,None,Planewave L-500,"Astrodon LRGB Gen2 I-Series Tru-Balance filters, Astrodon 3nm SII,Ha,OIII",Produces very large files,Telescope System Information and Specs
+T26,Deep Space,20.0,508,1537,f/3.0,Planewave Delta Rho 500,Advanced Corrected Cassegrain Focus,ASI6200MM Pro (mono),Mono CMOS,Sony IMX455,"36 x 24
+(Full Format)",181º,80.4,54,7.52 (Bin2),"1.01""",15.3,4788,3194,91%,51.4Ke,—,300,None,Planewave L-550 on Equatorial Wedge,"Chroma Filters:
+Wideband: Luminance, Red, Green & Blue
+Narrowband: SII, Ha & OIII with a 3nm optimise passband","Bin2 only due to current software limitations
+Recommended Exposures: LRGB: 30s-180s.
+Narrowband: 180s-300s. 900s Available",Telescope System Information and Specs
+T68,"One Shot Color
+(30 min free / day)",11.0,279,620,f/2.2,"Celestron RASA 11""",Rowe Ackerman Schmidt Astrograph,ZWO ASI2600 Color,"Color CMOS
+(RGGB Bayer)",Sony IMX571,"23.6 x 15.6
+(APS-C)",277º,130.2,87,3.76,"1.25""",26.1,6248,4176,>50%,—,—,240,Via Mount,Paramount ME II,None,"Full-Time Free Telescope System
+Large (26 MP, 16-bit) FITS files",Telescope System Information and Specs
+,Sierra Remote Observatory (MPC U69),,,,,,,,,,,,,,,,,,,,,,,,,,,
+T24,Deep Space,24.0,610,3962,f/6.5,Planewave CDK24,Corrected Dall-Kirkham ,Player One Zeus 455M PRO,Mono CMOS,—,36 x 24,90.7º,31.6,21.1,7.52 (Bin2),"0.395""",15.3,4788,3194,91%,71.6Ke,—,600,External Guiding (300s+),Planewave Ascension 200HR,"Astrodon LRGB2-E50S
+Astrodon HA3_50S, OIII3_50S, SII3_50S.Astrodon V, I (V*-50S, Ic*-50S)","Best results on Bin1. Dithering highly recommended. Uses RBI Flush to prevent ghosting. Best to use 60, 120, 180, 300, 600 and 900s exposures to match with calibraiton data.",Telescope System Information and Specs
+,"Siding Springs Observatory, Australia (MPC Q62)",,,,,,,,,,,,,,,,,,,,,,,,,,,
+T8,Wide Field,4.2,106,530,f/5.0,Takahashi FSQ ED,Petzval Apochromatic Refractor,FLI Microline 16803,CCD,—,36.8 x 36.8,358º,238.8,238.8,9,"3.5""",16.8,4096,4096,60%,100Ke,ABG,600,External ,Paramount PME,"AstroDon Series 2
+Luminance, Red, Green, Blue, EXO, Ha, SII, OIII, NIR Luminance",Northern view is restricted by observatory roof. N Horizon limit is 75°. Dithering is recommended because T8's CCD sometimes produces dark columns. ,Telescope System Information and Specs
+T17,Deep Field Astrophotography,17.0,432,2939,f/6.8,Planewave CDK17,Corrected Dall-Kirkham ,ASI6200MM Pro (mono),Mono CMOS,Sony IMX455,"36 x 24
+(Full Format)",84.2º,42.4,28.3,7.52 (Bin2),"0.531""",15.3,4788,3194,91% (475nm),51.4Ke,—,240,Unguided,Paramount PME,"Astrodon: Luminance, Clear 
+Astrodon: Red-E. Green-E. Blue-E
+Astrodon: Ha 5nm, 5nm OIII, 5nm, SII","NEW CMOS Camera for astrophotography
+Bin2 only due to software limitations",Telescope System Information and Specs
+T30,Deep Space,20.0,508,"2262
+(0.66 reducer)",f/4.4,Planewave CDK20,Corrected Dall-Kirkham ,FLI-PL6303E,CCD,—,27.6 x 18.4,270º,41.6,27.8,9,"0.81""",6.3,3072,2048,68%,100Ke,NABG,300,Active Guiding Disabled,Planewave Ascension 200HR,"AstroDon Tru-Balance Gen 2 E series Luminance, Red, Green, Blue, 5nm Ha, 5nm SII, 5nm OIII, and AstroDon Johnson/Cousins UvBVRcIc",Very sensitive NABG CCD - susceptible to blooming artifacts from bright subjects,Telescope System Information and Specs
+T32,Wide Deep Field,17.0,431,2912,f/6.8,Planewave CDK17,Corrected Dall-Kirkham ,ASI6200MM Pro (mono),Mono CMOS,Sony IMX455,"36 x 24
+(Full Format)",90º,42.4,28.3,7.52 (Bin2),"0.53""",15.3,4788,3194,91% (475nm),51.4Ke,—,300,Active Guiding Disabled,Planewave Ascension 200HR,"Astrodon E-Series Luminance Red, Green, Blue
+Astrodon 5nm Ha, SII, OIII
+Astrodon Johnson/Couisins V, Ic","NEW CMOS Camera for astrophotography
+Bin2 only due to software limitations",Telescope System Information and Specs
+T33,"Narrow Deep Field
+(30 min free / day)",12.6,320,2885,f/9.0,"Star Instruments 12.5"" RCOS",Ritchey-Chrétien - Closed Carbon Tube,Apogee Alta U16,CCD,—,36.8 x 36.8,359º,37,37,9,"0.54""",16.8,4096,4096,69%,100Ke,NABG,300,External Guiding,Paramount ME,"Astrodon Series II: Luminance, Red, Green, Blue
+Astrodon Ha (5nm), SII, OIII (3nm)
+","Full-Time Free Telescope System
+North Horizon limit is 45°
+Rec. exposures: LRGB at 300s. Narrowband at 300s Bin2, or 600s Bin1 on calm nights. ",Telescope System Information and Specs
+T59,Wide Deep Field,20.1,510,3411,f/6.8,Planewave CDK20,Corrected Dall-Kirkham ,FLI Proline 16803,CCD,—,36.8 x 36.8,90º,37.2,37.2,9,"0.54""",16.8,4096,4096,60%,> 100X Saturation Exposure,ABG,900,Active Guiding Disabled,Planewave Ascension 200HR,"Astrodon E-Series Luminance Red, Green, Blue
+Astrodon 5nm Ha, SII, OIII
+Astrodon Johnson/Couisins, IcZ",Capable of very long (15 min) exposures,Telescope System Information and Specs
+,Deep Sky Chile (MPC X07),,,,,,,,,,,,,,,,,,,,,,,,,,,
+T70,Super Wide Field,2.6,65,129,f/3.5,Samyang 135 mm @ f/3.5,Camera Lens,ASI2600MM Pro (mono),Mono CMOS,Sony IMX571,"23.5 x 15.7
+(APS-C)",314º,469.8,355.2,3.76,"4.51""",26.1,6248,4176,60%,50Ke,—,300,ZWO 30 F/4 guidescope with Loadstar SX2,Paramount ME,"Astrodon Gen 2 E-Series LRGB, Ha, OIII, SII","Note: Camera lens. Some residual coma occurs in the corners, and bright stars develop halos. This is normal and expected on this system. ",Telescope System Information and Specs
+T71,Wide Field Astrophotography,7.1,180,500,f/2.8,Takahashi Epsilon 180ED,Hyperbolic Corrected Newtonian Astrograph,ASI2600MM Pro (mono),Mono CMOS,Sony IMX571,"23.5 x 15.7
+(APS-C)",342.5º,161.4,108,3.76,"1.55""",26.1,6248,4176,60%,50Ke,—,600,QHY miniguidescope f4.3 with Loadstar Pro,Paramount MyT,"Astrodon Gen 2 I-Series LRGB, Ha (5nm), OIII (5nm), SII (5nm)","Electronic shutter. No user dark frames can be taken. Calibrated data available for 10, 30, 60, 120 180, 300, 600s.
+
+Generates very large (26 MP, 101 MiB) FITS files",Telescope System Information and Specs
+T72,Deep Space,20.1,510,3411,F/6.8,Planewave CDK20,Corrected Dall-Kirkham,FLI ML-16200,CCD,—,27 x 21.6,176º,26.93,21.53,6,"0.359""",16.2,4500,3600,60%,39Ke,ABG,600,None,PlaneWave L-500,"L,R,G,B,SII,Ha,OIII,U,V,B,R,I filters",Raw calibration frames can be found at data.itelescope.net. (Bias Bin1 & Bin2 and Darks 900s Bin1 & 2 are scaled with high precision for photometry calibrated image data from 0 to 900 seconds).,Telescope System Information and Specs
+T73,Deep Field Astrophotography,14.0,356,2563,f/7.2,Planewave CDK14,Corrected Dall-Kirkham,ASI2600MM Pro (mono),Mono CMOS,Sony IMX571,"23.5 x 15.7
+(APS-C)",179.6º,31.8,21,3.76,"0.31""",26.1,6248,4176,60%,50Ke,—,240,WO Guide Star 61 f5.9 guide scope with Starlight Xpress Ultrastar Pro (mono) guide camera,Paramount MEII,"Chroma LRGB, Chroma 3nm Ha, OIII, SII",(the ASI2600MM has an extremely low dark current making darks virtually redundant),Telescope System Information and Specs
+T74,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+T75,Medium Deep Space,9.8,250,950,f/3.8,ASA N250,Newtownian Astrograph,ASI6200MM Pro (mono),Mono CMOS,Sony IMX455,"36 x 24
+(Full Format)",88.3º,137.4,91.8,7.52 (Bin2),"1.722""",15.3,4788,3194,91%,50Ke,—,600,ZWO 30 F/4 guide scope with ASI290MM mini,Paramount MyT,"Chroma LRGB, Chroma 3nm Ha, OIII, SII",Bin2 only due to current software limitations.,Telescope System Information and Specs
+,"AstroCamp Observatory, Spain (MPC I89)",,,,,,,,,,,,,,,,,,,,,,,,,,,
+T18,Medium Deep Space,12.5,318,1683,f/5.3,Planewave CDK12,Corrected Dall-Kirkham ,QHY600M-PH-US Mono,Mono CMOS,Sony IMX455,"36 x 24
+(Full Format)",150º,73.6,49.1,7.52 (Bin2),"0.92"" (Bin2)",15.3,4788,3194,87%,> 38Ke,—,300,External via Lodestar SX and 300mm guidescope,Paramount PME,"Astrodon Series E LRGB. Astrodon 5nm Ha, SII, OIII. Photometric V (Custom Scientific Bessell) and Ic (Astrodon John/Cousins)","Bin2 only due to current software limitations.
+SONY Full Frame BSI CMOS Sensor IMX455",Telescope System Information and Specs
+,"Entre Encinas y Estrellas, Spain",,,,,,,,,,,,,,,,,,,,,,,,,,,
+T80,Super Wide Field,2.6,65,129,f/3.5,Samyang 135 mm @ f/3.5,Camera Lens,ASI2600MM Pro P25 (mono),Mono CMOS,Sony IMX571,"23.5 x 15.7
+(APS-C)",268º,622.2,415.8,3.76,"5.98""",26.1,6248,4176,60%,50Ke,—,300,ZWO 30 F/4 guidescope with Loadstar SX2 ,Paramount MyT,"Astrodon Gen 2 E-Series LRGB, Ha, OIII, SII",Note: Camera lens. Some residual coma occurs in the corners,Telescope System Information and Specs
