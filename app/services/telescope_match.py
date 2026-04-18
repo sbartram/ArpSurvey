@@ -141,3 +141,108 @@ def _required_filters(strategy):
     if "HA" in s or "NARROWBAND" in s:
         return {"Ha"}
     return {"L"}
+
+
+def compare_telescopes(target, date, moon_info, snr_target=DEFAULT_SNR_TARGET,
+                       plan_tier=DEFAULT_PLAN_TIER):
+    """
+    Evaluate all telescopes in the DB for a target+date.
+
+    Args:
+        target: dict with arp_number, name, ra_hours, dec_degrees,
+                size_arcmin, magnitude, filter_strategy
+        date: observation date (datetime.date)
+        moon_info: dict with phase_pct, separation_deg, risk
+        snr_target: desired SNR goal
+        plan_tier: billing tier for cost calculation
+
+    Returns dict: {"viable": [...], "excluded": [...]}
+        viable: sorted by composite score descending
+        excluded: sorted by telescope_id
+    """
+    from app.models import Telescope
+
+    telescopes = Telescope.query.all()
+
+    viable = []
+    excluded = []
+
+    for tel in telescopes:
+        result = evaluate_telescope(
+            target=target, telescope=tel, date=date,
+            site_key=tel.site, moon_info=moon_info,
+            snr_target=snr_target, plan_tier=plan_tier,
+        )
+        if result["disqualified"]:
+            excluded.append(result)
+        else:
+            viable.append(result)
+
+    _compute_scores(viable)
+
+    viable.sort(key=lambda r: r.get("score", 0), reverse=True)
+    excluded.sort(key=lambda r: r.get("telescope_id", ""))
+
+    return {"viable": viable, "excluded": excluded}
+
+
+def _compute_scores(viable):
+    """Compute composite quality scores using min-max normalization."""
+    if not viable:
+        return
+
+    if len(viable) == 1:
+        viable[0]["score"] = 75  # single option gets a decent score
+        return
+
+    # Extract raw values
+    times = [r["time_to_snr_minutes"] for r in viable]
+    fills = [r["fov_fill_pct"] for r in viable]
+    hours = [r["hours"] for r in viable]
+    elevs = [r["peak_elevation"] for r in viable]
+    costs = [r["cost_points"] for r in viable]
+
+    for r in viable:
+        # Time to SNR: lower is better -> invert
+        t_norm = 1.0 - _min_max_norm(r["time_to_snr_minutes"], times)
+
+        # FOV fill: optimal 10-60%, penalize outside
+        f_norm = _fov_fit_score(r["fov_fill_pct"])
+
+        # Hours: higher is better
+        h_norm = _min_max_norm(r["hours"], hours)
+
+        # Elevation: higher is better
+        e_norm = _min_max_norm(r["peak_elevation"], elevs)
+
+        # Cost: lower is better -> invert
+        c_norm = 1.0 - _min_max_norm(r["cost_points"], costs)
+
+        raw = (SCORE_WEIGHTS["time_to_snr"] * t_norm +
+               SCORE_WEIGHTS["fov_fit"] * f_norm +
+               SCORE_WEIGHTS["hours"] * h_norm +
+               SCORE_WEIGHTS["elevation"] * e_norm +
+               SCORE_WEIGHTS["cost"] * c_norm)
+
+        r["score"] = round(raw * 100, 1)
+
+
+def _min_max_norm(value, values):
+    """Normalize value to 0-1 range within values. Returns 0.5 if all equal."""
+    lo, hi = min(values), max(values)
+    if hi == lo:
+        return 0.5
+    return (value - lo) / (hi - lo)
+
+
+def _fov_fit_score(fill_pct):
+    """Score FOV fill percentage. Optimal range 10-60%, penalized outside."""
+    if fill_pct <= 0:
+        return 0.0
+    if fill_pct <= 10:
+        return fill_pct / 10.0 * 0.7   # ramp up to 0.7 at 10%
+    if fill_pct <= 60:
+        return 0.7 + (fill_pct - 10) / 50.0 * 0.3  # 0.7 to 1.0
+    if fill_pct <= 100:
+        return 1.0 - (fill_pct - 60) / 40.0 * 0.8  # 1.0 down to 0.2
+    return 0.0  # clipped

@@ -197,3 +197,86 @@ def test_fov_fill_ratio(app):
 
     assert result["fov_fill_pct"] == 10.0  # 6.0 / 60.0 * 100
     assert result["target_pixels"] == 360   # 6.0 * 60 / 1.0
+
+
+def test_compare_telescopes_splits_viable_and_excluded(app):
+    from app.services.telescope_match import compare_telescopes
+
+    with app.app_context():
+        # Viable telescope: full LRGB filters, NM site
+        tel1 = _make_telescope(tel_id="T14", site="New Mexico", filters=["L", "R", "G", "B"])
+        rate1 = _make_rate(tel1)
+        # Excluded telescope: Lum-only (missing RGB for LRGB target)
+        tel2 = _make_telescope(tel_id="T99", site="New Mexico", filters=["L"],
+                               aperture=100, fov=30.0)
+        db.session.add_all([tel1, rate1, tel2])
+        db.session.commit()
+
+        result = compare_telescopes(
+            target=SAMPLE_TARGET,
+            date=SAMPLE_DATE,
+            moon_info={"phase_pct": 20.0, "separation_deg": 90.0, "risk": "G"},
+        )
+
+    assert len(result["viable"]) >= 1
+    assert len(result["excluded"]) >= 1
+    # Viable telescopes have a score
+    for v in result["viable"]:
+        assert "score" in v
+        assert 0 <= v["score"] <= 100
+    # Excluded telescopes have no score
+    for e in result["excluded"]:
+        assert "score" not in e or e.get("score") is None
+
+
+def test_composite_score_normalization(app):
+    from app.services.telescope_match import compare_telescopes
+
+    with app.app_context():
+        tel1 = _make_telescope(tel_id="T14", aperture=250, fov=60.0,
+                               filters=["L", "R", "G", "B"])
+        rate1 = _make_rate(tel1)
+        tel2 = _make_telescope(tel_id="T21", aperture=430, fov=40.0, resolution=0.6,
+                               filters=["L", "R", "G", "B"])
+        rate2 = _make_rate(tel2)
+        db.session.add_all([tel1, rate1, tel2, rate2])
+        db.session.commit()
+
+        result = compare_telescopes(
+            target=SAMPLE_TARGET,
+            date=SAMPLE_DATE,
+            moon_info={"phase_pct": 20.0, "separation_deg": 90.0, "risk": "G"},
+        )
+
+    for v in result["viable"]:
+        assert 0 <= v["score"] <= 100
+
+
+def test_compare_telescopes_custom_snr_target(app):
+    from app.services.telescope_match import compare_telescopes
+
+    with app.app_context():
+        tel = _make_telescope(filters=["L", "R", "G", "B"])
+        rate = _make_rate(tel)
+        db.session.add_all([tel, rate])
+        db.session.commit()
+
+        result_30 = compare_telescopes(
+            target=SAMPLE_TARGET, date=SAMPLE_DATE,
+            moon_info={"phase_pct": 20.0, "separation_deg": 90.0, "risk": "G"},
+            snr_target=30,
+        )
+        result_60 = compare_telescopes(
+            target=SAMPLE_TARGET, date=SAMPLE_DATE,
+            moon_info={"phase_pct": 20.0, "separation_deg": 90.0, "risk": "G"},
+            snr_target=60,
+        )
+
+    v30 = result_30["viable"][0]
+    v60 = result_60["viable"][0]
+    # Higher SNR target = more time and cost
+    assert v60["time_to_snr_minutes"] >= v30["time_to_snr_minutes"]
+    assert v60["cost_points"] >= v30["cost_points"]
+    # Elevation and hours should be the same (same night, same telescope)
+    assert v30["peak_elevation"] == v60["peak_elevation"]
+    assert v30["hours"] == v60["hours"]
