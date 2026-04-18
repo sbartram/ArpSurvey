@@ -350,3 +350,35 @@ def test_restore_route_returns_planner_table(app, client):
     assert response.status_code == 200
     html = response.data.decode()
     assert "M51" in html or "T14" in html
+
+
+def test_composite_score_ordering(app):
+    """A larger aperture telescope should score higher for a faint target,
+    all else being equal at the same site."""
+    from app.services.telescope_match import compare_telescopes
+
+    # Use a faint target so aperture difference meaningfully reduces subs needed
+    faint_target = {**SAMPLE_TARGET, "magnitude": 14.0}
+
+    with app.app_context():
+        # Smaller aperture
+        tel_small = _make_telescope(tel_id="T05", aperture=127, fov=60.0,
+                                    filters=["L", "R", "G", "B"])
+        rate_small = _make_rate(tel_small)
+        # Larger aperture
+        tel_large = _make_telescope(tel_id="T14", aperture=250, fov=60.0,
+                                    filters=["L", "R", "G", "B"])
+        rate_large = _make_rate(tel_large)
+        db.session.add_all([tel_small, rate_small, tel_large, rate_large])
+        db.session.commit()
+
+        result = compare_telescopes(
+            target=faint_target, date=SAMPLE_DATE,
+            moon_info={"phase_pct": 20.0, "separation_deg": 90.0, "risk": "G"},
+        )
+
+    viable = result["viable"]
+    assert len(viable) == 2
+    # Larger aperture should score higher (faster SNR, lower cost)
+    assert viable[0]["telescope_id"] == "T14"
+    assert viable[0]["score"] > viable[1]["score"]
