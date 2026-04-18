@@ -154,8 +154,13 @@ def generate_acp():
     site_key = last.site_key
     obs_date = last.date_local
 
+    # Only include targets marked as "Scheduled"
+    scheduled = [r for r in last.results if r.get("target_status") == "Scheduled"]
+    if not scheduled:
+        return '<div class="empty-state">No targets marked as "Scheduled". Click a target\'s status badge to cycle it to Scheduled first.</div>'
+
     tel_groups = {}
-    for r in last.results:
+    for r in scheduled:
         size = r.get("size_arcmin") or 3.0
         tel_id = r.get("telescope") or assign_telescope(size, site_key, tels_df)
         tel_groups.setdefault(tel_id, []).append(r)
