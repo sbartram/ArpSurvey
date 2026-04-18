@@ -280,3 +280,73 @@ def test_compare_telescopes_custom_snr_target(app):
     # Elevation and hours should be the same (same night, same telescope)
     assert v30["peak_elevation"] == v60["peak_elevation"]
     assert v30["hours"] == v60["hours"]
+
+
+@pytest.fixture
+def client(app):
+    return app.test_client()
+
+
+def test_compare_route_returns_200(app, client):
+    from app.models import Target
+
+    with app.app_context():
+        # Seed a target and telescope
+        target = Target(
+            arp_number=85, name="M51", ra_hours=13.5, dec_degrees=47.2,
+            size_arcmin=11.0, magnitude=8.4, season="Spring",
+            filter_strategy="LRGB", best_site="New Mexico / Spain",
+        )
+        tel = _make_telescope(filters=["L", "R", "G", "B"])
+        rate = _make_rate(tel)
+        db.session.add_all([target, tel, rate])
+        db.session.commit()
+
+        response = client.get("/planner/compare?arp=85&date=2026-04-17&site=New+Mexico")
+
+    assert response.status_code == 200
+    html = response.data.decode()
+    assert "M51" in html
+    assert "T14" in html
+
+
+def test_compare_route_missing_arp_returns_error(app, client):
+    response = client.get("/planner/compare?date=2026-04-17&site=New+Mexico")
+    assert response.status_code == 200
+    html = response.data.decode()
+    assert "not found" in html.lower() or "no target" in html.lower()
+
+
+def test_restore_route_returns_planner_table(app, client):
+    from app.models import Target, SessionResult
+
+    with app.app_context():
+        target = Target(
+            arp_number=85, name="M51", ra_hours=13.5, dec_degrees=47.2,
+            size_arcmin=11.0, magnitude=8.4, season="Spring",
+            filter_strategy="LRGB", best_site="New Mexico / Spain",
+        )
+        db.session.add(target)
+        db.session.flush()
+
+        # Seed a session result
+        import datetime as dt
+        session = SessionResult(
+            site_key="New Mexico",
+            date_local=dt.date(2026, 4, 17),
+            eve_twilight=dt.datetime(2026, 4, 18, 2, 30),
+            morn_twilight=dt.datetime(2026, 4, 18, 11, 0),
+            results=[{
+                "arp": 85, "name": "M51", "telescope": "T14",
+                "filter_strategy": "LRGB", "moon": {"risk": "G"},
+                "transit": "2026-04-18T06:00:00",
+            }],
+        )
+        db.session.add(session)
+        db.session.commit()
+
+        response = client.get("/planner/restore")
+
+    assert response.status_code == 200
+    html = response.data.decode()
+    assert "M51" in html or "T14" in html

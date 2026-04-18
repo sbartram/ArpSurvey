@@ -1,0 +1,20 @@
+<div class="card" style="margin-bottom:12px">
+  <a href="#" style="text-decoration:none"
+     hx-get="/planner/restore" hx-target="#planner-results" hx-swap="innerHTML"
+     >&larr; Back to targets</a>
+  &nbsp;&middot;&nbsp;
+  <strong>Arp {{ target.arp_number }} &mdash; {{ target.name }}</strong>
+  &nbsp;&middot;&nbsp;
+  V mag: {{ target.magnitude or '?' }} | Size: {{ target.size_arcmin or '?' }}'
+</div>
+
+{% if viable %}
+<p>{{ viable|length }} viable telescope(s) found. Full UI in Task 4.</p>
+{% for r in viable %}
+<p>{{ r.telescope_id }} ({{ r.site }}) — Score: {{ r.score }}</p>
+{% endfor %}
+{% endif %}
+
+{% if excluded %}
+<p>{{ excluded|length }} excluded.</p>
+{% endif %}
