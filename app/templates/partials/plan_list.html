@@ -3,13 +3,14 @@
 </div>
 <div class="tbl-wrap">
   <table>
-    <thead><tr><th>Filename</th><th>Telescope</th><th>Targets</th></tr></thead>
+    <thead><tr><th>Filename</th><th>Telescope</th><th>Targets</th><th></th></tr></thead>
     <tbody>
       {% for g in generated %}
       <tr>
         <td>{{ g.filename }}</td>
         <td>{{ g.telescope }}</td>
         <td>{{ g.targets }}</td>
+        <td><a href="/files/plans/{{ g.plan_id }}/download" class="btn" style="padding:2px 8px;font-size:11px">Download</a></td>
       </tr>
       {% endfor %}
     </tbody>

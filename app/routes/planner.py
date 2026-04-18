@@ -185,7 +185,9 @@ def generate_acp():
             metadata_=params,
         )
         db.session.add(plan)
-        generated.append({"filename": filename, "telescope": tel_id, "targets": len(group)})
+        db.session.flush()
+        generated.append({"filename": filename, "telescope": tel_id,
+                          "targets": len(group), "plan_id": plan.id})
 
     db.session.commit()
 
