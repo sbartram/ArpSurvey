@@ -12,7 +12,7 @@ import ephem
 from arp_common import OBSERVATORIES, SITE_MAP
 
 from app.services.astronomy import (
-    build_observer, dark_window, target_visibility, moon_info,
+    build_observer, dark_window, target_visibility, moon_info, alt_at_time,
 )
 
 
@@ -58,6 +58,9 @@ def compute_session(date, site_key, targets, min_hours, moon_filter):
 
         utc_offset = cfg["utc_offset"]
 
+        # Peak elevation at transit
+        peak_el = round(alt_at_time(ra_h, dec_deg, site_key, vis["transit"]), 1)
+
         results.append({
             "arp": t["arp_number"],
             "name": t["name"],
@@ -66,6 +69,7 @@ def compute_session(date, site_key, targets, min_hours, moon_filter):
             "size_arcmin": t.get("size_arcmin"),
             "filter_strategy": t.get("filter_strategy", "Luminance"),
             "hours": vis["hours"],
+            "peak_elevation": peak_el,
             "rise": vis["rise"].isoformat(),
             "set": vis["set"].isoformat(),
             "transit": vis["transit"].isoformat(),

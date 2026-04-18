@@ -127,6 +127,7 @@ def filter_planner():
         "name": lambda r: r["name"].lower(),
         "transit": lambda r: r["transit"],
         "hours": lambda r: r["hours"],
+        "elevation": lambda r: r.get("peak_elevation", 0),
         "moon": lambda r: r["moon"]["phase_pct"],
         "sep": lambda r: r["moon"]["separation_deg"],
         "risk": lambda r: {"G": 0, "M": 1, "A": 2}.get(r["moon"]["risk"], 3),
@@ -179,6 +180,7 @@ def generate_acp():
             "magnitude": r.get("magnitude"),
             "transit_local": r.get("transit_local"),
             "hours": r.get("hours"),
+            "peak_elevation": r.get("peak_elevation"),
             "moon": r.get("moon"),
         } for r in group]
 

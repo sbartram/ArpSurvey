@@ -170,7 +170,9 @@ def build_plan(targets, telescope_id, observatory, params, filename=None,
         if transit_str and hours:
             moon_phase = moon.get("phase_pct", "")
             moon_sep = moon.get("separation_deg", "")
-            window_str = f"  [{hours}h window, transit {transit_str}, moon {moon_phase}% sep {moon_sep}deg]"
+            peak_el = t.get("peak_elevation", "")
+            el_str = f", el {peak_el}deg" if peak_el else ""
+            window_str = f"  [{hours}h window, transit {transit_str}{el_str}, moon {moon_phase}% sep {moon_sep}deg]"
         else:
             window_str = ""
         lines.append(f"; --- Arp {arp}: {t['name']}  (size: {size}'{mag_str}){window_str} ---")
