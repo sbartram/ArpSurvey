@@ -173,7 +173,8 @@ def filter_planner():
     key_fn = sort_keys.get(sort_field, sort_keys["transit"])
     results.sort(key=key_fn, reverse=reverse)
 
-    return render_template("partials/planner_rows.html", results=results)
+    return render_template("partials/planner_rows.html", results=results,
+                           date=last.date_local.isoformat(), site=last.site_key)
 
 
 @bp.route("/planner/compare")
