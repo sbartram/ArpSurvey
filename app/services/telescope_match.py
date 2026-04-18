@@ -6,9 +6,6 @@ Computes visibility, SNR, FOV fit, cost, and a composite quality score.
 """
 
 import math
-import datetime
-
-from arp_common import OBSERVATORIES
 
 from app.services.astronomy import dark_window, target_visibility, alt_at_time
 from app.services.snr import estimate_snr
