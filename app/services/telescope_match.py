@@ -195,9 +195,8 @@ def _compute_scores(viable):
         viable[0]["score"] = 75  # single option gets a decent score
         return
 
-    # Extract raw values
+    # Extract raw values for min-max normalization
     times = [r["time_to_snr_minutes"] for r in viable]
-    fills = [r["fov_fill_pct"] for r in viable]
     hours = [r["hours"] for r in viable]
     elevs = [r["peak_elevation"] for r in viable]
     costs = [r["cost_points"] for r in viable]
