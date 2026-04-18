@@ -184,7 +184,7 @@ def generate_acp():
             target_name = sanitize_name(f"Arp{int(group[0]['arp']):03d}_{group[0]['name']}")
             filename = f"{target_name}-{tel_id}-{obs_date}.txt"
         else:
-            filename = f"Arp_Session_{site_key.replace(' ', '_')}_{obs_date}_{tel_id}.txt"
+            filename = f"arp-session-{tel_id}-{obs_date}.txt"
 
         tel_record = db.session.query(Telescope).filter_by(telescope_id=tel_id).first()
         plan = GeneratedPlan(
