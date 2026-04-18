@@ -1,5 +1,8 @@
 # Generated coordinate data — run arp_ned_coords.py to regenerate
-#arp_ned_coords.csv
+arp_ned_coords.csv
+
+tmp/
+*.log
 
 # Generated ACP plan files
 acp_plans/
