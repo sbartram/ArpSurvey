@@ -176,7 +176,15 @@ def generate_acp():
         } for r in group]
 
         result = build_plan(target_dicts, tel_id, "Session", params)
-        filename = f"Arp_Session_{site_key.replace(' ', '_')}_{obs_date}_{tel_id}.txt"
+
+        # Single target: {target-name}-{telescope}-{date}.txt
+        # Multiple targets: Arp_Session_{site}_{date}_{telescope}.txt
+        if len(group) == 1:
+            from arp_common import sanitize_name
+            target_name = sanitize_name(f"Arp{int(group[0]['arp']):03d}_{group[0]['name']}")
+            filename = f"{target_name}-{tel_id}-{obs_date}.txt"
+        else:
+            filename = f"Arp_Session_{site_key.replace(' ', '_')}_{obs_date}_{tel_id}.txt"
 
         tel_record = db.session.query(Telescope).filter_by(telescope_id=tel_id).first()
         plan = GeneratedPlan(
