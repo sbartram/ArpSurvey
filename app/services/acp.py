@@ -122,7 +122,7 @@ def build_plan(targets, telescope_id, season, params, filename=None):
     lines.append(f"; Arp Catalog Observing Plan")
     lines.append(f"; Plan Name    : {plan_name}")
     lines.append(f"; Telescope    : {telescope_id}")
-    lines.append(f"; Season       : {season}")
+    lines.append(f"; Observatory  : {season}")
     lines.append(f"; Targets      : {len(targets)}")
     lines.append(f"; Imaging time : {format_duration(imaging_secs)}")
     lines.append(f"; Total duration: {format_duration(total_secs)}")
