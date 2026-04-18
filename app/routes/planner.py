@@ -9,6 +9,8 @@ from app.services.session import compute_session
 from app.services.astronomy import dark_window
 from app.services.acp import build_plan, assign_telescope
 from app.services.snr import estimate_snr, snr_quality_label
+from app.services.telescope_match import compare_telescopes, DEFAULT_SNR_TARGET
+from app.services.astronomy import build_observer, moon_info as compute_moon_info
 
 bp = Blueprint("planner", __name__)
 
@@ -171,7 +173,110 @@ def filter_planner():
     key_fn = sort_keys.get(sort_field, sort_keys["transit"])
     results.sort(key=key_fn, reverse=reverse)
 
-    return render_template("partials/planner_rows.html", results=results)
+    return render_template("partials/planner_rows.html", results=results,
+                           date=last.date_local.isoformat(), site=last.site_key)
+
+
+@bp.route("/planner/compare")
+def compare():
+    arp_num = request.args.get("arp", type=int)
+    date_str = request.args.get("date") or datetime.date.today().isoformat()
+    site_key = request.args.get("site", "New Mexico")
+    snr_target = request.args.get("snr_target", DEFAULT_SNR_TARGET, type=float)
+    sort_by = request.args.get("sort", "score")
+    sort_dir = request.args.get("dir", "desc")
+
+    if arp_num is None:
+        return '<div class="empty-state">No target specified.</div>'
+
+    target_record = db.session.query(Target).filter_by(
+        arp_number=arp_num
+    ).first()
+    if not target_record:
+        return '<div class="empty-state">Target not found.</div>'
+
+    obs_date = datetime.date.fromisoformat(date_str)
+
+    target = {
+        "arp_number": target_record.arp_number,
+        "name": target_record.name,
+        "ra_hours": target_record.best_ra,
+        "dec_degrees": target_record.best_dec,
+        "size_arcmin": target_record.size_arcmin,
+        "magnitude": target_record.magnitude,
+        "filter_strategy": target_record.filter_strategy,
+    }
+
+    # Compute moon info for this target on this date
+    obs = build_observer(site_key, obs_date)
+    mi = compute_moon_info(target["ra_hours"], target["dec_degrees"], obs)
+
+    result = compare_telescopes(
+        target=target, date=obs_date, moon_info=mi,
+        snr_target=snr_target,
+    )
+
+    # Apply column sort to viable list
+    if sort_by != "score":
+        reverse = sort_dir == "desc"
+        sort_keys = {
+            "telescope": lambda r: r.get("telescope_id", ""),
+            "site": lambda r: r.get("site", ""),
+            "elevation": lambda r: r.get("peak_elevation", 0),
+            "hours": lambda r: r.get("hours", 0),
+            "airmass": lambda r: r.get("airmass", 99),
+            "pixels": lambda r: r.get("target_pixels", 0),
+            "fov": lambda r: r.get("fov_fill_pct", 0),
+            "snr": lambda r: r.get("snr_single", 0),
+            "time": lambda r: r.get("time_to_snr_minutes", 9999),
+            "cost": lambda r: r.get("cost_points", 9999),
+            "moon": lambda r: {"G": 0, "M": 1, "A": 2}.get(r.get("moon_risk", ""), 3),
+        }
+        key_fn = sort_keys.get(sort_by, lambda r: r.get("score", 0))
+        result["viable"].sort(key=key_fn, reverse=reverse)
+
+    return render_template("partials/telescope_compare.html",
+                           target=target, date=date_str, site=site_key,
+                           snr_target=snr_target,
+                           viable=result["viable"],
+                           excluded=result["excluded"])
+
+
+@bp.route("/planner/restore")
+def restore():
+    """Re-render the full planner table from the last SessionResult.
+
+    Used by the compare view's "Back to targets" button, since the compare
+    swap destroys #planner-filters and the filter route can't restore the
+    full table layout.
+    """
+    last = db.session.query(SessionResult).order_by(
+        SessionResult.computed_at.desc()
+    ).first()
+    if not last or not last.results:
+        return '<div class="empty-state">No session data. Compute a session first.</div>'
+
+    results = list(last.results)
+    utc_offset = OBSERVATORIES[last.site_key]["utc_offset"]
+    eve_local = (last.eve_twilight + datetime.timedelta(hours=utc_offset)).strftime("%H:%M")
+    morn_local = (last.morn_twilight + datetime.timedelta(hours=utc_offset)).strftime("%H:%M")
+    dark_hrs = round((last.morn_twilight - last.eve_twilight).total_seconds() / 3600, 1)
+
+    telescopes = sorted(set(r["telescope"] for r in results))
+    strategies = sorted(set(r["filter_strategy"] for r in results))
+
+    summary = {
+        "date": last.date_local.isoformat(), "site": last.site_key,
+        "eve_local": eve_local, "morn_local": morn_local,
+        "dark_hrs": dark_hrs, "total": len(results),
+        "good": sum(1 for r in results if r["moon"]["risk"] == "G"),
+        "marginal": sum(1 for r in results if r["moon"]["risk"] == "M"),
+        "avoid": sum(1 for r in results if r["moon"]["risk"] == "A"),
+    }
+
+    return render_template("partials/planner_table.html",
+                           results=results, summary=summary,
+                           telescopes=telescopes, strategies=strategies)
 
 
 @bp.route("/planner/generate-acp", methods=["POST"])

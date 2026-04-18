@@ -24,8 +24,14 @@
           hx-patch="/targets/{{ r.target_id }}/status" hx-swap="outerHTML"
           style="cursor:pointer">{{ r.target_status }}</span>
   </td>
+  <td>
+    <button class="btn-sm"
+            hx-get="/planner/compare?arp={{ r.arp }}&date={{ date }}&site={{ site }}"
+            hx-target="#planner-results" hx-swap="innerHTML"
+            style="font-size:11px;padding:2px 8px;cursor:pointer">Compare</button>
+  </td>
 </tr>
 {% endfor %}
 {% if not results %}
-<tr><td colspan="13" class="empty-state">No targets match the current filters.</td></tr>
+<tr><td colspan="14" class="empty-state">No targets match the current filters.</td></tr>
 {% endif %}

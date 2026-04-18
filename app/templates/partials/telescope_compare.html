@@ -1,0 +1,98 @@
+<div class="card" style="font-size:13px;color:var(--text2);margin-bottom:12px">
+  <a href="#" style="text-decoration:none"
+     hx-get="/planner/restore" hx-target="#planner-results" hx-swap="innerHTML"
+     >&larr; Back to targets</a>
+  &nbsp;&middot;&nbsp;
+  <strong>Arp {{ target.arp_number }} &mdash; {{ target.name }}</strong>
+  &nbsp;&middot;&nbsp;
+  V mag: {{ target.magnitude or '?' }} | Size: {{ target.size_arcmin or '?' }}'
+  &nbsp;&middot;&nbsp;
+  <label style="font-size:12px">
+    SNR target:
+    <input type="number" name="snr_target" value="{{ snr_target }}" min="1" max="999"
+           style="width:60px"
+           hx-get="/planner/compare?arp={{ target.arp_number }}&date={{ date }}&site={{ site }}"
+           hx-target="#planner-results" hx-swap="innerHTML"
+           hx-trigger="change" hx-include="this">
+  </label>
+</div>
+
+{% if viable %}
+<div class="tbl-wrap">
+  <table>
+    <thead>
+      <tr>
+        {% set base = "/planner/compare?arp=" ~ target.arp_number ~ "&date=" ~ date ~ "&site=" ~ site ~ "&snr_target=" ~ snr_target %}
+        <th style="cursor:pointer" hx-get="{{ base }}&sort=score&dir=desc" hx-target="#planner-results" hx-swap="innerHTML">Score</th>
+        <th style="cursor:pointer" hx-get="{{ base }}&sort=telescope&dir=asc" hx-target="#planner-results" hx-swap="innerHTML">Telescope</th>
+        <th style="cursor:pointer" hx-get="{{ base }}&sort=site&dir=asc" hx-target="#planner-results" hx-swap="innerHTML">Site</th>
+        <th style="cursor:pointer" hx-get="{{ base }}&sort=elevation&dir=desc" hx-target="#planner-results" hx-swap="innerHTML">Peak El</th>
+        <th style="cursor:pointer" hx-get="{{ base }}&sort=hours&dir=desc" hx-target="#planner-results" hx-swap="innerHTML">Hrs</th>
+        <th style="cursor:pointer" hx-get="{{ base }}&sort=airmass&dir=asc" hx-target="#planner-results" hx-swap="innerHTML">Airmass</th>
+        <th style="cursor:pointer" hx-get="{{ base }}&sort=pixels&dir=desc" hx-target="#planner-results" hx-swap="innerHTML">Pixels</th>
+        <th style="cursor:pointer" hx-get="{{ base }}&sort=fov&dir=asc" hx-target="#planner-results" hx-swap="innerHTML">FOV%</th>
+        <th style="cursor:pointer" hx-get="{{ base }}&sort=snr&dir=desc" hx-target="#planner-results" hx-swap="innerHTML">SNR/sub</th>
+        <th style="cursor:pointer" hx-get="{{ base }}&sort=time&dir=asc" hx-target="#planner-results" hx-swap="innerHTML">Time</th>
+        <th style="cursor:pointer" hx-get="{{ base }}&sort=cost&dir=asc" hx-target="#planner-results" hx-swap="innerHTML">Cost</th>
+        <th style="cursor:pointer" hx-get="{{ base }}&sort=moon&dir=asc" hx-target="#planner-results" hx-swap="innerHTML">Moon</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in viable %}
+      <tr>
+        <td>
+          {% if r.score >= 70 %}
+            <span class="badge G" title="Score: {{ r.score }}">{{ r.score|round|int }}</span>
+          {% elif r.score >= 40 %}
+            <span class="badge M" title="Score: {{ r.score }}">{{ r.score|round|int }}</span>
+          {% else %}
+            <span class="badge A" title="Score: {{ r.score }}">{{ r.score|round|int }}</span>
+          {% endif %}
+        </td>
+        <td>{{ r.telescope_id }}</td>
+        <td>{{ r.site }}</td>
+        <td>{{ r.peak_elevation }}&deg;</td>
+        <td>{{ r.hours }}</td>
+        <td>{{ r.airmass }}</td>
+        <td>{{ r.target_pixels }}</td>
+        <td>{{ r.fov_fill_pct }}%</td>
+        <td>{{ r.snr_single }}</td>
+        <td>{{ r.time_to_snr_minutes }}m</td>
+        <td>{{ r.cost_points }} pts</td>
+        <td><span class="badge {{ r.moon_risk }}">{{ r.moon_risk }}</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">No viable telescopes found for this target.</div>
+{% endif %}
+
+{% if excluded %}
+<details style="margin-top:16px">
+  <summary style="cursor:pointer;font-size:13px;color:var(--text3)">
+    {{ excluded|length }} excluded telescope{{ 's' if excluded|length != 1 }}
+  </summary>
+  <div class="tbl-wrap" style="opacity:0.5;margin-top:8px">
+    <table>
+      <thead>
+        <tr>
+          <th>Telescope</th>
+          <th>Site</th>
+          <th>Reason</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in excluded %}
+        <tr>
+          <td>{{ r.telescope_id }}</td>
+          <td>{{ r.site }}</td>
+          <td>{{ r.disqualification_reason }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</details>
+{% endif %}
