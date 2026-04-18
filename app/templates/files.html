@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Files{% endblock %}
+
+{% block content %}
+<div class="grid2">
+  <div class="card">
+    <div class="card-title">Upload data file</div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:12px">
+      Upload an updated Excel or CSV file to re-import data into the database.
+      Supported files: Arp_Seasonal_Plan.xlsx, itelescopesystems.xlsx, arp_ned_coords.csv
+    </p>
+    <form hx-post="/files/upload" hx-target="#upload-result" hx-swap="innerHTML"
+          hx-encoding="multipart/form-data">
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="file" name="file" accept=".xlsx,.csv" required
+               style="font-size:13px">
+        <button type="submit" class="btn btn-primary">Upload &amp; Import</button>
+      </div>
+    </form>
+    <div id="upload-result" style="margin-top:12px"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">About file imports</div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.8">
+      <strong>Arp_Seasonal_Plan.xlsx</strong> — Re-imports all 338 targets (upsert by Arp #)<br>
+      <strong>itelescopesystems.xlsx</strong> — Re-imports telescope specs and billing rates<br>
+      <strong>arp_ned_coords.csv</strong> — Updates NED coordinates on matching targets
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">Generated ACP plans</div>
+  {% if plans %}
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr><th>Filename</th><th>Type</th><th>Season</th><th>Created</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for p in plans %}
+        <tr>
+          <td>{{ p.filename }}</td>
+          <td><span class="badge pending">{{ p.plan_type }}</span></td>
+          <td>{{ p.season or "" }}</td>
+          <td>{{ p.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+          <td><a href="/files/plans/{{ p.id }}/download" class="btn" style="padding:2px 8px;font-size:11px">Download</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">No generated plans yet. Use the ACP Generator to create plans.</div>
+  {% endif %}
+</div>
+{% endblock %}

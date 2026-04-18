@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Visibility{% endblock %}
+
+{% block content %}
+{% if session_info %}
+<div class="grid4" style="margin-bottom:12px">
+  <div class="metric">
+    <div class="lbl">Observatory</div>
+    <div class="val" style="font-size:16px">{{ session_info.site }}</div>
+    <div class="sub">{{ session_info.utc_offset_str }}</div>
+  </div>
+  <div class="metric">
+    <div class="lbl">Date</div>
+    <div class="val" style="font-size:16px">{{ session_info.date }}</div>
+    <div class="sub">Computed {{ session_info.computed }}</div>
+  </div>
+  <div class="metric">
+    <div class="lbl">Dark window (local)</div>
+    <div class="val" style="font-size:16px">{{ session_info.eve_local }}–{{ session_info.morn_local }}</div>
+    <div class="sub">{{ session_info.dark_hrs }}h of darkness</div>
+  </div>
+  <div class="metric">
+    <div class="lbl">Observable targets</div>
+    <div class="val" style="font-size:16px">{{ session_info.count }}</div>
+    <div class="sub">All times in local ({{ session_info.utc_offset_str }})</div>
+  </div>
+</div>
+{% endif %}
+
+<div class="filter-row">
+  <input type="text" name="search" placeholder="Search Arp # or name" style="width:180px"
+         hx-get="/visibility/filter" hx-target="#vis-table" hx-swap="innerHTML"
+         hx-trigger="input changed delay:300ms"
+         hx-include="[name='min_hours'],[name='moon_filter'],[name='sort']">
+  <select name="min_hours"
+          hx-get="/visibility/filter" hx-target="#vis-table" hx-swap="innerHTML"
+          hx-trigger="change"
+          hx-include="[name='search'],[name='moon_filter'],[name='sort']">
+    <option value="0">Any duration</option>
+    <option value="2">2+ hours</option>
+    <option value="4">4+ hours</option>
+    <option value="6">6+ hours</option>
+  </select>
+  <select name="moon_filter"
+          hx-get="/visibility/filter" hx-target="#vis-table" hx-swap="innerHTML"
+          hx-trigger="change"
+          hx-include="[name='search'],[name='min_hours'],[name='sort']">
+    <option value="">Any moon rating</option>
+    <option value="G">Good only</option>
+    <option value="GM">Good + marginal</option>
+  </select>
+  <select name="sort"
+          hx-get="/visibility/filter" hx-target="#vis-table" hx-swap="innerHTML"
+          hx-trigger="change"
+          hx-include="[name='search'],[name='min_hours'],[name='moon_filter']">
+    <option value="transit">Sort by transit</option>
+    <option value="hours">Sort by obs hours</option>
+    <option value="arp">Sort by Arp #</option>
+  </select>
+</div>
+
+<div id="vis-table">
+  {% include "partials/visibility_table.html" %}
+</div>
+{% endblock %}

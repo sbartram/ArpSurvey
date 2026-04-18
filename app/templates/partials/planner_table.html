@@ -1,0 +1,64 @@
+<div class="card" style="font-size:13px;color:var(--text2);margin-bottom:12px">
+  {{ summary.site }} &middot; {{ summary.date }} &middot;
+  Dark window: {{ summary.eve_local }}–{{ summary.morn_local }} ({{ summary.dark_hrs }}h) &middot;
+  {{ summary.total }} targets
+  ({{ summary.good }} good, {{ summary.marginal }} marginal, {{ summary.avoid }} avoid)
+</div>
+
+<div class="filter-row" id="planner-filters">
+  <input type="text" name="search" placeholder="Search Arp # or name" style="width:180px"
+         hx-get="/planner/filter" hx-target="#planner-tbody" hx-swap="innerHTML"
+         hx-trigger="input changed delay:300ms"
+         hx-include="#planner-filters">
+  <select name="telescope"
+          hx-get="/planner/filter" hx-target="#planner-tbody" hx-swap="innerHTML"
+          hx-trigger="change" hx-include="#planner-filters">
+    <option value="">All telescopes</option>
+    {% for t in telescopes %}
+    <option value="{{ t }}">{{ t }}</option>
+    {% endfor %}
+  </select>
+  <select name="strategy"
+          hx-get="/planner/filter" hx-target="#planner-tbody" hx-swap="innerHTML"
+          hx-trigger="change" hx-include="#planner-filters">
+    <option value="">All filters</option>
+    {% for s in strategies %}
+    <option value="{{ s }}">{{ s }}</option>
+    {% endfor %}
+  </select>
+  <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+    <input type="checkbox" name="hide_done"
+           hx-get="/planner/filter" hx-target="#planner-tbody" hx-swap="innerHTML"
+           hx-trigger="change" hx-include="#planner-filters"> Hide done
+  </label>
+  <span style="font-size:12px;color:var(--text3)">{{ results|length }} targets</span>
+</div>
+
+{% if results %}
+<div class="tbl-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th style="cursor:pointer" hx-get="/planner/filter?sort=arp" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Arp</th>
+        <th style="cursor:pointer" hx-get="/planner/filter?sort=name" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Name</th>
+        <th>Window</th>
+        <th style="cursor:pointer" hx-get="/planner/filter?sort=transit" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Transit</th>
+        <th style="cursor:pointer" hx-get="/planner/filter?sort=hours" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Hrs</th>
+        <th style="cursor:pointer" hx-get="/planner/filter?sort=elevation" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Peak El</th>
+        <th style="cursor:pointer" hx-get="/planner/filter?sort=moon" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Moon%</th>
+        <th style="cursor:pointer" hx-get="/planner/filter?sort=sep" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Sep</th>
+        <th style="cursor:pointer" hx-get="/planner/filter?sort=risk" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Risk</th>
+        <th style="cursor:pointer" hx-get="/planner/filter?sort=telescope" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Telescope</th>
+        <th style="cursor:pointer" hx-get="/planner/filter?sort=filters" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Filters</th>
+        <th style="cursor:pointer" hx-get="/planner/filter?sort=snr" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Est. SNR</th>
+        <th style="cursor:pointer" hx-get="/planner/filter?sort=status" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Status</th>
+      </tr>
+    </thead>
+    <tbody id="planner-tbody">
+      {% include "partials/planner_rows.html" %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">No observable targets found with these constraints.</div>
+{% endif %}

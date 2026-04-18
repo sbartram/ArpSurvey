@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}ACP Generator{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-title">Generate ACP plans</div>
+  <form hx-post="/generator/run" hx-target="#gen-results" hx-swap="innerHTML">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Season</label>
+        <select name="season">
+          {% for s in seasons %}
+          <option value="{{ s }}">{{ s }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Telescope (blank = auto)</label>
+        <select name="telescope">
+          <option value="">Auto-assign</option>
+          {% for t in telescopes %}
+          <option value="{{ t.telescope_id }}">{{ t.telescope_id }} ({{ t.site }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Exposure (sec)</label>
+        <select name="exposure">
+          <option value="60">60</option>
+          <option value="120">120</option>
+          <option value="180">180</option>
+          <option value="300" selected>300</option>
+          <option value="600">600</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Count per filter</label>
+        <input type="number" name="count" value="2" min="1" max="10">
+      </div>
+      <div class="form-group">
+        <label>Repeat cycles</label>
+        <input type="number" name="repeat" value="3" min="1" max="10">
+      </div>
+      <div class="form-group">
+        <label>Targets per plan</label>
+        <input type="number" name="targets_per_plan" value="5" min="1" max="20">
+      </div>
+      <div class="form-group">
+        <label>Plan tier</label>
+        <select name="plan_tier">
+          {% for tier in plan_tiers %}
+          <option value="{{ tier }}" {% if tier == "Plan-40" %}selected{% endif %}>{{ tier }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Generate plans</button>
+    <span class="htmx-indicator" style="margin-left:8px;color:var(--text3)">Generating...</span>
+  </form>
+</div>
+
+<div class="card">
+  <div class="card-title">Generated plans</div>
+  <div id="gen-results">
+    {% if plans %}
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Filename</th><th>Season</th><th>Type</th><th>Created</th><th></th></tr></thead>
+        <tbody>
+          {% for p in plans %}
+          <tr>
+            <td>{{ p.filename }}</td>
+            <td>{{ p.season }}</td>
+            <td><span class="badge pending">{{ p.plan_type }}</span></td>
+            <td>{{ p.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td><a href="/files/plans/{{ p.id }}/download" class="btn" style="padding:2px 8px;font-size:11px">Download</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">No plans generated yet. Use the form above.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

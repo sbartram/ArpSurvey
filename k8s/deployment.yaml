@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: arp-survey
+  labels:
+    app: arp-survey
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: arp-survey
+  template:
+    metadata:
+      labels:
+        app: arp-survey
+    spec:
+      initContainers:
+      - name: migrate
+        image: arp-survey:latest
+        command: ["alembic", "upgrade", "head"]
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: arp-survey-secrets
+              key: database-url
+      containers:
+      - name: arp-survey
+        image: arp-survey:latest
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: arp-survey-secrets
+              key: database-url
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: arp-survey-secrets
+              key: flask-secret-key
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 30
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"

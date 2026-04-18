@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Moon Calendar{% endblock %}
+
+{% block content %}
+{% if metrics %}
+<div class="grid4">
+  <div class="metric">
+    <div class="lbl">Data generated</div>
+    <div class="val" style="font-size:16px">{{ metrics.generated }}</div>
+    <div class="sub">{{ metrics.days }} days</div>
+  </div>
+  <div class="metric">
+    <div class="lbl">Next new moon</div>
+    <div class="val" style="font-size:16px">{{ metrics.next_new or "—" }}</div>
+  </div>
+  <div class="metric">
+    <div class="lbl">Next full moon</div>
+    <div class="val" style="font-size:16px">{{ metrics.next_full or "—" }}</div>
+  </div>
+  <div class="metric">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div class="lbl">Regenerate</div>
+    </div>
+    <form hx-post="/moon/regenerate" hx-target="#moon-content" hx-swap="innerHTML" style="margin-top:4px">
+      <div style="display:flex;gap:4px">
+        <select name="days" style="width:80px;font-size:12px;padding:4px">
+          <option value="60">60d</option>
+          <option value="90" selected>90d</option>
+          <option value="120">120d</option>
+        </select>
+        <button type="submit" class="btn btn-primary" style="padding:4px 10px;font-size:12px">Run</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+<div id="moon-content">
+  {% if computing %}
+  <div class="card" style="text-align:center;padding:20px"
+       hx-get="/moon/status" hx-trigger="every 3s" hx-swap="outerHTML">
+    <div class="card-title">Computing moon data...</div>
+    <div style="color:var(--text3)">This takes about 25 seconds.</div>
+  </div>
+  {% elif targets_with_moon %}
+  <div class="card">
+    <div class="card-title">Moon phase — next 30 days</div>
+    <div style="margin-bottom:8px;line-height:1.4">
+      {% for day in phase_calendar %}
+        {% if day.phase_pct < 25 %}
+          <span class="strip-day" style="background:#97C459" title="{{ day.date }}: {{ day.phase_pct }}%"></span>
+        {% elif day.phase_pct < 75 %}
+          <span class="strip-day" style="background:#EF9F27" title="{{ day.date }}: {{ day.phase_pct }}%"></span>
+        {% else %}
+          <span class="strip-day" style="background:#E24B4A" title="{{ day.date }}: {{ day.phase_pct }}%"></span>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="filter-row">
+    <input type="text" placeholder="Search Arp # or name" style="width:180px"
+           hx-get="/moon/filter" hx-target="#moon-strips" hx-swap="innerHTML"
+           hx-trigger="input changed delay:300ms" name="search">
+    <select hx-get="/moon/filter" hx-target="#moon-strips" hx-swap="innerHTML"
+            hx-trigger="change" name="risk" hx-include="[name='search']">
+      <option value="">All — tonight</option>
+      <option value="G">Good tonight</option>
+      <option value="M">Marginal tonight</option>
+      <option value="A">Avoid tonight</option>
+    </select>
+    <span style="font-size:12px;color:var(--text3)">{{ targets_with_moon|length }} targets</span>
+  </div>
+
+  <div id="moon-strips">
+    {% include "partials/moon_strips.html" %}
+  </div>
+  {% else %}
+  <div class="card">
+    <div class="empty-state">
+      No moon data available. Click "Run" above to generate.
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -4,11 +4,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-A Python toolkit for systematically imaging all 338 objects in Halton Arp's *Atlas of Peculiar Galaxies* using iTelescope.net remote telescopes. The pipeline flows: **data files → Python scripts → ACP plan files (.txt)**, plus a standalone browser dashboard (`arp_project.html`) for tracking progress.
+A Python toolkit for systematically imaging all 338 objects in Halton Arp's *Atlas of Peculiar Galaxies* using iTelescope.net remote telescopes. Two interfaces: **CLI scripts** (original pipeline) and a **Flask server app** (on `feature/server-app` branch) with browser UI, PostgreSQL, and k8s deployment.
 
 ## Commands
 
 ```bash
+# === Server App (feature/server-app branch) ===
+# Start local dev environment
+docker-compose up -d
+
+# Run Alembic migrations
+PYTHONPATH=. DATABASE_URL=postgresql://arp:arp_dev@localhost:5432/arpsurvey .venv/bin/alembic upgrade head
+
+# Run data migration (one-time, populates DB from flat files)
+PYTHONPATH=. DATABASE_URL=postgresql://arp:arp_dev@localhost:5432/arpsurvey .venv/bin/python scripts/migrate_data.py
+
+# Import telescope CCD specs and target magnitudes
+PYTHONPATH=. DATABASE_URL=postgresql://arp:arp_dev@localhost:5432/arpsurvey .venv/bin/python scripts/import_telescope_specs.py
+
+# === CLI Tools (original, still functional) ===
 # Install dependencies
 pip install pandas openpyxl xlrd ephem
 
@@ -37,14 +51,17 @@ The scripts are standalone CLI tools run individually. A pytest suite lives in `
 ### Testing
 
 ```bash
-# Run the full suite
-pytest tests/
+# Run the full suite (use .venv/bin/ — Python 3.14 in venv)
+.venv/bin/pytest tests/
+
+# Or with PYTHONPATH for app imports
+PYTHONPATH=. .venv/bin/pytest tests/ -v
 
 # Run a single file
-pytest tests/test_arp_common.py -v
+.venv/bin/pytest tests/test_arp_common.py -v
 
 # Run a single test by name pattern
-pytest tests/ -k "moon_risk" -v
+.venv/bin/pytest tests/ -k "moon_risk" -v
 ```
 
 Tests cover pure functions in all 5 modules plus data loaders. Astronomy-heavy code (dark window, target visibility, moon info at transit) is not tested — those wrap `ephem` directly. Tests run against the real data files in the repo.
@@ -71,13 +88,39 @@ All shared constants, data loaders, coordinate utilities, and moon risk classifi
 - Valid exposure durations: 60, 120, 180, 300, 600 seconds (must match iTelescope calibration library)
 - Default imaging: 2L per repeat × 3 repeats (Luminance) or 2L+1R+1G+1B per repeat × 3 repeats (LRGB)
 
+### Server App Architecture (feature/server-app)
+
+Flask + SQLAlchemy + Jinja2 + HTMX. All state in PostgreSQL (no localStorage).
+
+- **`app/__init__.py`** — Flask app factory (`create_app`), `db = SQLAlchemy()`
+- **`app/models.py`** — 8 SQLAlchemy models: Target, Telescope, TelescopeRate, ImagingLog, MoonData, MoonCalendarRun, SessionResult, GeneratedPlan
+- **`app/routes/`** — Flask blueprints (overview, planner, visibility, moon, log, export, generator, files, targets, health)
+- **`app/services/`** — Business logic extracted from CLI scripts (astronomy, acp, session, moon_calendar, importer, ned, snr)
+- **`app/templates/`** — Jinja2 templates extending `base.html`; `partials/` for HTMX fragments
+- **`scripts/`** — Data migration and import scripts
+- **`migrations/`** — Alembic schema migrations
+
+Key patterns:
+- HTMX for interactivity (no JS framework). Partials return HTML fragments.
+- `hx-include` gathers filter values from sibling controls.
+- Background computation (moon calendar) uses `threading.Thread` with DB status flag for cross-worker safety.
+- Tests use SQLite in-memory (`SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"`). Use `db.JSON` not `db.ARRAY` for portability.
+- Gunicorn with `--reload` in docker-compose for dev. Without it, Python changes need `docker-compose restart app`.
+
+### Gotchas
+- `parse_ra()` returns decimal hours, `parse_catalog_coords()` returns RA in degrees — don't mix them
+- `arp_moon_data.json` uses compact keys (`d`, `p`, `s`, `r`) — normalize to (`date`, `phase_pct`, etc.) when importing
+- Never fabricate SRI integrity hashes — compute with: `curl -s <url> | openssl dgst -sha384 -binary | openssl base64 -A`
+- ACP filenames: single target = `{name}-{telescope}-{date}.txt`, multi = `arp-session-{telescope}-{date}.txt`
+
 ### Dashboard (`arp_project.html`)
 A self-contained ~150KB HTML file with embedded data, coordinates, and astronomy engine. No server or external dependencies. Uses browser `localStorage` for persistence. Moon data must be re-embedded when `arp_moon_data.json` is regenerated.
 
 ### Data files
 - **`Arp_Seasonal_Plan.xlsx`** — Primary input: 338 targets across season sheets (Spring/Summer/Autumn/Winter/All Objects) with RA, Dec, size, site, filter strategy.
 - **`itelescopesystems.xlsx`** — Telescope specs (FOV, resolution, filters) and billing rates across 5 plan tiers.
-- **`asu.tsv`** — VizieR catalog VII/192 reference data.
+- **`asu.tsv`** — VizieR catalog VII/192 reference data (includes V-band magnitudes).
+- **`itelescopes.csv`** — Extended telescope specs with CCD camera details (pixel size, QE, full well). Source: [iTelescope Systems Google Sheet](https://docs.google.com/spreadsheets/d/1jZWkkjewOuyNC9YzQ8y2d0pO1e4T7EBeysmQMPBVSOk/edit?usp=sharing). Used by `import_telescope_specs.py`.
 - **`arp_ned_coords.csv`** — High-precision NED coordinates (generated by `arp_ned_coords.py`).
 
 ### ACP plan format

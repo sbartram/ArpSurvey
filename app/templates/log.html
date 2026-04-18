@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Imaging Log{% endblock %}
+
+{% block content %}
+<div class="grid2">
+  <div class="card">
+    <div class="card-title">Log new observation</div>
+    <form hx-post="/log" hx-target="#log-results" hx-swap="innerHTML"
+          hx-on::after-request="if(event.detail.successful) this.reset()">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Arp #</label>
+          <input type="number" name="arp_number" min="1" max="338" placeholder="e.g. 85" required>
+        </div>
+        <div class="form-group">
+          <label>Date imaged</label>
+          <input type="date" name="date" value="{{ today }}">
+        </div>
+        <div class="form-group">
+          <label>Telescope</label>
+          <select name="telescope">
+            {% for t in telescopes %}
+            <option value="{{ t.telescope_id }}">{{ t.telescope_id }} ({{ t.site }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Total exposure (min)</label>
+          <input type="number" name="exposure" min="1" placeholder="e.g. 90">
+        </div>
+        <div class="form-group">
+          <label>Filter strategy</label>
+          <select name="filter_strategy">
+            <option>Luminance</option>
+            <option>LRGB</option>
+            <option>Ha+RGB</option>
+            <option>Narrowband</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Quality (1-5)</label>
+          <select name="quality">
+            <option value="5">5 - Excellent</option>
+            <option value="4">4 - Good</option>
+            <option value="3" selected>3 - Average</option>
+            <option value="2">2 - Poor</option>
+            <option value="1">1 - Bad</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:12px">
+        <label>Notes</label>
+        <textarea name="notes" placeholder="Seeing, tracking, clouds, re-image needed..."></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">Save observation</button>
+    </form>
+  </div>
+
+  <div class="card" id="log-stats-panel">
+    <div class="card-title">Log statistics</div>
+    {% include "partials/log_stats.html" %}
+  </div>
+</div>
+
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <div class="card-title" style="margin-bottom:0">Observation history</div>
+    <a href="/log/export" class="btn">Export CSV</a>
+  </div>
+  <div id="log-results">
+    {% include "partials/log_table.html" %}
+  </div>
+</div>
+{% endblock %}

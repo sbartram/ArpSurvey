@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Arp Catalog{% endblock %} — iTelescope Project</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
+</head>
+<body>
+<div class="app">
+
+<header>
+  <div>
+    <div class="header-title">Arp Catalog &middot; iTelescope Project</div>
+    <div class="header-sub">338 peculiar galaxies &middot; Plan-40 membership</div>
+  </div>
+  <div class="header-meta">
+    {% block header_meta %}{% endblock %}
+  </div>
+</header>
+
+<nav class="nav">
+  <a href="/" class="{% if request.path == '/' %}active{% endif %}">Overview</a>
+  <a href="/planner" class="{% if request.path.startswith('/planner') %}active{% endif %}">Tonight's plan</a>
+  <a href="/visibility" class="{% if request.path.startswith('/visibility') %}active{% endif %}">Visibility</a>
+  <a href="/moon" class="{% if request.path.startswith('/moon') %}active{% endif %}">Moon calendar</a>
+  <a href="/log" class="{% if request.path.startswith('/log') %}active{% endif %}">Imaging log</a>
+  <a href="/export" class="{% if request.path.startswith('/export') %}active{% endif %}">Progress export</a>
+  <a href="/generator" class="{% if request.path.startswith('/generator') %}active{% endif %}">ACP generator</a>
+  <a href="/files" class="{% if request.path.startswith('/files') %}active{% endif %}">Files</a>
+</nav>
+
+<div class="main">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="card" style="border-left:3px solid var(--accent);margin-bottom:12px">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+</div>
+
+</div>
+</body>
+</html>

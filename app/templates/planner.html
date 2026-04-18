@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Tonight's Plan{% endblock %}
+
+{% block content %}
+<div class="card" style="margin-bottom:12px;padding:12px 20px">
+  <form hx-post="/planner/compute" hx-target="#planner-results" hx-swap="innerHTML">
+    <div style="display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap">
+      <div class="form-group" style="margin:0">
+        <label>Date</label>
+        <input type="date" name="date" value="{{ today }}" style="width:140px">
+      </div>
+      <div class="form-group" style="margin:0">
+        <label>Observatory</label>
+        <select name="site" style="width:160px">
+          {% for s in sites %}
+          <option value="{{ s }}">{{ s }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group" style="margin:0">
+        <label>Min obs hours</label>
+        <select name="min_hours" style="width:110px">
+          <option value="1">1+ hour</option>
+          <option value="1.5" selected>1.5+ hours</option>
+          <option value="2">2+ hours</option>
+          <option value="3">3+ hours</option>
+          <option value="4">4+ hours</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin:0">
+        <label>Moon filter</label>
+        <select name="moon_filter" style="width:140px">
+          <option value="">All (incl. avoid)</option>
+          <option value="GM" selected>Good + marginal</option>
+          <option value="G">Good only</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">Compute session</button>
+      <span class="htmx-indicator" style="color:var(--text3)">Computing...</span>
+    </div>
+  </form>
+  <div style="margin-top:8px">
+    <button class="btn" hx-post="/planner/generate-acp" hx-target="#acp-output" hx-swap="innerHTML">
+      Generate ACP plan
+    </button>
+  </div>
+</div>
+
+<div id="planner-results">
+  {% if last_session %}
+  <div class="card" style="font-size:13px;color:var(--text2);margin-bottom:12px">
+    Last computed: {{ last_session.site_key }} on {{ last_session.date_local }}
+    ({{ last_session.results|length }} targets)
+  </div>
+  {% else %}
+  <div class="empty-state">Click "Compute session" to find tonight's observable targets.</div>
+  {% endif %}
+</div>
+
+<div id="acp-output"></div>
+{% endblock %}
