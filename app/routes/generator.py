@@ -60,11 +60,8 @@ def run():
                 "size_arcmin": t.size_arcmin, "filter_strategy": t.filter_strategy,
             } for t in batch]
 
-            result = build_plan(target_dicts, tel_id, season, params)
-
-            # Fix filename for batch
             filename = f"Arp_{season}_{tel_id}_batch{batch_num:02d}.txt"
-            result["filename"] = filename
+            result = build_plan(target_dicts, tel_id, season, params, filename=filename)
 
             # Look up telescope DB record for FK
             tel_record = db.session.query(Telescope).filter_by(telescope_id=tel_id).first()

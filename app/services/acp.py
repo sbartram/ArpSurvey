@@ -77,19 +77,22 @@ def format_duration(total_secs):
     return f"{h}h {m:02d}m" if h > 0 else f"{m}m"
 
 
-def build_plan(targets, telescope_id, season, params):
+def build_plan(targets, telescope_id, season, params, filename=None):
     """
     Generate an ACP plan from target data.
 
     Args:
         targets: List of dicts with keys: arp, name, ra_hours, dec_degrees,
-                 size_arcmin, filter_strategy
+                 size_arcmin, filter_strategy, magnitude (optional)
         telescope_id: Telescope string ID (e.g. "T20")
         season: Season name
         params: Dict with keys: exposure, count, repeat, plan_tier, binning
+        filename: Plan filename for the header (optional)
 
     Returns dict: {filename, content, duration_secs, cost_points}
     """
+    from datetime import datetime, timezone
+
     exposure = params["exposure"]
     count = params["count"]
     repeat = params["repeat"]
@@ -98,7 +101,7 @@ def build_plan(targets, telescope_id, season, params):
     lrgb_counts = compute_lrgb_counts(count)
     lum_counts = [count]
 
-    plan_name = f"Arp_{season}_{telescope_id}_batch01"
+    plan_name = filename or f"Arp_{season}_{telescope_id}_batch01"
 
     exposure_secs = 0
     for t in targets:
@@ -112,6 +115,8 @@ def build_plan(targets, telescope_id, season, params):
     target_overhead = len(targets) * OVERHEAD_PER_TARGET_SECS
     total_secs = (exposure_secs + target_overhead) * repeat + OVERHEAD_SESSION_SECS
 
+    now_str = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+
     lines = []
     lines.append(f"; ============================================================")
     lines.append(f"; Arp Catalog Observing Plan")
@@ -121,7 +126,7 @@ def build_plan(targets, telescope_id, season, params):
     lines.append(f"; Targets      : {len(targets)}")
     lines.append(f"; Imaging time : {format_duration(imaging_secs)}")
     lines.append(f"; Total duration: {format_duration(total_secs)}")
-    lines.append(f"; Generated    : Arp ACP Generator")
+    lines.append(f"; Generated    : Arp ACP Generator on {now_str}")
     lines.append(f"; ============================================================")
     lines.append("")
     lines.append("#BillingMethod Session")
@@ -149,7 +154,9 @@ def build_plan(targets, telescope_id, season, params):
             intervals = str(exposure)
             binnings = "1"
 
-        lines.append(f"; --- Arp {arp}: {t['name']}  (size: {size}') ---")
+        mag = t.get("magnitude")
+        mag_str = f", mag: {mag}" if mag else ""
+        lines.append(f"; --- Arp {arp}: {t['name']}  (size: {size}'{mag_str}) ---")
         lines.append(f"#count {counts}")
         lines.append(f"#interval {intervals}")
         lines.append(f"#binning {binnings}")

@@ -167,24 +167,26 @@ def generate_acp():
 
     params = {"exposure": 300, "count": 2, "repeat": 3, "plan_tier": "Plan-40", "binning": 1}
 
+    from arp_common import sanitize_name
+
     generated = []
     for tel_id, group in tel_groups.items():
         target_dicts = [{
             "arp": r["arp"], "name": r["name"],
             "ra_hours": r["ra_hours"], "dec_degrees": r["dec_degrees"],
-            "size_arcmin": r.get("size_arcmin"), "filter_strategy": r.get("filter_strategy", "Luminance"),
+            "size_arcmin": r.get("size_arcmin"),
+            "filter_strategy": r.get("filter_strategy", "Luminance"),
+            "magnitude": r.get("magnitude"),
         } for r in group]
 
-        result = build_plan(target_dicts, tel_id, "Session", params)
-
-        # Single target: {target-name}-{telescope}-{date}.txt
-        # Multiple targets: Arp_Session_{site}_{date}_{telescope}.txt
+        # Compute filename first so it appears in the plan header
         if len(group) == 1:
-            from arp_common import sanitize_name
             target_name = sanitize_name(f"Arp{int(group[0]['arp']):03d}_{group[0]['name']}")
             filename = f"{target_name}-{tel_id}-{obs_date}.txt"
         else:
             filename = f"arp-session-{tel_id}-{obs_date}.txt"
+
+        result = build_plan(target_dicts, tel_id, site_key, params, filename=filename)
 
         tel_record = db.session.query(Telescope).filter_by(telescope_id=tel_id).first()
         plan = GeneratedPlan(
