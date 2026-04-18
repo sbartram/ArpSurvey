@@ -156,7 +156,16 @@ def build_plan(targets, telescope_id, season, params, filename=None):
 
         mag = t.get("magnitude")
         mag_str = f", mag: {mag}" if mag else ""
-        lines.append(f"; --- Arp {arp}: {t['name']}  (size: {size}'{mag_str}) ---")
+        transit_str = t.get("transit_local", "")
+        hours = t.get("hours", "")
+        moon = t.get("moon", {})
+        if transit_str and hours:
+            moon_phase = moon.get("phase_pct", "")
+            moon_sep = moon.get("separation_deg", "")
+            window_str = f"  [{hours}h window, transit {transit_str}, moon {moon_phase}% sep {moon_sep}deg]"
+        else:
+            window_str = ""
+        lines.append(f"; --- Arp {arp}: {t['name']}  (size: {size}'{mag_str}){window_str} ---")
         lines.append(f"#count {counts}")
         lines.append(f"#interval {intervals}")
         lines.append(f"#binning {binnings}")

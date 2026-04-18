@@ -177,6 +177,9 @@ def generate_acp():
             "size_arcmin": r.get("size_arcmin"),
             "filter_strategy": r.get("filter_strategy", "Luminance"),
             "magnitude": r.get("magnitude"),
+            "transit_local": r.get("transit_local"),
+            "hours": r.get("hours"),
+            "moon": r.get("moon"),
         } for r in group]
 
         # Compute filename first so it appears in the plan header
