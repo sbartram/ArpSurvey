@@ -107,7 +107,7 @@ def parse_filters(raw):
     if "LRGB" in text:
         found.update(["L", "R", "G", "B"])
     else:
-        if "LUMINANCE" in text or re.search(r'\bL\b', text):
+        if "LUMINANCE" in text or "CLEAR" in text or re.search(r'\bL\b', text):
             found.add("L")
         if re.search(r'\bRED\b', text) or re.search(r'\bR\b(?!C)', text):
             found.add("R")

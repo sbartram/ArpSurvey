@@ -67,12 +67,12 @@ class TestParseFilters:
         assert "L" in result
         assert "Ha" in result
 
-    def test_rgb_without_luminance(self):
+    def test_clear_treated_as_luminance(self):
         result = parse_filters(
             "Red Green Blue, Ha, SII, OIII, Clear and Johnson's Cousin's Photometric"
         )
-        assert "L" not in result
-        assert set(result) >= {"R", "G", "B", "Ha"}
+        assert "L" in result
+        assert set(result) >= {"L", "R", "G", "B", "Ha"}
 
     def test_none_string(self):
         assert parse_filters("None") is None
