@@ -35,6 +35,7 @@
         <th style="cursor:pointer" hx-get="{{ base }}&sort=time&dir=asc" hx-target="#planner-results" hx-swap="innerHTML">Time</th>
         <th style="cursor:pointer" hx-get="{{ base }}&sort=cost&dir=asc" hx-target="#planner-results" hx-swap="innerHTML">Cost</th>
         <th style="cursor:pointer" hx-get="{{ base }}&sort=moon&dir=asc" hx-target="#planner-results" hx-swap="innerHTML">Moon</th>
+        <th>Status</th>
       </tr>
     </thead>
     <tbody>
@@ -60,6 +61,14 @@
         <td>{{ r.time_to_snr_minutes }}m</td>
         <td>{{ r.cost_points }} pts</td>
         <td><span class="badge {{ r.moon_risk }}">{{ r.moon_risk }}</span></td>
+        <td>
+          {% set selected = (target_status == 'Scheduled' and preferred_telescope == r.telescope_id) %}
+          {% set telescope = r.telescope_id %}
+          <span class="badge {{ 'sched' if selected else 'pending' }}"
+                hx-patch="/targets/{{ target_id }}/select-telescope?telescope={{ telescope }}"
+                hx-swap="outerHTML"
+                style="cursor:pointer">{{ 'Scheduled' if selected else 'Select' }}</span>
+        </td>
       </tr>
       {% endfor %}
     </tbody>

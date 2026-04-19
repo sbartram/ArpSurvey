@@ -97,8 +97,36 @@ def get_sensor_specs(camera_model, cmos_sensor_model):
     return {}
 
 
-def import_telescope_csv(session):
-    csv_path = Path(__file__).resolve().parent.parent / "itelescopes.csv"
+def parse_filters(raw):
+    """Parse free-text filter descriptions into standardized filter codes."""
+    if not raw or raw.strip().lower() in ("none", "—", ""):
+        return None
+    text = raw.upper()
+    found = set()
+    # Check for LRGB shorthand first
+    if "LRGB" in text:
+        found.update(["L", "R", "G", "B"])
+    else:
+        if "LUMINANCE" in text or re.search(r'\bL\b', text):
+            found.add("L")
+        if re.search(r'\bRED\b', text) or re.search(r'\bR\b(?!C)', text):
+            found.add("R")
+        if re.search(r'\bGREEN\b', text) or re.search(r'(?<![A-Z])\bG\b', text):
+            found.add("G")
+        if re.search(r'\bBLUE\b', text) or re.search(r'(?<![A-Z])\bB\b(?!V)', text):
+            found.add("B")
+    if re.search(r'H[- ]?A(LPHA)?|HA[_3]', text):
+        found.add("Ha")
+    if re.search(r'S\s*II|SII', text):
+        found.add("SII")
+    if re.search(r'O\s*III|OIII', text):
+        found.add("OIII")
+    return sorted(found) if found else None
+
+
+def import_telescope_csv(session, csv_path=None):
+    if csv_path is None:
+        csv_path = Path(__file__).resolve().parent.parent / "itelescopes.csv"
     if not csv_path.exists():
         print(f"  {csv_path} not found, skipping")
         return 0
@@ -127,7 +155,9 @@ def import_telescope_csv(session):
             tel.camera_model = camera or None
             tel.sensor_model = sensor_model if sensor_model != "—" else None
             tel.sensor_type = sensor_type or None
+            tel.aperture_mm = parse_focal_length(row.get("Aperature (mm)"))  # CSV typo
             tel.focal_length_mm = parse_focal_length(row.get("Focal Length (mm)"))
+            tel.resolution = parse_focal_length(row.get("Resolution (arcsec / pixel)"))
             tel.pixel_size_um = parse_pixel_size(row.get("Pixel Size (µm)"))
             tel.peak_qe = parse_qe(row.get("Peak QE"))
             tel.full_well_e = parse_full_well(row.get("Full Well"))
@@ -136,15 +166,18 @@ def import_telescope_csv(session):
             tel.read_noise_e = specs.get("read_noise")
             tel.dark_current_e = specs.get("dark_current")
 
+            tel.filters = parse_filters(row.get("Filters"))
+
             count += 1
 
     session.flush()
     return count
 
 
-def import_magnitudes(session):
+def import_magnitudes(session, tsv_path=None):
     """Import V-band magnitudes from asu.tsv into targets."""
-    tsv_path = Path(__file__).resolve().parent.parent / "asu.tsv"
+    if tsv_path is None:
+        tsv_path = Path(__file__).resolve().parent.parent / "asu.tsv"
     if not tsv_path.exists():
         print(f"  {tsv_path} not found, skipping")
         return 0

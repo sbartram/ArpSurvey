@@ -14,7 +14,14 @@ def update_status(target_id):
     if not target:
         return "Not found", 404
 
+    telescope = request.args.get("telescope", "")
     target.status = STATUS_CYCLE.get(target.status, "Pending")
+
+    if target.status == "Scheduled" and telescope:
+        target.preferred_telescope = telescope
+    elif target.status != "Scheduled":
+        target.preferred_telescope = None
+
     db.session.commit()
 
     css = STATUS_CSS.get(target.status, "pending")
@@ -23,7 +30,41 @@ def update_status(target_id):
         target_id=target_id,
         status=target.status,
         css=css,
+        telescope=telescope,
     )
+
+
+@bp.route("/targets/<int:target_id>/select-telescope", methods=["PATCH"])
+def select_telescope(target_id):
+    """Toggle telescope selection from the compare view.
+
+    If the target is already scheduled with this telescope, unschedule it.
+    Otherwise, schedule the target with this telescope.
+    """
+    target = db.session.get(Target, target_id)
+    if not target:
+        return "Not found", 404
+
+    telescope = request.args.get("telescope", "")
+    if target.status == "Scheduled" and target.preferred_telescope == telescope:
+        # Deselect: unschedule
+        target.status = "Pending"
+        target.preferred_telescope = None
+    else:
+        # Select: schedule with this telescope
+        target.status = "Scheduled"
+        target.preferred_telescope = telescope
+
+    db.session.commit()
+
+    if target.status == "Scheduled" and target.preferred_telescope == telescope:
+        return render_template("partials/compare_select_badge.html",
+                               target_id=target_id, telescope=telescope,
+                               selected=True)
+    else:
+        return render_template("partials/compare_select_badge.html",
+                               target_id=target_id, telescope=telescope,
+                               selected=False)
 
 
 @bp.route("/import/localstorage", methods=["POST"])

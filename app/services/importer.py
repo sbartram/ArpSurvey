@@ -212,7 +212,8 @@ def import_ned_coords_file(file_storage, session):
             if target:
                 target.ned_ra_hours = float(row["ra_hours"])
                 target.ned_dec_degrees = float(row["dec_deg"])
-                target.ned_name = str(row.get("ned_name", "")).strip() or None
+                raw_name = row.get("ned_name", "")
+                target.ned_name = str(raw_name).strip() if pd.notna(raw_name) else None
                 count += 1
 
         session.commit()

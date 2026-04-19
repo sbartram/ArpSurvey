@@ -21,6 +21,7 @@ class Target(db.Model):
     best_site = db.Column(db.String(40))
     filter_strategy = db.Column(db.String(20))
     status = db.Column(db.String(20), nullable=False, default="Pending")
+    preferred_telescope = db.Column(db.String(10))
     notes = db.Column(db.Text)
 
     imaging_logs = db.relationship("ImagingLog", backref="target", lazy="dynamic")
@@ -53,6 +54,7 @@ class Telescope(db.Model):
     sensor_type = db.Column(db.String(20))  # CCD or CMOS
     read_noise_e = db.Column(db.Float)      # e-/pixel
     dark_current_e = db.Column(db.Float)    # e-/pixel/sec at operating temp
+    active = db.Column(db.Boolean, nullable=False, default=True, server_default="true")
 
     rates = db.relationship("TelescopeRate", backref="telescope", lazy="dynamic")
 

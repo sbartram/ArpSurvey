@@ -1,1 +1,1 @@
-<span class="badge {{ css }}" hx-patch="/targets/{{ target_id }}/status" hx-swap="outerHTML" style="cursor:pointer">{{ status }}</span>
+<span class="badge {{ css }}" hx-patch="/targets/{{ target_id }}/status{% if telescope %}?telescope={{ telescope }}{% endif %}" hx-swap="outerHTML" style="cursor:pointer">{{ status }}</span>

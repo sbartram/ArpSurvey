@@ -217,8 +217,8 @@ def test_calc_plan_duration_mixed_batch():
 
 def test_calc_plan_cost_session_mode():
     """
-    Session billing = total_secs / 60 × rate.
-    1 Lum target: total = 2640 sec = 44 min. At 10 pts/min → 440 pts.
+    Session billing = total_secs / 3600 × rate.
+    1 Lum target: total = 2640 sec = 0.733 hr. At 10 pts/hr → 7.3 pts.
     """
     batch = _make_batch(["Luminance"])
     rates = {"T11": {"session": {"Plan-40": 10.0}, "exposure": {"Plan-40": 5.0}}}
@@ -227,14 +227,14 @@ def test_calc_plan_cost_session_mode():
         lrgb_counts=[2, 1, 1, 1], lum_counts=[2],
         rates=rates, plan_tier="Plan-40", billing_mode="session",
     )
-    assert points == pytest.approx(440.0)
+    assert points == pytest.approx(7.3, abs=0.1)
     assert rate == 10.0
 
 
 def test_calc_plan_cost_exposure_mode():
     """
-    Exposure billing = imaging_secs / 60 × rate.
-    1 Lum target: imaging = 1800 sec = 30 min. At 5 pts/min → 150 pts.
+    Exposure billing = imaging_secs / 3600 × rate.
+    1 Lum target: imaging = 1800 sec = 0.5 hr. At 5 pts/hr → 2.5 pts.
     """
     batch = _make_batch(["Luminance"])
     rates = {"T11": {"session": {"Plan-40": 10.0}, "exposure": {"Plan-40": 5.0}}}
@@ -243,7 +243,7 @@ def test_calc_plan_cost_exposure_mode():
         lrgb_counts=[2, 1, 1, 1], lum_counts=[2],
         rates=rates, plan_tier="Plan-40", billing_mode="exposure",
     )
-    assert points == pytest.approx(150.0)
+    assert points == pytest.approx(2.5)
     assert rate == 5.0
 
 

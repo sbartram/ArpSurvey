@@ -183,7 +183,8 @@ def calc_plan_cost(batch_df, tel_id, interval, repeat,
         exposure_secs *= repeat
         minutes = exposure_secs / 60
 
-    points = rate * minutes
+    hours = minutes / 60
+    points = rate * hours
     return round(points, 1), rate
 
 
@@ -435,8 +436,8 @@ def run(args):
                 "Duration (min)":     round(duration_secs / 60, 1),
                 f"Session pts ({plan_tier})":  s_pts_str,
                 f"Exposure pts ({plan_tier})": e_pts_str,
-                "Session rate (pts/min)":      session_rate  if session_rate  is not None else "n/a",
-                "Exposure rate (pts/min)":     exposure_rate if exposure_rate is not None else "n/a",
+                "Session rate (pts/hr)":       session_rate  if session_rate  is not None else "n/a",
+                "Exposure rate (pts/hr)":      exposure_rate if exposure_rate is not None else "n/a",
                 "File":               str(filename),
             }
             plan_log.append(log_entry)

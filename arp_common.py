@@ -44,10 +44,10 @@ SITE_MAP = {
 
 # Site-to-telescope mapping for auto-assignment
 SITE_TELESCOPES = {
-    "New Mexico": ["T5", "T8", "T14", "T11", "T21", "T25", "T68"],
-    "Spain":      ["T17", "T20", "T30", "T32", "T33", "T59"],
-    "Australia":  ["T24", "T18"],
-    "Chile":      ["T71", "T72", "T73", "T74", "T75"],
+    "New Mexico": ["T2", "T5", "T11", "T14", "T20", "T21", "T24", "T25", "T26", "T68"],
+    "Australia":  ["T8", "T17", "T30", "T32", "T33", "T59"],
+    "Spain":      ["T18", "T80"],
+    "Chile":      ["T70", "T71", "T72", "T73", "T74", "T75"],
 }
 
 # ---------------------------------------------------------------------------
@@ -206,7 +206,7 @@ def load_rates(filepath=None):
     """
     Load iTelescope imaging rates from the Imaging Rates sheet.
     Returns a dict: {telescope_id: {"session": {plan: pts}, "exposure": {plan: pts}}}
-    Rates are in iTelescope points per minute.
+    Rates are in iTelescope points per hour.
     """
     filepath = filepath or TELESCOPE_FILE
     df = pd.read_excel(filepath, sheet_name="Imaging Rates", header=None)

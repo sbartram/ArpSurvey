@@ -54,6 +54,12 @@ def evaluate_telescope(target, telescope, date, site_key, moon_info,
         "aperture_mm": telescope.aperture_mm,
     }
 
+    # --- Disqualification: unknown site ---
+    from arp_common import OBSERVATORIES
+    if site_key not in OBSERVATORIES:
+        return {**base, "disqualified": True,
+                "disqualification_reason": f"Unknown site: {site_key}"}
+
     # --- Disqualification: target visibility ---
     eve_dt, morn_dt = dark_window(site_key, date)
     vis = target_visibility(ra_h, dec_deg, site_key, eve_dt, morn_dt)
@@ -113,7 +119,7 @@ def evaluate_telescope(target, telescope, date, site_key, moon_info,
     # Cost from exposure rate
     rate = telescope.rates.filter_by(plan_tier=plan_tier).first()
     exposure_rate = rate.exposure_rate if rate else 0
-    cost_points = round(time_to_snr_minutes * exposure_rate, 1)
+    cost_points = round(time_to_snr_minutes / 60 * exposure_rate, 1)
 
     return {
         **base,
@@ -162,7 +168,7 @@ def compare_telescopes(target, date, moon_info, snr_target=DEFAULT_SNR_TARGET,
     """
     from app.models import Telescope
 
-    telescopes = Telescope.query.all()
+    telescopes = Telescope.query.filter_by(active=True).all()
 
     viable = []
     excluded = []

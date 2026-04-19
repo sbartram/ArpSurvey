@@ -123,7 +123,8 @@ def compute():
 
     return render_template("partials/planner_table.html",
                            results=results, summary=summary,
-                           telescopes=telescopes, strategies=strategies)
+                           telescopes=telescopes, strategies=strategies,
+                           date=date_str, site=site_key)
 
 
 @bp.route("/planner/filter")
@@ -181,7 +182,7 @@ def filter_planner():
 def compare():
     arp_num = request.args.get("arp", type=int)
     date_str = request.args.get("date") or datetime.date.today().isoformat()
-    site_key = request.args.get("site", "New Mexico")
+    site_key = request.args.get("site", "New Mexico") or "New Mexico"
     snr_target = request.args.get("snr_target", DEFAULT_SNR_TARGET, type=float)
     sort_by = request.args.get("sort", "score")
     sort_dir = request.args.get("dir", "desc")
@@ -238,6 +239,9 @@ def compare():
     return render_template("partials/telescope_compare.html",
                            target=target, date=date_str, site=site_key,
                            snr_target=snr_target,
+                           target_id=target_record.id,
+                           target_status=target_record.status,
+                           preferred_telescope=target_record.preferred_telescope,
                            viable=result["viable"],
                            excluded=result["excluded"])
 
@@ -276,7 +280,8 @@ def restore():
 
     return render_template("partials/planner_table.html",
                            results=results, summary=summary,
-                           telescopes=telescopes, strategies=strategies)
+                           telescopes=telescopes, strategies=strategies,
+                           date=last.date_local.isoformat(), site=last.site_key)
 
 
 @bp.route("/planner/generate-acp", methods=["POST"])
@@ -291,15 +296,22 @@ def generate_acp():
     site_key = last.site_key
     obs_date = last.date_local
 
-    # Only include targets marked as "Scheduled"
+    # Look up current target statuses and telescope preferences from DB
+    targets_db = {t.arp_number: t for t in db.session.query(Target).all()}
+    for r in last.results:
+        t = targets_db.get(r["arp"])
+        r["target_status"] = t.status if t else r.get("target_status", "Pending")
+
     scheduled = [r for r in last.results if r.get("target_status") == "Scheduled"]
     if not scheduled:
         return '<div class="empty-state">No targets marked as "Scheduled". Click a target\'s status badge to cycle it to Scheduled first.</div>'
 
     tel_groups = {}
     for r in scheduled:
+        t = targets_db.get(r["arp"])
+        preferred = t.preferred_telescope if t else None
         size = r.get("size_arcmin") or 3.0
-        tel_id = r.get("telescope") or assign_telescope(size, site_key, tels_df)
+        tel_id = preferred or r.get("telescope") or assign_telescope(size, site_key, tels_df)
         tel_groups.setdefault(tel_id, []).append(r)
 
     params = {"exposure": 300, "count": 2, "repeat": 3, "plan_tier": "Plan-40", "binning": 1}

@@ -1,0 +1,4 @@
+<span class="badge {{ 'sched' if selected else 'pending' }}"
+      hx-patch="/targets/{{ target_id }}/select-telescope?telescope={{ telescope }}"
+      hx-swap="outerHTML"
+      style="cursor:pointer">{{ 'Scheduled' if selected else 'Select' }}</span>
