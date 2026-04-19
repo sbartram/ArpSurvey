@@ -76,3 +76,6 @@ textarea{resize:vertical;min-height:60px}
 .htmx-indicator{display:none}
 .htmx-request .htmx-indicator{display:inline}
 .htmx-request.htmx-indicator{display:inline}
+.val-good{color:var(--green)}
+.val-warn{color:var(--amber)}
+.val-bad{color:var(--red)}

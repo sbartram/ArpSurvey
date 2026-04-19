@@ -5,15 +5,15 @@
   <td style="white-space:nowrap">{{ r.start_local }}–{{ r.end_local }}</td>
   <td>{{ r.transit_local }}</td>
   <td>{{ r.hours }}</td>
-  <td>{{ r.peak_elevation }}&deg;</td>
+  <td class="{% if r.peak_elevation >= 60 %}val-good{% elif r.peak_elevation >= 30 %}val-warn{% else %}val-bad{% endif %}">{{ r.peak_elevation }}&deg;</td>
   <td>{{ r.moon.phase_pct }}%</td>
-  <td>{{ r.moon.separation_deg }}&deg;</td>
+  <td class="{% if r.moon.separation_deg >= 60 %}val-good{% elif r.moon.separation_deg >= 30 %}val-warn{% else %}val-bad{% endif %}">{{ r.moon.separation_deg }}&deg;</td>
   <td><span class="badge {{ r.moon.risk }}">{{ r.moon.risk }}</span></td>
   <td>{{ r.telescope }}</td>
   <td>{{ r.filter_strategy }}</td>
   <td>
     {% if r.snr %}
-      <span title="{{ r.snr_quality }}">{{ r.snr }}</span>
+      <span title="{{ r.snr_quality }}" class="{% if r.snr >= 50 %}val-good{% elif r.snr >= 25 %}val-warn{% else %}val-bad{% endif %}">{{ r.snr }}</span>
     {% else %}
       —
     {% endif %}
