@@ -9,6 +9,7 @@ def register_blueprints(app):
     from app.routes.export import bp as export_bp
     from app.routes.generator import bp as generator_bp
     from app.routes.files import bp as files_bp
+    from app.routes.telescopes import bp as telescopes_bp
 
     app.register_blueprint(health_bp)
     app.register_blueprint(overview_bp)
@@ -20,3 +21,4 @@ def register_blueprints(app):
     app.register_blueprint(export_bp)
     app.register_blueprint(generator_bp)
     app.register_blueprint(files_bp)
+    app.register_blueprint(telescopes_bp)
