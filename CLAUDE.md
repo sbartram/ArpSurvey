@@ -137,3 +137,5 @@ A self-contained ~150KB HTML file with embedded data, coordinates, and astronomy
 
 ### ACP plan format
 Plans use iTelescope's ACP dialect: `#BillingMethod Session`, `#repeat`, `#count`, `#interval`, `#binning`, `#filter` directives, tab-separated target lines with decimal-hours RA and decimal-degrees Dec, ending with `#shutdown`. Plans are telescope-specific.
+
+This URL is a good reference for ACP used by iTelescope - [How do I write my own scripts or plans to control the telescopes?](https://support.itelescope.net/support/solutions/articles/143037-how-do-i-write-my-own-scripts-or-plans-to-control-the-telescopes-)
