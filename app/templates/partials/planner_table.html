@@ -32,6 +32,7 @@
            hx-trigger="change" hx-include="#planner-filters"> Hide done
   </label>
   <span style="font-size:12px;color:var(--text3)">{{ results|length }} targets</span>
+  <input type="hidden" name="sort" value="transit" id="planner-sort">
 </div>
 
 {% if results %}
@@ -39,19 +40,19 @@
   <table>
     <thead>
       <tr>
-        <th style="cursor:pointer" hx-get="/planner/filter?sort=arp" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Arp</th>
-        <th style="cursor:pointer" hx-get="/planner/filter?sort=name" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Name</th>
+        <th data-sort="arp" onclick="toggleSort(this)" style="cursor:pointer" hx-get="/planner/filter" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Arp</th>
+        <th data-sort="name" onclick="toggleSort(this)" style="cursor:pointer" hx-get="/planner/filter" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Name</th>
         <th>Window</th>
-        <th style="cursor:pointer" hx-get="/planner/filter?sort=transit" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Transit</th>
-        <th style="cursor:pointer" hx-get="/planner/filter?sort=hours" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Hrs</th>
-        <th style="cursor:pointer" hx-get="/planner/filter?sort=elevation" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Peak El</th>
-        <th style="cursor:pointer" hx-get="/planner/filter?sort=moon" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Moon%</th>
-        <th style="cursor:pointer" hx-get="/planner/filter?sort=sep" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Sep</th>
-        <th style="cursor:pointer" hx-get="/planner/filter?sort=risk" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Risk</th>
-        <th style="cursor:pointer" hx-get="/planner/filter?sort=telescope" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Telescope</th>
-        <th style="cursor:pointer" hx-get="/planner/filter?sort=filters" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Filters</th>
-        <th style="cursor:pointer" hx-get="/planner/filter?sort=snr" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Est. SNR</th>
-        <th style="cursor:pointer" hx-get="/planner/filter?sort=status" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Status</th>
+        <th data-sort="transit" onclick="toggleSort(this)" style="cursor:pointer" hx-get="/planner/filter" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Transit <span class="sort-arrow">▲</span></th>
+        <th data-sort="hours" onclick="toggleSort(this)" style="cursor:pointer" hx-get="/planner/filter" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Hrs</th>
+        <th data-sort="elevation" onclick="toggleSort(this)" style="cursor:pointer" hx-get="/planner/filter" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Peak El</th>
+        <th data-sort="moon" onclick="toggleSort(this)" style="cursor:pointer" hx-get="/planner/filter" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Moon%</th>
+        <th data-sort="sep" onclick="toggleSort(this)" style="cursor:pointer" hx-get="/planner/filter" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Sep</th>
+        <th data-sort="risk" onclick="toggleSort(this)" style="cursor:pointer" hx-get="/planner/filter" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Risk</th>
+        <th data-sort="telescope" onclick="toggleSort(this)" style="cursor:pointer" hx-get="/planner/filter" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Telescope</th>
+        <th data-sort="filters" onclick="toggleSort(this)" style="cursor:pointer" hx-get="/planner/filter" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Filters</th>
+        <th data-sort="snr" onclick="toggleSort(this)" style="cursor:pointer" hx-get="/planner/filter" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Est. SNR</th>
+        <th data-sort="status" onclick="toggleSort(this)" style="cursor:pointer" hx-get="/planner/filter" hx-target="#planner-tbody" hx-swap="innerHTML" hx-include="#planner-filters">Status</th>
         <th></th>
       </tr>
     </thead>
@@ -63,3 +64,24 @@
 {% else %}
 <div class="empty-state">No observable targets found with these constraints.</div>
 {% endif %}
+
+<script>
+function toggleSort(th) {
+  var input = document.getElementById('planner-sort');
+  var col = th.dataset.sort;
+  var cur = input.value;
+  if (cur === col) {
+    input.value = '-' + col;
+  } else if (cur === '-' + col) {
+    input.value = col;
+  } else {
+    input.value = col;
+  }
+  // Update arrow indicators
+  document.querySelectorAll('th[data-sort] .sort-arrow').forEach(function(el) { el.remove(); });
+  var arrow = document.createElement('span');
+  arrow.className = 'sort-arrow';
+  arrow.textContent = input.value.startsWith('-') ? ' ▼' : ' ▲';
+  th.appendChild(arrow);
+}
+</script>

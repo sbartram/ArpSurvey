@@ -1,9 +1,18 @@
 # Backlog
 
+## General
+
+Use current observatory names:
+* Chile
+* Siding Spring (Australia)
+* Utah Desert Remote
+* Sierra Remote
+* Spain
+
 ## Planner
 
 - add filters: elev, SNR
-- support reverse sort
+- ~~support reverse sort~~
 - ~~add color coding for elevation - less than 60 should be red/bad~~
 - ~~add color coding for SNR - less than 50 should be red/bad~~
 - ~~add color coding and filtering for moon separation - less than 60 should be red/bad~~
