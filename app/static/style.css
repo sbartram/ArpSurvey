@@ -48,6 +48,9 @@ header{background:var(--bg);border-bottom:0.5px solid var(--border);padding:12px
 .pending{color:var(--blue);background:var(--blue-bg)}
 .sched{color:var(--amber);background:var(--amber-bg)}
 .skip{color:var(--text2);background:var(--bg2)}
+.online{color:var(--green);background:var(--green-bg)}
+.offline{color:var(--red);background:var(--red-bg)}
+.offline-row{opacity:0.6}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th{text-align:left;padding:7px 10px;font-size:10px;font-weight:500;color:var(--text2);border-bottom:0.5px solid var(--border);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;background:var(--bg2)}
 td{padding:7px 10px;border-bottom:0.5px solid var(--border);vertical-align:middle}
