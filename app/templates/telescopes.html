@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Telescopes{% endblock %}
+
+{% block content %}
+<div class="grid3">
+  <div class="metric">
+    <div class="lbl">Total telescopes</div>
+    <div class="val">{{ total }}</div>
+  </div>
+  <div class="metric">
+    <div class="lbl">Online</div>
+    <div class="val" style="color:var(--green)">{{ online }}</div>
+  </div>
+  <div class="metric">
+    <div class="lbl">Offline</div>
+    <div class="val" style="color:var(--red)">{{ offline }}</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">Fleet status</div>
+  {% if telescopes %}
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Scope</th>
+          <th>Site</th>
+          <th>Aperture</th>
+          <th>FOV</th>
+          <th>Camera</th>
+          <th>Sensor</th>
+          <th>Filters</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for telescope in telescopes %}
+          {% include "partials/telescope_row.html" %}
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">No telescopes imported yet</div>
+  {% endif %}
+</div>
+{% endblock %}
