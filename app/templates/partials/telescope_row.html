@@ -1,0 +1,18 @@
+<tr class="{% if not telescope.active %}offline-row{% endif %}" id="tel-row-{{ telescope.id }}">
+  <td style="font-weight:500">{{ telescope.telescope_id }}</td>
+  <td>{{ telescope.site }}</td>
+  <td>{{ "%g"|format(telescope.aperture_mm or 0) }} mm</td>
+  <td>{{ "%.1f"|format(telescope.fov_arcmin or 0) }}'</td>
+  <td>{{ telescope.camera_model or "—" }}</td>
+  <td>{{ telescope.sensor_type or "—" }}</td>
+  <td style="font-size:11px;color:var(--text2)">{{ (telescope.filters or [])|join(" ") }}</td>
+  <td>
+    <span class="badge {% if telescope.active %}online{% else %}offline{% endif %}"
+          hx-patch="/telescopes/{{ telescope.id }}/toggle"
+          hx-target="#tel-row-{{ telescope.id }}"
+          hx-swap="outerHTML"
+          style="cursor:pointer">
+      {{ "Online" if telescope.active else "Offline" }}
+    </span>
+  </td>
+</tr>
