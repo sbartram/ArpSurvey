@@ -1,0 +1,14 @@
+<div class="grid3" id="telescope-metrics" {% if oob %}hx-swap-oob="true"{% endif %}>
+  <div class="metric">
+    <div class="lbl">Total telescopes</div>
+    <div class="val">{{ total }}</div>
+  </div>
+  <div class="metric">
+    <div class="lbl">Online</div>
+    <div class="val" style="color:var(--green)">{{ online }}</div>
+  </div>
+  <div class="metric">
+    <div class="lbl">Offline</div>
+    <div class="val" style="color:var(--red)">{{ offline }}</div>
+  </div>
+</div>

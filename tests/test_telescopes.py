@@ -66,10 +66,14 @@ def test_toggle_online_to_offline(client, app):
         assert t5.active is True
         response = client.patch(f"/telescopes/{t5.id}/toggle")
         assert response.status_code == 200
-        assert b"Offline" in response.data
-        assert b"offline-row" in response.data
+        html = response.data.decode()
+        assert "Offline" in html
+        assert "offline-row" in html
         db.session.refresh(t5)
         assert t5.active is False
+        # OOB metrics update included in response
+        assert "hx-swap-oob" in html
+        assert "telescope-metrics" in html
 
 
 def test_toggle_offline_to_online(client, app):

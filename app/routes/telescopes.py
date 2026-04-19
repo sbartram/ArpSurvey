@@ -1,6 +1,8 @@
 import re
 
 from flask import Blueprint, render_template
+from sqlalchemy import func
+
 from app import db
 from app.models import Telescope
 
@@ -37,4 +39,12 @@ def toggle_active(telescope_id):
         return "Not found", 404
     telescope.active = not telescope.active
     db.session.commit()
-    return render_template("partials/telescope_row.html", telescope=telescope)
+
+    total = db.session.query(func.count(Telescope.id)).scalar()
+    online = db.session.query(func.count(Telescope.id)).filter(Telescope.active.is_(True)).scalar()
+
+    row_html = render_template("partials/telescope_row.html", telescope=telescope)
+    metrics_html = render_template("partials/telescope_metrics.html",
+                                   total=total, online=online, offline=total - online,
+                                   oob=True)
+    return row_html + metrics_html
