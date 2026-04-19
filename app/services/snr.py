@@ -20,13 +20,16 @@ For N sub-exposures, total SNR = single_SNR * sqrt(N).
 
 import math
 
+from arp_common import SITE_UTAH, SITE_SIERRA, SITE_SPAIN, SITE_SIDING, SITE_CHILE
+
 # Typical sky brightness at zenith in V-band (mag/arcsec^2) per site
 # Dark site ~21.5, moderate ~20.5, light-polluted ~19
 SITE_SKY_BRIGHTNESS = {
-    "New Mexico": 21.0,   # moderate (Mayhill area)
-    "Spain": 21.0,        # moderate (rural Spain)
-    "Australia": 21.5,    # dark (Siding Spring)
-    "Chile": 21.5,        # dark
+    SITE_UTAH:   21.0,   # moderate
+    SITE_SIERRA: 21.0,   # moderate
+    SITE_SPAIN:  21.0,   # moderate
+    SITE_SIDING: 21.5,   # dark
+    SITE_CHILE:  21.5,   # dark
 }
 
 # Vega zero-point flux in V-band: photons/s/cm^2/Angstrom at mag=0

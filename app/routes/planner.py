@@ -1,7 +1,7 @@
 import datetime
 
 from flask import Blueprint, render_template, request
-from arp_common import OBSERVATORIES, load_telescopes
+from arp_common import OBSERVATORIES, SITE_UTAH, load_telescopes
 
 from app import db
 from app.models import Target, SessionResult, GeneratedPlan, Telescope
@@ -32,7 +32,7 @@ def index():
 @bp.route("/planner/compute", methods=["POST"])
 def compute():
     date_str = request.form.get("date") or datetime.date.today().isoformat()
-    site_key = request.form.get("site", "New Mexico")
+    site_key = request.form.get("site", SITE_UTAH)
     min_hours = request.form.get("min_hours", 1.5, type=float)
     moon_filter = request.form.get("moon_filter", "")
 
@@ -182,7 +182,7 @@ def filter_planner():
 def compare():
     arp_num = request.args.get("arp", type=int)
     date_str = request.args.get("date") or datetime.date.today().isoformat()
-    site_key = request.args.get("site", "New Mexico") or "New Mexico"
+    site_key = request.args.get("site", SITE_UTAH) or SITE_UTAH
     snr_target = request.args.get("snr_target", DEFAULT_SNR_TARGET, type=float)
     sort_by = request.args.get("sort", "score")
     sort_dir = request.args.get("dir", "desc")

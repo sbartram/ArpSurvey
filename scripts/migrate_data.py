@@ -17,7 +17,7 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from arp_common import (
-    SEASON_SHEETS, SITE_TELESCOPES, PLAN_TIERS,
+    SEASON_SHEETS, SITE_TELESCOPES, SITE_UTAH, PLAN_TIERS,
     load_targets, load_telescopes, load_rates,
     parse_ra, parse_dec, DATA_DIR,
 )
@@ -214,7 +214,7 @@ def import_moon_data(session):
         status="complete",
         generated_at=datetime.now(timezone.utc),
         days=data["days"],
-        site_key="New Mexico",
+        site_key=SITE_UTAH,
         start_date=date.fromisoformat(data["generated"]),
         phase_calendar=[
             {"date": entry.get("d", entry.get("date")),

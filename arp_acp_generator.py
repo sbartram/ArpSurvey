@@ -37,7 +37,7 @@ import pandas as pd
 
 from arp_common import (
     TELESCOPE_FILE,
-    TELESCOPE_TIERS, SITE_TELESCOPES, PLAN_TIERS, SEASON_SHEETS,
+    TELESCOPE_TIERS, SITE_TELESCOPES, SITE_MAP, PLAN_TIERS, SEASON_SHEETS,
     LRGB_FILTERS, LUM_FILTERS,
     OVERHEAD_PER_TARGET_SECS, OVERHEAD_SESSION_SECS,
     load_telescopes, load_rates, load_targets, load_ned_coords, sanitize_name,
@@ -89,11 +89,11 @@ def assign_telescope(row, telescopes, preferred_telescope=None):
             candidates = tel_ids
             break
 
-    # Filter by site preference if specified
+    # Filter by site preference via SITE_MAP lookup
     site_preferred = []
-    for site_key, site_tels in SITE_TELESCOPES.items():
-        if site_key.lower() in best_site.lower():
-            site_preferred.extend(site_tels)
+    compatible_sites = SITE_MAP.get(best_site, [])
+    for site_key in compatible_sites:
+        site_preferred.extend(SITE_TELESCOPES.get(site_key, []))
 
     # Try site-preferred candidates first, then all candidates
     ordered = [t for t in candidates if t in site_preferred] + \

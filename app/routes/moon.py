@@ -2,6 +2,7 @@ import threading
 from datetime import date, datetime, timezone
 
 from flask import Blueprint, render_template, request, current_app
+from arp_common import SITE_UTAH
 
 from app import db
 from app.models import Target, MoonData, MoonCalendarRun
@@ -72,7 +73,7 @@ def regenerate():
     run = MoonCalendarRun(
         status="computing",
         days=days,
-        site_key="New Mexico",
+        site_key=SITE_UTAH,
         start_date=date.today(),
         phase_calendar=[],
     )
@@ -90,7 +91,7 @@ def regenerate():
                              "ra_hours": t.best_ra, "dec_degrees": t.best_dec}
                             for t in targets]
 
-            rows, metadata = compute_moon_data(target_dicts, days, "New Mexico")
+            rows, metadata = compute_moon_data(target_dicts, days, SITE_UTAH)
 
             # Clear old moon data and insert new
             db.session.query(MoonData).delete()

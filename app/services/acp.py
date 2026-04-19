@@ -33,7 +33,7 @@ def assign_telescope(size_arcmin, site_key, telescopes_df, preferred_telescope=N
 
     Args:
         size_arcmin: Target angular size
-        site_key: Observatory site string (e.g. "New Mexico / Spain" or "Spain")
+        site_key: Observatory site string (e.g. "Utah Desert Remote Observatory")
         telescopes_df: DataFrame from load_telescopes(), indexed by telescope ID
         preferred_telescope: Force a specific telescope if valid
 
@@ -87,7 +87,7 @@ def build_plan(targets, telescope_id, observatory, params, filename=None,
                  size_arcmin, filter_strategy, magnitude (optional),
                  transit_local, hours, moon (optional — for session plans)
         telescope_id: Telescope string ID (e.g. "T20")
-        observatory: Observatory name (e.g. "New Mexico")
+        observatory: Observatory name (e.g. "Utah Desert Remote Observatory")
         params: Dict with keys: exposure, count, repeat, plan_tier, binning
         filename: Plan filename for the header (optional)
         date_str: Observation date string for the header (optional)

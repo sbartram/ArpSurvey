@@ -23,31 +23,39 @@ TELESCOPE_FILE = DATA_DIR / "itelescopesystems.xlsx"
 # Observatory configuration
 # ---------------------------------------------------------------------------
 
+SITE_UTAH    = "Utah Desert Remote Observatory"
+SITE_SIERRA  = "Sierra Remote Observatory"
+SITE_SPAIN   = "Spain"
+SITE_SIDING  = "Siding Spring Observatory"
+SITE_CHILE   = "Deep Sky Chile"
+
 OBSERVATORIES = {
-    "New Mexico": {"lat": "33.0",  "lon": "-107.0", "elev": 1400, "utc_offset": -7,  "min_el": 30},
-    "Spain":      {"lat": "38.0",  "lon": "-3.5",   "elev": 1200, "utc_offset":  2,  "min_el": 30},
-    "Australia":  {"lat": "-31.3", "lon": "149.1",  "elev": 1100, "utc_offset": 10,  "min_el": 30},
-    "Chile":      {"lat": "-30.0", "lon": "-70.7",  "elev": 1500, "utc_offset": -4,  "min_el": 30},
+    SITE_UTAH:    {"lat": "38.1",  "lon": "-113.6", "elev": 1600, "utc_offset": -6,  "min_el": 30},
+    SITE_SIERRA:  {"lat": "37.1",  "lon": "-119.5", "elev": 1500, "utc_offset": -7,  "min_el": 30},
+    SITE_SPAIN:   {"lat": "38.1",  "lon": "-2.3",   "elev": 1600, "utc_offset":  2,  "min_el": 30},
+    SITE_SIDING:  {"lat": "-31.3", "lon": "149.1",  "elev": 1165, "utc_offset": 10,  "min_el": 30},
+    SITE_CHILE:   {"lat": "-30.5", "lon": "-70.8",  "elev": 1500, "utc_offset": -4,  "min_el": 30},
 }
 
-# Map "Best Site" column values to list of compatible observatory keys.
+# Map "Best Site" column values (from spreadsheet) to list of compatible observatory keys.
 # Use [0] for the primary site (e.g. for moon calendar which needs one site).
 SITE_MAP = {
-    "New Mexico / Spain":     ["New Mexico", "Spain"],
-    "New Mexico / Australia": ["New Mexico", "Australia"],
-    "Any site":               ["New Mexico", "Spain", "Chile", "Australia"],
-    "Australia":              ["Australia"],
-    "New Mexico":             ["New Mexico"],
-    "Spain":                  ["Spain"],
-    "Chile":                  ["Chile"],
+    "New Mexico / Spain":     [SITE_UTAH, SITE_SPAIN],
+    "New Mexico / Australia": [SITE_UTAH, SITE_SIDING],
+    "Any site":               [SITE_UTAH, SITE_SIERRA, SITE_SPAIN, SITE_SIDING, SITE_CHILE],
+    "Australia":              [SITE_SIDING],
+    "New Mexico":             [SITE_UTAH],
+    "Spain":                  [SITE_SPAIN],
+    "Chile":                  [SITE_CHILE],
 }
 
 # Site-to-telescope mapping for auto-assignment
 SITE_TELESCOPES = {
-    "New Mexico": ["T2", "T5", "T11", "T14", "T20", "T21", "T24", "T25", "T26", "T68"],
-    "Australia":  ["T8", "T17", "T30", "T32", "T33", "T59"],
-    "Spain":      ["T18", "T80"],
-    "Chile":      ["T70", "T71", "T72", "T73", "T74", "T75"],
+    SITE_UTAH:    ["T2", "T5", "T11", "T14", "T20", "T21", "T25", "T26", "T68"],
+    SITE_SIERRA:  ["T24"],
+    SITE_SIDING:  ["T8", "T10", "T17", "T30", "T32", "T33", "T59"],
+    SITE_SPAIN:   ["T18", "T80"],
+    SITE_CHILE:   ["T70", "T71", "T72", "T73", "T74", "T75"],
 }
 
 # ---------------------------------------------------------------------------

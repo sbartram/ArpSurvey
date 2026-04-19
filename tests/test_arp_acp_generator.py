@@ -109,7 +109,7 @@ def test_assign_telescope_small_target_prefers_small_tier():
     telescopes = _make_telescope_df()
     row = pd.Series({"Size (arcmin)": 2.0, "Best Site": "New Mexico"})
     # Small tier is ["T17", "T32", "T21", "T11", "T25"]
-    # New Mexico site preference: T21, T11, T25 come before T17 (Spain)
+    # Utah site preference: T21, T11, T25 come before T17 (Siding Spring)
     # T21 FOV min=30; 2 × 1.5 = 3 ≤ 30 → fits → T21 selected
     assert assign_telescope(row, telescopes) == "T21"
 

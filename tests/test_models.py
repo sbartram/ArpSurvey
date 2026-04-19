@@ -2,6 +2,7 @@
 
 import pytest
 from datetime import date, datetime, timezone
+from arp_common import SITE_UTAH
 from app import create_app, db
 from app.config import Config
 from app.models import (
@@ -82,7 +83,7 @@ def test_telescope_and_rate(session):
 def test_imaging_log_with_foreign_keys(session):
     target = Target(arp_number=85, name="M51", ra_hours=13.5, dec_degrees=47.2,
                     season="Spring")
-    tel = Telescope(telescope_id="T11", site="New Mexico")
+    tel = Telescope(telescope_id="T11", site=SITE_UTAH)
     session.add_all([target, tel])
     session.commit()
     log = ImagingLog(target_id=target.id, date_imaged=date(2026, 4, 15),
@@ -112,7 +113,7 @@ def test_moon_data_unique_constraint(session):
 
 def test_moon_calendar_run(session):
     run = MoonCalendarRun(
-        status="computing", days=90, site_key="New Mexico",
+        status="computing", days=90, site_key=SITE_UTAH,
         start_date=date(2026, 4, 17),
         phase_calendar=[{"date": "2026-04-17", "phase_pct": 45.0}],
     )

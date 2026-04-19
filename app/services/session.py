@@ -9,7 +9,7 @@ import datetime
 
 import ephem
 
-from arp_common import OBSERVATORIES, SITE_MAP
+from arp_common import OBSERVATORIES, SITE_MAP, SITE_UTAH
 
 from app.services.astronomy import (
     build_observer, dark_window, target_visibility, moon_info, alt_at_time,
@@ -22,7 +22,7 @@ def compute_session(date, site_key, targets, min_hours, moon_filter):
 
     Args:
         date: observation date (datetime.date)
-        site_key: observatory name (e.g. "New Mexico")
+        site_key: observatory name (e.g. SITE_UTAH)
         targets: list of dicts with keys: arp_number, name, ra_hours, dec_degrees,
                  size_arcmin, filter_strategy, best_site
         min_hours: minimum observable hours
@@ -36,7 +36,7 @@ def compute_session(date, site_key, targets, min_hours, moon_filter):
     results = []
     for t in targets:
         best_site = t.get("best_site", "Any site") or "Any site"
-        compatible = SITE_MAP.get(best_site, ["New Mexico"])
+        compatible = SITE_MAP.get(best_site, [SITE_UTAH])
         if site_key not in compatible:
             continue
 

@@ -13,6 +13,7 @@ from scripts.import_telescope_specs import (
     parse_focal_length, get_sensor_specs, import_telescope_csv,
     import_magnitudes,
 )
+from arp_common import SITE_UTAH, SITE_SPAIN
 from app import create_app, db
 from app.config import Config
 from app.models import Target, Telescope
@@ -272,7 +273,7 @@ def fixture_csv(tmp_path):
 class TestImportTelescopeCsv:
     def test_imports_all_fields(self, session, fixture_csv):
         """Verify every parsed field lands in the DB."""
-        tel = Telescope(telescope_id="T99", site="New Mexico")
+        tel = Telescope(telescope_id="T99", site=SITE_UTAH)
         session.add(tel)
         session.flush()
 
@@ -300,7 +301,7 @@ class TestImportTelescopeCsv:
 
     def test_updates_existing_telescope(self, session, fixture_csv):
         """Running import twice should update, not duplicate."""
-        tel = Telescope(telescope_id="T99", site="New Mexico", aperture_mm=100.0)
+        tel = Telescope(telescope_id="T99", site=SITE_UTAH, aperture_mm=100.0)
         session.add(tel)
         session.flush()
 
@@ -320,7 +321,7 @@ class TestImportTelescopeCsv:
             "Camera": "SBIG STX-16803",
             "CMOS Sensor Model": "—",
         }])
-        tel = Telescope(telescope_id="T88", site="New Mexico")
+        tel = Telescope(telescope_id="T88", site=SITE_UTAH)
         session.add(tel)
         session.flush()
 
@@ -333,7 +334,7 @@ class TestImportTelescopeCsv:
             "Telescope": "T88",
             "Filters": "None",
         }])
-        tel = Telescope(telescope_id="T88", site="Spain")
+        tel = Telescope(telescope_id="T88", site=SITE_SPAIN)
         session.add(tel)
         session.flush()
 

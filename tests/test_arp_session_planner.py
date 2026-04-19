@@ -3,6 +3,7 @@
 import pytest
 import ephem
 
+from arp_common import SITE_UTAH
 from arp_session_planner import (
     ephem_to_local,
     estimate_cost,
@@ -74,7 +75,7 @@ def test_estimate_cost_none_rate():
     (25.0, "T14"),  # very wide tier
 ])
 def test_assign_telescope(size, expected):
-    assert assign_telescope(size, "New Mexico") == expected
+    assert assign_telescope(size, SITE_UTAH) == expected
 
 
 # ---------------------------------------------------------------------------
@@ -113,7 +114,7 @@ def _make_session_targets():
 
 def test_build_session_plan_required_directives():
     targets = _make_session_targets()
-    plan = build_session_plan(targets, "New Mexico", "2026-04-15", "Plan-40")
+    plan = build_session_plan(targets, SITE_UTAH, "2026-04-15", "Plan-40")
     assert "#BillingMethod Session" in plan
     assert "#RESUME" in plan
     assert "#FIRSTLAST" in plan
@@ -123,7 +124,7 @@ def test_build_session_plan_required_directives():
 
 def test_build_session_plan_target_count_in_header():
     targets = _make_session_targets()
-    plan = build_session_plan(targets, "New Mexico", "2026-04-15", "Plan-40")
+    plan = build_session_plan(targets, SITE_UTAH, "2026-04-15", "Plan-40")
     assert "Targets     : 2" in plan
 
 
@@ -138,12 +139,12 @@ def test_build_session_plan_uses_named_overhead_constants():
     Total duration = 2100 + 660 = 2760 sec = 46 min
     """
     targets = _make_session_targets()
-    plan = build_session_plan(targets, "New Mexico", "2026-04-15", "Plan-40")
+    plan = build_session_plan(targets, SITE_UTAH, "2026-04-15", "Plan-40")
     # 46 minutes — check it appears in "Total duration" line
     assert "46m" in plan or "46 m" in plan
 
 
 def test_build_session_plan_shows_plan_tier():
     targets = _make_session_targets()
-    plan = build_session_plan(targets, "New Mexico", "2026-04-15", "Plan-90")
+    plan = build_session_plan(targets, SITE_UTAH, "2026-04-15", "Plan-90")
     assert "Plan-90" in plan

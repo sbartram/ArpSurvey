@@ -22,7 +22,8 @@ from pathlib import Path
 import ephem
 
 from arp_common import (
-    OBSERVATORIES, SITE_MAP, load_targets, moon_risk, parse_ra, parse_dec,
+    OBSERVATORIES, SITE_MAP, SITE_UTAH,
+    load_targets, moon_risk, parse_ra, parse_dec,
 )
 
 
@@ -85,7 +86,7 @@ def run(args):
     # Moon phase calendar — one entry per day for header info
     moon_obj  = ephem.Moon()
     phase_cal = []
-    obs, utc_offset = build_observer("New Mexico")
+    obs, utc_offset = build_observer(SITE_UTAH)
     utc_hour = (24 - utc_offset) % 24
     for d in range(days):
         date = today + datetime.timedelta(days=d)
@@ -104,7 +105,7 @@ def run(args):
         ra_str   = parse_ra(row["RA (J2000)"])
         dec_str  = parse_dec(row["Dec (J2000)"])
         site_str = str(row.get("Best Site", "Any site")).strip()
-        obs_key  = SITE_MAP.get(site_str, ["New Mexico"])[0]
+        obs_key  = SITE_MAP.get(site_str, [SITE_UTAH])[0]
         season   = str(row.get("season", "")).strip() if "season" in row else ""
 
         windows   = calc_windows(ra_str, dec_str, obs_key, today, days)

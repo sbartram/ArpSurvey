@@ -2,6 +2,7 @@
 
 import datetime
 import pytest
+from arp_common import SITE_UTAH
 from app.services.session import compute_session
 
 
@@ -12,7 +13,7 @@ def test_compute_session_returns_observable_targets():
     ]
     results = compute_session(
         date=datetime.date(2026, 4, 17),
-        site_key="New Mexico",
+        site_key=SITE_UTAH,
         targets=targets,
         min_hours=1.0,
         moon_filter="",
@@ -31,7 +32,7 @@ def test_compute_session_filters_by_min_hours():
     ]
     results = compute_session(
         date=datetime.date(2026, 4, 17),
-        site_key="New Mexico",
+        site_key=SITE_UTAH,
         targets=targets,
         min_hours=99,
         moon_filter="",
@@ -47,7 +48,7 @@ def test_compute_session_filters_by_site():
     ]
     results = compute_session(
         date=datetime.date(2026, 4, 17),
-        site_key="New Mexico",
+        site_key=SITE_UTAH,
         targets=targets,
         min_hours=1.0,
         moon_filter="",

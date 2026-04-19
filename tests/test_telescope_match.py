@@ -4,6 +4,7 @@ import datetime
 import math
 import pytest
 
+from arp_common import SITE_UTAH, SITE_SIDING
 from app import create_app, db
 from app.config import Config
 from app.models import Telescope, TelescopeRate
@@ -23,7 +24,7 @@ def app():
         db.drop_all()
 
 
-def _make_telescope(tel_id="T14", site="New Mexico", fov=60.0, resolution=1.1,
+def _make_telescope(tel_id="T14", site=SITE_UTAH, fov=60.0, resolution=1.1,
                     filters=None, aperture=250, read_noise=8.0, dark_current=0.05,
                     peak_qe=0.6, full_well=25000, pixel_size=9.0, focal_length=2000):
     """Helper to build a Telescope instance for testing."""
@@ -45,7 +46,7 @@ def _make_rate(telescope, plan_tier="Plan-40", session_rate=12.0, exposure_rate=
     )
 
 
-# M51 (Arp 85): bright, large, high-Dec — observable from New Mexico in April
+# M51 (Arp 85): bright, large, high-Dec — observable from Utah in April in April
 SAMPLE_TARGET = {
     "arp_number": 85,
     "name": "M51",
@@ -73,7 +74,7 @@ def test_evaluate_telescope_viable(app):
             target=SAMPLE_TARGET,
             telescope=tel,
             date=SAMPLE_DATE,
-            site_key="New Mexico",
+            site_key=SITE_UTAH,
             moon_info={"phase_pct": 20.0, "separation_deg": 90.0, "risk": "G"},
         )
 
@@ -100,13 +101,13 @@ def test_evaluate_telescope_below_horizon(app):
     }
 
     with app.app_context():
-        tel = _make_telescope(tel_id="T24", site="Australia")
+        tel = _make_telescope(tel_id="T24", site=SITE_SIDING)
         db.session.add(tel)
         db.session.commit()
 
         result = evaluate_telescope(
             target=northern_target, telescope=tel, date=SAMPLE_DATE,
-            site_key="Australia",
+            site_key=SITE_SIDING,
             moon_info={"phase_pct": 20.0, "separation_deg": 90.0, "risk": "G"},
         )
 
@@ -127,7 +128,7 @@ def test_evaluate_telescope_fov_clipped(app):
 
         result = evaluate_telescope(
             target=large_target, telescope=tel, date=SAMPLE_DATE,
-            site_key="New Mexico",
+            site_key=SITE_UTAH,
             moon_info={"phase_pct": 20.0, "separation_deg": 90.0, "risk": "G"},
         )
 
@@ -145,7 +146,7 @@ def test_evaluate_telescope_missing_filters(app):
 
         result = evaluate_telescope(
             target=SAMPLE_TARGET, telescope=tel, date=SAMPLE_DATE,
-            site_key="New Mexico",
+            site_key=SITE_UTAH,
             moon_info={"phase_pct": 20.0, "separation_deg": 90.0, "risk": "G"},
         )
 
@@ -166,7 +167,7 @@ def test_time_to_snr_calculation(app):
 
         result = evaluate_telescope(
             target=SAMPLE_TARGET, telescope=tel, date=SAMPLE_DATE,
-            site_key="New Mexico",
+            site_key=SITE_UTAH,
             moon_info={"phase_pct": 20.0, "separation_deg": 90.0, "risk": "G"},
             snr_target=30,
         )
@@ -191,7 +192,7 @@ def test_fov_fill_ratio(app):
 
         result = evaluate_telescope(
             target=target, telescope=tel, date=SAMPLE_DATE,
-            site_key="New Mexico",
+            site_key=SITE_UTAH,
             moon_info={"phase_pct": 20.0, "separation_deg": 90.0, "risk": "G"},
         )
 
@@ -204,10 +205,10 @@ def test_compare_telescopes_splits_viable_and_excluded(app):
 
     with app.app_context():
         # Viable telescope: full LRGB filters, NM site
-        tel1 = _make_telescope(tel_id="T14", site="New Mexico", filters=["L", "R", "G", "B"])
+        tel1 = _make_telescope(tel_id="T14", site=SITE_UTAH, filters=["L", "R", "G", "B"])
         rate1 = _make_rate(tel1)
         # Excluded telescope: Lum-only (missing RGB for LRGB target)
-        tel2 = _make_telescope(tel_id="T99", site="New Mexico", filters=["L"],
+        tel2 = _make_telescope(tel_id="T99", site=SITE_UTAH, filters=["L"],
                                aperture=100, fov=30.0)
         db.session.add_all([tel1, rate1, tel2])
         db.session.commit()
@@ -302,7 +303,7 @@ def test_compare_route_returns_200(app, client):
         db.session.add_all([target, tel, rate])
         db.session.commit()
 
-        response = client.get("/planner/compare?arp=85&date=2026-04-17&site=New+Mexico")
+        response = client.get("/planner/compare?arp=85&date=2026-04-17&site=Utah+Desert+Remote+Observatory")
 
     assert response.status_code == 200
     html = response.data.decode()
@@ -311,7 +312,7 @@ def test_compare_route_returns_200(app, client):
 
 
 def test_compare_route_missing_arp_returns_error(app, client):
-    response = client.get("/planner/compare?date=2026-04-17&site=New+Mexico")
+    response = client.get("/planner/compare?date=2026-04-17&site=Utah+Desert+Remote+Observatory")
     assert response.status_code == 200
     html = response.data.decode()
     assert "not found" in html.lower() or "no target" in html.lower()
@@ -332,14 +333,20 @@ def test_restore_route_returns_planner_table(app, client):
         # Seed a session result
         import datetime as dt
         session = SessionResult(
-            site_key="New Mexico",
+            site_key=SITE_UTAH,
             date_local=dt.date(2026, 4, 17),
             eve_twilight=dt.datetime(2026, 4, 18, 2, 30),
             morn_twilight=dt.datetime(2026, 4, 18, 11, 0),
             results=[{
                 "arp": 85, "name": "M51", "telescope": "T14",
-                "filter_strategy": "LRGB", "moon": {"risk": "G"},
+                "filter_strategy": "LRGB",
+                "moon": {"risk": "G", "phase_pct": 10.0, "separation_deg": 80.0},
                 "transit": "2026-04-18T06:00:00",
+                "peak_elevation": 72.5, "hours": 5.0,
+                "start_local": "20:00", "end_local": "01:00",
+                "transit_local": "22:30",
+                "snr": 65.0, "snr_quality": "Good",
+                "target_status": "Pending", "target_id": 1,
             }],
         )
         db.session.add(session)

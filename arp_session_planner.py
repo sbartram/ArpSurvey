@@ -12,14 +12,14 @@ Usage:
                                   [--plan-tier TIER] [--output-dir DIR]
 
 Examples:
-    # Tonight at New Mexico
+    # Tonight at Utah Desert Remote Observatory
     python arp_session_planner.py
 
     # Specific date at Spain
     python arp_session_planner.py --date 2026-05-10 --site Spain
 
     # Only targets with 3+ observable hours
-    python arp_session_planner.py --site "New Mexico" --min-hours 3
+    python arp_session_planner.py --site "Utah Desert Remote Observatory" --min-hours 3
 """
 
 import argparse
@@ -32,7 +32,7 @@ from pathlib import Path
 import ephem
 
 from arp_common import (
-    OBSERVATORIES, SITE_MAP, TELESCOPE_TIERS, PLAN_TIERS,
+    OBSERVATORIES, SITE_MAP, SITE_UTAH, TELESCOPE_TIERS, PLAN_TIERS,
     LRGB_COUNTS, LUM_COUNTS, INTERVAL,
     OVERHEAD_PER_TARGET_SECS, OVERHEAD_SESSION_SECS,
     RISK_LABELS,
@@ -188,7 +188,7 @@ def estimate_cost(strategy, rate_per_min):
 # ---------------------------------------------------------------------------
 
 def assign_telescope(size, obs_key):
-    site_prefix = obs_key.split()[0]  # "New" or "Spain" or "Australia" or "Chile"
+    site_prefix = obs_key.split()[0]  # "Utah" or "Sierra" or "Spain" or "Siding" or "Deep"
     for min_s, max_s, tel_ids in TELESCOPE_TIERS:
         if min_s <= size < max_s:
             return tel_ids[0]
@@ -353,7 +353,7 @@ def run(args):
         size     = float(row["Size (arcmin)"]) if row["Size (arcmin)"] else 3.0
 
         # Check site compatibility
-        compatible_sites = SITE_MAP.get(site_str, ["New Mexico"])
+        compatible_sites = SITE_MAP.get(site_str, [SITE_UTAH])
         if obs_key not in compatible_sites:
             continue
 
@@ -456,9 +456,9 @@ def parse_args():
     )
     parser.add_argument("--date", default=None,
         help="Observing date YYYY-MM-DD (default: today)")
-    parser.add_argument("--site", default="New Mexico",
+    parser.add_argument("--site", default=SITE_UTAH,
         choices=list(OBSERVATORIES.keys()),
-        help="Observatory site (default: New Mexico)")
+        help="Observatory site (default: Utah Desert Remote Observatory)")
     parser.add_argument("--min-hours", type=float, default=1.5,
         help="Minimum observable hours to include a target (default: 1.5)")
     parser.add_argument("--min-el", type=int, default=None,
