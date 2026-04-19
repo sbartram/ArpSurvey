@@ -94,16 +94,18 @@ Flask + SQLAlchemy + Jinja2 + HTMX. All state in PostgreSQL (no localStorage).
 
 - **`app/__init__.py`** — Flask app factory (`create_app`), `db = SQLAlchemy()`
 - **`app/models.py`** — 8 SQLAlchemy models: Target, Telescope, TelescopeRate, ImagingLog, MoonData, MoonCalendarRun, SessionResult, GeneratedPlan
-- **`app/routes/`** — Flask blueprints (overview, planner, visibility, moon, log, export, generator, files, targets, health)
+- **`app/routes/`** — Flask blueprints (overview, planner, visibility, moon, log, export, generator, files, targets, telescopes, health)
 - **`app/services/`** — Business logic extracted from CLI scripts (astronomy, acp, session, moon_calendar, importer, ned, snr)
 - **`app/services/telescope_match.py`** — `compare_telescopes()` evaluates all active telescopes for a target; `evaluate_telescope()` computes visibility, SNR, FOV fit, cost, and composite score. Only queries `active=True` telescopes.
 - **`app/routes/targets.py`** — Status badge cycle (`/targets/<id>/status`) and telescope selection from compare view (`/targets/<id>/select-telescope`). `preferred_telescope` stored on Target model, used by ACP generation.
+- **`app/routes/telescopes.py`** — Telescope fleet management page (`/telescopes`) and online/offline toggle (`PATCH /telescopes/<id>/toggle`). Toggle uses HTMX out-of-band swap (`hx-swap-oob`) to update both the row and the summary metric cards atomically.
 - **`app/templates/`** — Jinja2 templates extending `base.html`; `partials/` for HTMX fragments
 - **`scripts/`** — Data migration and import scripts
 - **`migrations/`** — Alembic schema migrations
 
 Key patterns:
 - HTMX for interactivity (no JS framework). Partials return HTML fragments.
+- `hx-swap-oob="true"` for multi-element updates from a single HTMX response (e.g., telescope toggle updates both row and metrics).
 - `hx-include` gathers filter values from sibling controls.
 - Background computation (moon calendar) uses `threading.Thread` with DB status flag for cross-worker safety.
 - Tests use SQLite in-memory (`SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"`). Use `db.JSON` not `db.ARRAY` for portability.
