@@ -96,7 +96,7 @@ Flask + SQLAlchemy + Jinja2 + HTMX. All state in PostgreSQL (no localStorage).
 - **`app/models.py`** — 8 SQLAlchemy models: Target, Telescope, TelescopeRate, ImagingLog, MoonData, MoonCalendarRun, SessionResult, GeneratedPlan
 - **`app/routes/`** — Flask blueprints (overview, planner, visibility, moon, log, export, generator, files, targets, telescopes, health)
 - **`app/services/`** — Business logic extracted from CLI scripts (astronomy, acp, session, moon_calendar, importer, ned, snr)
-- **`app/services/telescope_match.py`** — `compare_telescopes()` evaluates all active telescopes for a target; `evaluate_telescope()` computes visibility, SNR, FOV fit, cost, and composite score. Only queries `active=True` telescopes.
+- **`app/services/telescope_match.py`** — `compare_telescopes()` evaluates all active telescopes for a target; `evaluate_telescope()` computes visibility, SNR, FOV fit, cost, and composite score. Only queries `active=True` telescopes. `best_telescope_for_target()` scores only active telescopes at a specific site — used by the session planner for per-target telescope assignment. The legacy `assign_telescope()` in `acp.py` (size-tier lookup) is fallback only.
 - **`app/routes/targets.py`** — Status badge cycle (`/targets/<id>/status`) and telescope selection from compare view (`/targets/<id>/select-telescope`). `preferred_telescope` stored on Target model, used by ACP generation.
 - **`app/routes/telescopes.py`** — Telescope fleet management page (`/telescopes`) and online/offline toggle (`PATCH /telescopes/<id>/toggle`). Toggle uses HTMX out-of-band swap (`hx-swap-oob`) to update both the row and the summary metric cards atomically.
 - **`app/templates/`** — Jinja2 templates extending `base.html`; `partials/` for HTMX fragments
@@ -117,7 +117,7 @@ Key patterns:
 - Never fabricate SRI integrity hashes — compute with: `curl -s <url> | openssl dgst -sha384 -binary | openssl base64 -A`
 - ACP filenames: single target = `{name}-{telescope}-{date}.txt`, multi = `arp-session-{telescope}-{date}.txt`
 - Telescope data requires two imports: `importer.py` (xlsx → site/fov/rates) and `import_telescope_specs.py` (csv → CCD specs/filters/aperture/resolution). Both needed for complete records.
-- `import_telescope_specs.py` must run locally (host), not in Docker — `itelescopes.csv` is not volume-mounted into the container
+- `import_telescope_specs.py` can run in-container (k8s exec) or locally — `itelescopes.csv` is baked into the Docker image
 - Billing rates from `load_rates()` / `itelescopesystems.xlsx` are **points per hour**, not per minute
 - `SessionResult.results` is a snapshot — target status changes in DB are not reflected. Always look up current `Target.status` from the DB when making decisions based on status.
 - HTMX silently ignores 5xx responses (no swap occurs). Debug "nothing happens" with `docker-compose logs app --tail=40`
@@ -139,3 +139,14 @@ A self-contained ~150KB HTML file with embedded data, coordinates, and astronomy
 Plans use iTelescope's ACP dialect: `#BillingMethod Session`, `#repeat`, `#count`, `#interval`, `#binning`, `#filter` directives, tab-separated target lines with decimal-hours RA and decimal-degrees Dec, ending with `#shutdown`. Plans are telescope-specific.
 
 This URL is a good reference for ACP used by iTelescope - [How do I write my own scripts or plans to control the telescopes?](https://support.itelescope.net/support/solutions/articles/143037-how-do-i-write-my-own-scripts-or-plans-to-control-the-telescopes-)
+
+### K8s Deployment
+
+- Cluster: 4-node k3s (arm64), MetalLB for LoadBalancer IPs
+- Registry: `registry.bartram.org` (no auth, Let's Encrypt TLS)
+- DB: PostgreSQL in `postgres` namespace (`postgresql.postgres.svc.cluster.local`), app DB = `arpsurvey`, user = `arp`
+- App namespace: `arp-survey`, service IP: `192.168.44.208`
+- Docker build: must use `--platform linux/arm64 --provenance=false` (arm64 nodes, provenance causes manifest list issues with containerd)
+- Dockerfile uses `USER 1000` (numeric UID required for `runAsNonRoot` securityContext)
+- Init container runs `alembic upgrade head`; data population via `kubectl exec ... python scripts/migrate_data.py` then `import_telescope_specs.py`
+- `PYTHONPATH=/app` must be set in k8s container env for Alembic and app imports

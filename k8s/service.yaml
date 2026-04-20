@@ -4,6 +4,7 @@ metadata:
   name: arp-survey
 spec:
   type: LoadBalancer
+  loadBalancerIP: 192.168.44.208
   selector:
     app: arp-survey
   ports:

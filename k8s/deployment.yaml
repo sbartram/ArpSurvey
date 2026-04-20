@@ -16,12 +16,14 @@ spec:
     spec:
       initContainers:
       - name: migrate
-        image: arp-survey:latest
+        image: registry.bartram.org/arp-survey:latest
         command: ["alembic", "upgrade", "head"]
         securityContext:
           runAsNonRoot: true
           allowPrivilegeEscalation: false
         env:
+        - name: PYTHONPATH
+          value: /app
         - name: DATABASE_URL
           valueFrom:
             secretKeyRef:
@@ -29,13 +31,15 @@ spec:
               key: database-url
       containers:
       - name: arp-survey
-        image: arp-survey:latest
+        image: registry.bartram.org/arp-survey:latest
         securityContext:
           runAsNonRoot: true
           allowPrivilegeEscalation: false
         ports:
         - containerPort: 8000
         env:
+        - name: PYTHONPATH
+          value: /app
         - name: DATABASE_URL
           valueFrom:
             secretKeyRef:

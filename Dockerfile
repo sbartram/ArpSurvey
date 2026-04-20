@@ -21,9 +21,10 @@ COPY itelescopesystems.xlsx .
 COPY arp_ned_coords.csv .
 COPY arp_moon_data.json .
 COPY asu.tsv .
+COPY itelescopes.csv .
 
-RUN useradd -r appuser
-USER appuser
+RUN useradd -r -u 1000 appuser
+USER 1000
 
 EXPOSE 8000
 CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:8000", "app:create_app()"]
