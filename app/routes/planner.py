@@ -9,7 +9,7 @@ from app.services.session import compute_session
 from app.services.astronomy import dark_window
 from app.services.acp import build_plan, assign_telescope
 from app.services.snr import estimate_snr, snr_quality_label
-from app.services.telescope_match import compare_telescopes, DEFAULT_SNR_TARGET
+from app.services.telescope_match import compare_telescopes, best_telescope_for_target, DEFAULT_SNR_TARGET
 from app.services.astronomy import build_observer, moon_info as compute_moon_info
 
 bp = Blueprint("planner", __name__)
@@ -48,16 +48,29 @@ def compute():
 
     results = compute_session(obs_date, site_key, target_dicts, min_hours, moon_filter)
 
-    # Assign telescopes and estimate SNR for each result
+    # Assign telescopes using scoring model, with legacy tier fallback
     tels_df = load_telescopes()
-    # Build magnitude lookup from DB targets
     mag_lookup = {t.arp_number: t.magnitude for t in targets}
 
     for r in results:
         size = r.get("size_arcmin") or 3.0
-        tel_id = assign_telescope(size, site_key, tels_df)
+        magnitude = mag_lookup.get(r["arp"])
+        r["magnitude"] = magnitude
+
+        # Score-based selection: evaluate active telescopes at this site
+        target_for_match = {
+            "arp_number": r["arp"], "name": r["name"],
+            "ra_hours": r["ra_hours"], "dec_degrees": r["dec_degrees"],
+            "size_arcmin": size, "magnitude": magnitude,
+            "filter_strategy": r.get("filter_strategy", "Luminance"),
+        }
+        tel_id = best_telescope_for_target(
+            target_for_match, obs_date, site_key, r["moon"]
+        )
+        if not tel_id:
+            # Fallback to legacy size-tier assignment
+            tel_id = assign_telescope(size, site_key, tels_df)
         r["telescope"] = tel_id
-        r["magnitude"] = mag_lookup.get(r["arp"])
 
         # SNR estimation
         tel_record = db.session.query(Telescope).filter_by(telescope_id=tel_id).first()

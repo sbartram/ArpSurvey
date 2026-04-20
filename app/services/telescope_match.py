@@ -149,6 +149,38 @@ def _required_filters(strategy):
     return {"L"}
 
 
+def best_telescope_for_target(target, date, site_key, moon_info,
+                              snr_target=DEFAULT_SNR_TARGET,
+                              plan_tier=DEFAULT_PLAN_TIER):
+    """
+    Pick the highest-scoring active telescope at a specific site.
+
+    Returns telescope_id string, or None if no viable telescope found.
+    """
+    from app.models import Telescope
+
+    telescopes = Telescope.query.filter_by(active=True, site=site_key).all()
+    if not telescopes:
+        return None
+
+    viable = []
+    for tel in telescopes:
+        result = evaluate_telescope(
+            target=target, telescope=tel, date=date,
+            site_key=site_key, moon_info=moon_info,
+            snr_target=snr_target, plan_tier=plan_tier,
+        )
+        if not result["disqualified"]:
+            viable.append(result)
+
+    if not viable:
+        return None
+
+    _compute_scores(viable)
+    viable.sort(key=lambda r: r.get("score", 0), reverse=True)
+    return viable[0]["telescope_id"]
+
+
 def compare_telescopes(target, date, moon_info, snr_target=DEFAULT_SNR_TARGET,
                        plan_tier=DEFAULT_PLAN_TIER):
     """
