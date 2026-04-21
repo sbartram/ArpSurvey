@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "astropy": {
+      "source": "tondevrel/scientific-agent-skills",
+      "sourceType": "github",
+      "computedHash": "5db33d5d424c741ad1ad379592e70b2ea1e8e0736138022fc5da4a19795467ee"
+    }
+  }
+}
