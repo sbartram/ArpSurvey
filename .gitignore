@@ -28,5 +28,6 @@ venv/
 .worktrees/
 .claude/settings.local.json
 k8s/secret.yaml
+charts/*/values-secret.yaml
 .superpowers/
 TODO.md

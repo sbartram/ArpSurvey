@@ -142,6 +142,9 @@ This URL is a good reference for ACP used by iTelescope - [How do I write my own
 
 ### K8s Deployment
 
+- **Deployment is via Helm** (`charts/arp-survey/`). Prefer editing the chart over `k8s/*.yaml` (kept as legacy reference). Deploy: `helm upgrade --install arp-survey charts/arp-survey -n arp-survey --create-namespace -f charts/arp-survey/values-secret.yaml`
+- Secrets: copy `charts/arp-survey/values-secret.yaml.template` → `values-secret.yaml` (gitignored). Chart fails fast if `secret.databaseUrl`/`secret.flaskSecretKey` are empty.
+- Chart selector is intentionally `app: arp-survey` (matching original manifest) so `helm install` adopts the existing Deployment in-place. Don't change selector labels without planning a delete+reinstall.
 - Cluster: 4-node k3s (arm64), MetalLB for LoadBalancer IPs
 - Registry: `registry.bartram.org` (no auth, Let's Encrypt TLS)
 - DB: PostgreSQL in `postgres` namespace (`postgresql.postgres.svc.cluster.local`), app DB = `arpsurvey`, user = `arp`

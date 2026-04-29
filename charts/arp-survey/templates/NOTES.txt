@@ -1,0 +1,17 @@
+arp-survey {{ .Chart.AppVersion }} deployed to namespace {{ .Release.Namespace }}.
+
+Service: {{ include "arp-survey.fullname" . }} ({{ .Values.service.type }})
+{{- if eq .Values.service.type "LoadBalancer" }}
+  LoadBalancer IP: {{ .Values.service.loadBalancerIP | default "(auto-assigned)" }}
+{{- end }}
+
+Check status:
+  kubectl -n {{ .Release.Namespace }} get pods,svc -l app.kubernetes.io/instance={{ .Release.Name }}
+
+Tail logs:
+  kubectl -n {{ .Release.Namespace }} logs -l app.kubernetes.io/instance={{ .Release.Name }} -f
+
+Run data import (one-time after first deploy):
+  POD=$(kubectl -n {{ .Release.Namespace }} get pod -l app.kubernetes.io/instance={{ .Release.Name }} -o jsonpath='{.items[0].metadata.name}')
+  kubectl -n {{ .Release.Namespace }} exec $POD -- python scripts/migrate_data.py
+  kubectl -n {{ .Release.Namespace }} exec $POD -- python scripts/import_telescope_specs.py

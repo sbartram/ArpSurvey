@@ -1,0 +1,59 @@
+replicaCount: 1
+
+image:
+  repository: registry.bartram.org/arp-survey
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: LoadBalancer
+  port: 80
+  targetPort: 8000
+  loadBalancerIP: 192.168.44.208
+
+containerPort: 8000
+
+env:
+  PYTHONPATH: /app
+
+# Secret handling. Set create=true to render the Secret from values
+# (provide values-secret.yaml on the command line — gitignored).
+# Set create=false to reference an existing Secret managed out-of-band.
+secret:
+  create: true
+  name: arp-survey-secrets
+  # Populated from values-secret.yaml at install time
+  databaseUrl: ""
+  flaskSecretKey: ""
+
+resources:
+  requests:
+    memory: 128Mi
+    cpu: 100m
+  limits:
+    memory: 512Mi
+    cpu: 500m
+
+probes:
+  readiness:
+    path: /health
+    initialDelaySeconds: 5
+    periodSeconds: 10
+  liveness:
+    path: /health
+    initialDelaySeconds: 15
+    periodSeconds: 30
+
+migration:
+  enabled: true
+  command: ["alembic", "upgrade", "head"]
+
+securityContext:
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+
+podSecurityContext: {}
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
